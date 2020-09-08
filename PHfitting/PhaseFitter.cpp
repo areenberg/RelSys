@@ -5,12 +5,16 @@
  * Created on September 1, 2020, 3:26 PM
  */
 
+
+#include "PhaseFitter.h"
+
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<math.h>
 #include<iostream>
+#include <vector>
 
-#include "PhaseFitter.h"
 
 using namespace std;
 
@@ -582,7 +586,7 @@ void PhaseFitter::input_density()
     scanf("%lf", &dt);
 */
     switch (choice1) {
-    case 1:
+    case 1: //from file
       infil=fopen("input-phases", "r");
       fscanf(infil, "%d", &dim);
       pie = v_alloc(dim);
@@ -594,7 +598,7 @@ void PhaseFitter::input_density()
       }
       fclose(infil);
       break;
-    case 2:
+    case 2: //from keyboard
       printf("Dimension p: ");
       scanf("%d", &dim);
       pie = v_alloc(dim);
@@ -608,6 +612,9 @@ void PhaseFitter::input_density()
 	}            
       }     
       break;
+        case 3: //from program
+            
+            break;
     }
     exit = v_alloc(dim);
     for (i=0; i < dim; i++) 
@@ -1643,7 +1650,7 @@ int PhaseFitter::search_partner(void)
   return(max+1);
 }   
  
-void PhaseFitter::run(int NoOfEMsteps, int intSeed, int samOrDen, int inDType, double trP, double dt) {
+void PhaseFitter::run(int NoOfEMsteps, int intSeed, int inDType, double trP, double dt) {
     //main method from EMpht
     /*
      NoOfEMsteps: Number of iterations in the EM algorithm.
@@ -1657,7 +1664,6 @@ void PhaseFitter::run(int NoOfEMsteps, int intSeed, int samOrDen, int inDType, d
     integerSeed = intSeed;
     truncationPoint = trP;
     densityType = inDType;
-    sampleOrDensity = samOrDen;
     
     int i, j, sampletype, fitting, choice, newp; 
     int *pilegal, **Tlegal, NoOfInput[3]={0, 0, 0}, NoToSave; 
@@ -1814,5 +1820,24 @@ void PhaseFitter::setCoxianGeneral(int p=2){
     PHDistribution = 5;
 }
 
+void PhaseFitter::setInputSample(){
+    //fits the phase-type distribution to samples
+    
+    sampleOrDensity = 1;
+    
+}
 
-
+void PhaseFitter::setInputDensity(vector<vector<double>>& q_in, vector<double> &pi_in){
+    //fits the phase-type distribution to a density
+    
+    pi_in_point = pi_in.data();
+   
+    for (int i=0; i<pi_in.size(); i++){
+        cout << "pi[" << i << "] = " << pi_in_point[i] << endl;
+    }
+    
+    
+    
+    sampleOrDensity = 2;
+    
+}

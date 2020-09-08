@@ -14,6 +14,11 @@
 #ifndef PHASEFITTER_H
 #define PHASEFITTER_H
 
+
+#include <vector>
+
+using namespace std;
+
 class PhaseFitter {
 public:
     PhaseFitter();
@@ -21,16 +26,22 @@ public:
     virtual ~PhaseFitter();
     
     //methods
-    void run(int NoOfEMsteps, int intSeed, int samOrDen, int inDType, double trP, double dt);
+    void run(int NoOfEMsteps, int intSeed, int inDType, double trP, double dt);
+    
+    //type of output
     void setGeneralPH(int p);
     void setHyberExponential(int p);
     void setSumOfExponentials(int p);
     void setCoxian(int p);
     void setCoxianGeneral(int p);
     
+    // type of input
+    void setInputSample();
+    void setInputDensity(vector<vector<double>> &q_in, vector<double> &p_in);
+    
     
 private:
-   
+    
     //variables and pointers
     double *obs, *weight, *censur, *cweight, *lower, *upper, *intweight;
     double  SumOfWeights, SumOfCensored, SumOfInt;
@@ -38,6 +49,8 @@ private:
     
     int phases, sampleOrDensity, densityType, PHDistribution, integerSeed;
     double truncationPoint, densityInterval;   
+    
+    double * pi_in_point;
     
     //private EMpht methods
     double *v_alloc(int n);

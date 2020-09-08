@@ -6,11 +6,13 @@
  * Created on 31. august 2020, 20.10
  */
 
+
+#include "PhaseFitter.h"
+
 #include <cstdlib>
 #include <iostream>
 #include<string.h>
-
-#include "PhaseFitter.h"
+#include <vector>
 
 using namespace std;
 
@@ -24,18 +26,27 @@ int main(int argc, char** argv) {
     
     PhaseFitter ph; 
     
-    //run fitting program
+    
+    
+    //parameters
     int phases = 3;
     int EMiterations = 50;
     int seed = 1234;
-    int sampleOrDensity = 2;
     int inputDensityType = 6;
     double truncationPoint = 100;
     double dt = 1e-3; //truncationPoint/500;
     
+    //input phases
+    vector<vector<double>> q_in {{-2, 2, 0},
+                                   {0, -2, 2},
+                                   {0, 0, -2}};
+    vector<double> pi_in {1, 0, 0};
+    
+    //set input and output types
+    ph.setInputDensity(q_in,pi_in);
     ph.setSumOfExponentials(phases);
     
-    ph.run(EMiterations,seed,sampleOrDensity,inputDensityType,truncationPoint,dt);
+    ph.run(EMiterations,seed,inputDensityType,truncationPoint,dt);
     
     
     return 0;
