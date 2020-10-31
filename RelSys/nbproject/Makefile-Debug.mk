@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/HyperQueue.o \
 	${OBJECTDIR}/LinSolver.o \
 	${OBJECTDIR}/Queue.o \
+	${OBJECTDIR}/StatusBar.o \
 	${OBJECTDIR}/combinatorial.o \
 	${OBJECTDIR}/main.o
 
@@ -80,6 +81,11 @@ ${OBJECTDIR}/Queue.o: Queue.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Queue.o Queue.cpp
+
+${OBJECTDIR}/StatusBar.o: StatusBar.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/StatusBar.o StatusBar.cpp
 
 ${OBJECTDIR}/combinatorial.o: combinatorial.cpp
 	${MKDIR} -p ${OBJECTDIR}

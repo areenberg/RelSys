@@ -15,7 +15,7 @@
  */
 
 /* 
- * File:   LinSolver.cpp
+ * File:   LinSolver.h
  * Author: Anders Reenberg Andersen
  * 
  * Created on September 24, 2020, 1:05 PM
@@ -48,12 +48,11 @@ public:
     
 private:
 
-
+    
     void scale(vector<vector<double>> &values);
     void normalize(vector<double> &pi);
     void embeddedChain(vector<vector<double>> &values);
-
-
+    
 };
 
 #endif /* LINSOLVER_H */

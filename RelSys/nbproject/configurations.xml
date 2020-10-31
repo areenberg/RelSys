@@ -7,6 +7,7 @@
       <itemPath>HyperQueue.h</itemPath>
       <itemPath>LinSolver.h</itemPath>
       <itemPath>Queue.h</itemPath>
+      <itemPath>StatusBar.h</itemPath>
       <itemPath>combinatorial.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
@@ -19,6 +20,7 @@
       <itemPath>HyperQueue.cpp</itemPath>
       <itemPath>LinSolver.cpp</itemPath>
       <itemPath>Queue.cpp</itemPath>
+      <itemPath>StatusBar.cpp</itemPath>
       <itemPath>combinatorial.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
@@ -55,6 +57,10 @@
       <item path="Queue.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="StatusBar.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="combinatorial.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -94,6 +100,10 @@
       <item path="Queue.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Queue.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="StatusBar.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="combinatorial.cpp" ex="false" tool="1" flavor2="0">
       </item>

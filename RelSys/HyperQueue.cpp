@@ -54,11 +54,17 @@ void HyperQueue::fitOpenPH(int q){
     
     //demo of parameter fitting
     if (q==0){
-        openRates[0] = 7.542357; openRates[1] = 1.914932;
-        openDist[0] = 0.557010; openDist[1] = 0.442990;
+        openRates[0] = 0.809498; openRates[1] = 4.926081;
+        openDist[0] = 0.348426; openDist[1] = 0.651574;
     }else if (q==1){
-        openRates[0] = 5.325001; openRates[1] = 1.198522;
-        openDist[0] = 0.455257; openDist[1] = 0.544743;
+        openRates[0] = 0.042962; openRates[1] = 3.554449;
+        openDist[0] = 0.426178; openDist[1] = 0.573822;
+    }else if (q==2){
+        openRates[0] = 0.246928; openRates[1] = 3.320117;
+        openDist[0] = 0.383202; openDist[1] = 0.616798;
+    }else if (q==3){
+        openRates[0] = 0.083738; openRates[1] = 4.282059;
+        openDist[0] = 0.386958; openDist[1] = 0.613042;
     }else{
         cout << "Wrong hyperqueue index." << endl;
     }
@@ -71,11 +77,17 @@ void HyperQueue::fitBlockedPH(int q){
     
     //demo of parameter fitting
     if (q==0){
-        blockedRates[0] = 2.281119;
+        blockedRates[0] = 2.438961;
         blockedDist[0] = 1.0;
     }else if(q==1){
-        blockedRates[0] = 1.358751;
+        blockedRates[0] = 6.776864;
         blockedDist[0] = 1.0;
+    }else if(q==2){
+        blockedRates[0] = 3.551759;
+        blockedDist[0] = 1.0;        
+    }else if(q==3){
+        blockedRates[0] = 6.892878;
+        blockedDist[0] = 1.0;    
     }else{
         cout << "Wrong hyperqueue index." << endl;
     }

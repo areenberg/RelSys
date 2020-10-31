@@ -62,6 +62,7 @@ public:
     vector<double> marginalDist(vector<double> &pi); //returns the marginal distribution
     double expectedOccupancy(vector<double> &pi); //returns the expected occupancy of capacity
     double expectedOccupancyFraction(vector<double> &pi); //returns the expected fraction of capacity utilized
+    double rejectionProbability(vector<double> &pi); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
     Queue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues);

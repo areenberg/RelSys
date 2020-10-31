@@ -24,6 +24,7 @@
 #include "Queue.h"
 #include "HyperQueue.h"
 #include "combinatorial.h"
+#include "StatusBar.h"
 
 #include <vector>
 #include <algorithm>  
@@ -57,6 +58,9 @@ void Queue::checkInput(){
     
     if (upperLim.size()!=lowerLim.size()){
         cout << "Error: Limits must be of equal length." << endl;
+    }
+    if (upperLim.size()!=(Nh+1) || lowerLim.size()!=(Nh+1)){
+        cout << "Error: Limits must have same length as number of queues (main + hyper)." << endl;
     }
     int k = 0;
     for (int i=0; i<upperLim.size(); i++){
@@ -114,6 +118,13 @@ double Queue::expectedOccupancy(vector<double> &pi){
     return(y);
 }
 
+double Queue::rejectionProbability(vector<double> &pi){
+    
+    vector<double> margDist = marginalDist(pi);
+    
+    return(margDist[margDist.size()-1]);
+}
+
 double Queue::expectedOccupancyFraction(vector<double> &pi){
     
     return(expectedOccupancy(pi)/cap);
@@ -144,6 +155,7 @@ void Queue::buildTransposedChain(){
     qColumnIndices.clear(); qColumnIndices.resize(Ns);
     qValues.clear(); qValues.resize(Ns);
     
+    StatusBar sbar(Ns,30);
     for (int i=0; i<Ns; i++){
         allIngoing();
         qColumnIndices[i].resize(fromIdxSize,0);
@@ -153,7 +165,12 @@ void Queue::buildTransposedChain(){
             qValues[i][j] = jumpFromRate[j];
         }
         nextCurrentState();
+        if (i%100000==0){
+            double bval = i;
+            sbar.updateBar(bval);
+        }
     }
+    sbar.endBar();
     
 }
 

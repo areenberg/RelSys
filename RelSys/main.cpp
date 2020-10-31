@@ -9,6 +9,7 @@
 #include "Queue.h"
 #include "HyperQueue.h"
 #include "LinSolver.h"
+#include "StatusBar.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -20,39 +21,22 @@ using namespace std;
 using namespace std::chrono; 
 
 
-/*
- * 
- */
-
-
-void normalize(vector<double> &pi){
-    
-    double sm = 0;
-    for (int i=0; i<pi.size(); i++){
-        sm += pi[i];
-    }
-    for (int i=0; i<pi.size(); i++){
-        pi[i] /= sm;
-    }
-    
-}
-
-
 
 int main(int argc, char** argv) {
     
+    
     //specifications of main queue
-    double arrivalRate = 2.0;
-    double serviceRate = 0.5;
-    int capacity = 20;
+    double arrivalRate = 2.890697;
+    double serviceRate = 0.4447632;
+    int capacity = 15;
     
     //create and add surrogate queues to the system
-    int nhq = 2; //number of hyper queues
+    int nhq = 4; //number of hyper queues
     HyperQueue * hq_array = new HyperQueue[nhq];
     //rates with which relocated patients arrive to the main queue during blockage
-    double arrRate[nhq] = {4.5*0.5,1.5*0.5};
+    double arrRate[nhq] = {3.585529*0.25,3.709466*0.25,2.546503*0.25,3.605887*0.25};
     //rates with which the relocated patients are served at the main queue
-    double serRate[nhq] = {0.50,0.20};
+    double serRate[nhq] = {0.1364088,0.6260197,0.4431681,0.3161356};
     for (int i=0; i<nhq; i++){
         int statesBlocked = 1;
         int statesOpen = 2;
@@ -60,8 +44,9 @@ int main(int argc, char** argv) {
         hq_array[i].fitAll(i); //fit parameters
     }
     
-    vector<int> upperLimits = {20,20,20};
-    vector<int> lowerLimits = {0,0,0};
+    //upper and lower limits in each queue. must include all queues (main and hyper queues)
+    vector<int> upperLimits = {15,10,10,10,10};
+    vector<int> lowerLimits = {0,0,0,0,0};
     
     Queue q(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
     
@@ -70,28 +55,20 @@ int main(int argc, char** argv) {
     
     cout << "number of states = " << q.Ns << endl;
     
-    
-//    for (int i=0; i<803950; i++){
-//        //q.allIngoing();
-//        q.nextCurrentState();
-//    }
-//    
-//    q.allIngoing();
-//    for (int j=0; j<q.fromIdxSize; j++){
-//        cout << q.jumpFromIdx[j] << " "; 
-//    }
-    //notes: in sidx=803950, jump from jidx=804922 causes an error due to out of bound.
-    //find out how this jump was derived.
-    
     vector<double> pi(q.Ns,0); 
+    srand(time(0)); double sm=0;
     for (int i=0; i<q.Ns; i++){
-        pi[i] = 1.0/q.Ns;
+        pi[i] = rand()%q.Ns+1;
+        sm += pi[i]; 
+    }
+    for (int i=0; i<q.Ns; i++){
+        pi[i] /= sm;
     }
     
     LinSolver solver;
-    solver.sor(pi,q,1.0,1e-9);
+    solver.sor(pi,q,1.0,1e-6);
 //    solver.sorOnDemand(pi,q,1.0,1e-6);
-//    solver.powerMethod(pi,q,1e-6);
+    //solver.powerMethod(pi,q,1e-6);
     
     cout << "MARGINAL DISTRIBUTION:" << endl;
     vector<double> x = q.marginalDist(pi);
@@ -102,6 +79,7 @@ int main(int argc, char** argv) {
     cout << "STATS:" << endl;
     cout << "expected load = " << q.expectedOccupancy(pi) << endl;
     cout << "capacity utilization = " << q.expectedOccupancyFraction(pi)*100 << "%" << endl;
+    cout << "rejection probability = " << q.rejectionProbability(pi) << endl; 
     
     auto stop = high_resolution_clock::now(); //stop time 
     auto duration = duration_cast<milliseconds>(stop - start); 

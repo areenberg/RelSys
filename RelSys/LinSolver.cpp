@@ -23,6 +23,7 @@
 
 #include "Queue.h"
 #include "LinSolver.h"
+#include "StatusBar.h"
 
 #include <iostream>
 #include <vector>
@@ -43,13 +44,20 @@ LinSolver::~LinSolver() {
 
 void LinSolver::sor(vector<double> &pi, Queue &q, double relaxation, double eps){
     
+    cout << "Engaging SOR." << endl;
+    
     double sm, x_new, diff, tol;
     int maxIter = 1e4, iter = 0;
     
+    cout << "Building transition matrix..." << endl;
+    cout << "Step 1:" << endl;
     q.buildTransposedChain(); //generate and store the entire transposed transition matrix
     
+    cout << "Step 2:" << endl;
     scale(q.qValues); //scale the transposed transition matrix
     
+    cout << "Solving state distribution..." << endl;
+    StatusBar sbar(1e-4-eps,30);
     do {
         tol = 0.0;
         for (int i=0; i<q.Ns; i++){
@@ -70,15 +78,20 @@ void LinSolver::sor(vector<double> &pi, Queue &q, double relaxation, double eps)
         
         iter++;
         if (iter%10==0){
-            cout << tol << endl;
+            //cout << tol << endl;
+            double bval = 1e-4-tol;
+            sbar.updateBar(bval);
         }
         
     }while (tol>eps && iter<maxIter);
+    sbar.endBar();
     cout << "SOR stats: " << iter << " iterations, tolerance " << tol << endl;
     
 }
 
 void LinSolver::sorOnDemand(vector<double> &pi, Queue &q, double relaxation, double eps){
+    
+    cout << "Engaging SOR (on demand)." << endl;
     
     double sm, x_new, diff, tol;
     int maxIter = 1e4, iter = 0;
@@ -126,12 +139,18 @@ void LinSolver::scale(vector<vector<double>> &values){
     
     double scaler;
     
+    StatusBar sbar(values.size(),30);
     for (int i=0; i<values.size(); i++){
         scaler = 1.0/values[i][values[i].size()-1];
         for (int j=0; j<values[i].size(); j++){
             values[i][j] *= scaler;
         }
+        if (i%100==0){
+            double bval = i;
+            sbar.updateBar(bval);
+        }
     }
+    sbar.endBar();
     
 }
 
@@ -149,6 +168,8 @@ void LinSolver::normalize(vector<double> &pi){
 }
 
 void LinSolver::powerMethod(vector<double> &pi, Queue &q, double eps){
+    
+    cout << "Engaging power method." << endl;
     
     double x_new, diff, tol;
     int maxIter = 1e4, iter = 0;
@@ -177,6 +198,9 @@ void LinSolver::powerMethod(vector<double> &pi, Queue &q, double eps){
         normalize(pi);
         
         iter++;
+        if (iter%10==0){
+            cout << tol << endl;
+        }
     }while (tol>eps && iter<maxIter);
     cout << "PM stats: " << iter << " iterations, tolerance " << tol << endl;
     
