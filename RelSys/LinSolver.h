@@ -25,7 +25,7 @@
 #ifndef LINSOLVER_H
 #define LINSOLVER_H
 
-#include "Queue.h"
+#include "HeuristicQueue.h"
 
 #include <vector>
 #include <iostream>
@@ -36,9 +36,9 @@ using namespace std;
 class LinSolver {
 public:
     
-    void sor(vector<double> &pi, Queue &q, double relaxation, double eps); //derive the state distribution using SOR. requires the transition matrix is stored.
-    void sorOnDemand(vector<double> &pi, Queue &q, double relaxation, double eps); //employ SOR using on-demand calculations of the state transitions
-    void powerMethod(vector<double> &pi, Queue &q, double eps); //employs the power method. requires the transition matrix is stored. 
+    void sor(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps); //derive the state distribution using SOR. requires the transition matrix is stored.
+    void sorOnDemand(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps); //employ SOR using on-demand calculations of the state transitions
+    void powerMethod(vector<double> &pi, HeuristicQueue &q, double eps); //employs the power method. requires the transition matrix is stored. 
 
     
     

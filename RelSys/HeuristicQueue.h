@@ -15,23 +15,23 @@
  */
 
 /* 
- * File:   Queue.h
+ * File:   HeuristicQueue.h
  * Author: Anders Reenberg Andersen
  *
  * Created on September 14, 2020, 7:41 PM
  */
 
-#ifndef QUEUE_H
-#define QUEUE_H
+#ifndef HEURISTICQUEUE_H
+#define HEURISTICQUEUE_H
 
 #include "HyperQueue.h"
-#include "combinatorial.h"
+#include "Combinatorial.h"
 
 #include <vector>
 
 using namespace std;
 
-class Queue {
+class HeuristicQueue {
 public:
     
     //variables
@@ -65,9 +65,9 @@ public:
     double rejectionProbability(vector<double> &pi); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
-    Queue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues);
-    Queue(const Queue& orig);
-    virtual ~Queue();
+    HeuristicQueue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues);
+    HeuristicQueue(const HeuristicQueue& orig);
+    virtual ~HeuristicQueue();
 
 private:
 
@@ -77,7 +77,7 @@ private:
     vector<int> upperLim; //capacity limits
     vector<int> lowerLim;
     
-    combinatorial cmb; //used for calculating jumps
+    Combinatorial cmb; //used for calculating jumps
     
     int K_use;
 
@@ -103,5 +103,5 @@ private:
     
 };
 
-#endif /* QUEUE_H */
+#endif /* HEURISTICQUEUE_H */
 

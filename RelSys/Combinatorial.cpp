@@ -15,27 +15,27 @@
  */
 
 /* 
- * File:   combinatorial.cpp
+ * File:   Combinatorial.cpp
  * Author: $Anders Reenberg Andersen
  * 
  * Created on 7. marts 2020, 23:41
  */
 
-#include "combinatorial.h"
+#include "Combinatorial.h"
 #include <math.h>
 #include <iostream>
 #include <vector>
 
 using namespace std;
 
-combinatorial::combinatorial() {
+Combinatorial::Combinatorial() {
     
 }
 
-combinatorial::combinatorial(const combinatorial& orig) {
+Combinatorial::Combinatorial(const Combinatorial& orig) {
 }
 
-combinatorial::~combinatorial() {
+Combinatorial::~Combinatorial() {
 }
 
 //int combinatorial::capWeights(int K, int n) {
@@ -108,7 +108,7 @@ combinatorial::~combinatorial() {
 //    }
 //}
 
-int combinatorial::capWithLimits(int &K, vector<int> &upperLim, vector<int> &lowerLim){
+int Combinatorial::capWithLimits(int &K, vector<int> &upperLim, vector<int> &lowerLim){
     //derives the total number of permutations for a system
     //with total capacity K and customer nodes corresponding to the
     //sizes of upperLim and lowerLim.

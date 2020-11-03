@@ -4,11 +4,13 @@
     <logicalFolder name="HeaderFiles"
                    displayName="Header Files"
                    projectFiles="true">
+      <itemPath>Combinatorial.h</itemPath>
+      <itemPath>EntireSystem.h</itemPath>
+      <itemPath>HeuristicQueue.h</itemPath>
       <itemPath>HyperQueue.h</itemPath>
       <itemPath>LinSolver.h</itemPath>
-      <itemPath>Queue.h</itemPath>
       <itemPath>StatusBar.h</itemPath>
-      <itemPath>combinatorial.h</itemPath>
+      <itemPath>WardData.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -17,11 +19,13 @@
     <logicalFolder name="SourceFiles"
                    displayName="Source Files"
                    projectFiles="true">
+      <itemPath>Combinatorial.cpp</itemPath>
+      <itemPath>EntireSystem.cpp</itemPath>
+      <itemPath>HeuristicQueue.cpp</itemPath>
       <itemPath>HyperQueue.cpp</itemPath>
       <itemPath>LinSolver.cpp</itemPath>
-      <itemPath>Queue.cpp</itemPath>
       <itemPath>StatusBar.cpp</itemPath>
-      <itemPath>combinatorial.cpp</itemPath>
+      <itemPath>WardData.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -46,6 +50,18 @@
       </toolsSet>
       <compileType>
       </compileType>
+      <item path="Combinatorial.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Combinatorial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="EntireSystem.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="EntireSystem.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HeuristicQueue.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HeuristicQueue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="HyperQueue.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HyperQueue.h" ex="false" tool="3" flavor2="0">
@@ -54,17 +70,13 @@
       </item>
       <item path="LinSolver.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Queue.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Queue.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="StatusBar.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="combinatorial.cpp" ex="false" tool="1" flavor2="0">
+      <item path="WardData.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="combinatorial.h" ex="false" tool="3" flavor2="0">
+      <item path="WardData.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -89,6 +101,18 @@
           <developmentMode>5</developmentMode>
         </asmTool>
       </compileType>
+      <item path="Combinatorial.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Combinatorial.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="EntireSystem.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="EntireSystem.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="HeuristicQueue.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="HeuristicQueue.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="HyperQueue.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="HyperQueue.h" ex="false" tool="3" flavor2="0">
@@ -97,17 +121,13 @@
       </item>
       <item path="LinSolver.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Queue.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Queue.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="StatusBar.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="combinatorial.cpp" ex="false" tool="1" flavor2="0">
+      <item path="WardData.cpp" ex="false" tool="1" flavor2="0">
       </item>
-      <item path="combinatorial.h" ex="false" tool="3" flavor2="0">
+      <item path="WardData.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>

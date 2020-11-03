@@ -28,12 +28,12 @@
 
 using namespace std;
 
-class combinatorial {
+class Combinatorial {
 public:
     
-    combinatorial();
-    combinatorial(const combinatorial& orig);
-    virtual ~combinatorial();
+    Combinatorial();
+    Combinatorial(const Combinatorial& orig);
+    virtual ~Combinatorial();
     
     //permutation methods
     int capWithLimits(int &K, vector<int> &upperLim, vector<int> &lowerLim);

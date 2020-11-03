@@ -21,7 +21,7 @@
  * Created on September 24, 2020, 1:05 PM
  */
 
-#include "Queue.h"
+#include "HeuristicQueue.h"
 #include "LinSolver.h"
 #include "StatusBar.h"
 
@@ -42,7 +42,7 @@ LinSolver::~LinSolver() {
 }
 
 
-void LinSolver::sor(vector<double> &pi, Queue &q, double relaxation, double eps){
+void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps){
     
     cout << "Engaging SOR." << endl;
     
@@ -89,7 +89,7 @@ void LinSolver::sor(vector<double> &pi, Queue &q, double relaxation, double eps)
     
 }
 
-void LinSolver::sorOnDemand(vector<double> &pi, Queue &q, double relaxation, double eps){
+void LinSolver::sorOnDemand(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps){
     
     cout << "Engaging SOR (on demand)." << endl;
     
@@ -167,7 +167,7 @@ void LinSolver::normalize(vector<double> &pi){
     
 }
 
-void LinSolver::powerMethod(vector<double> &pi, Queue &q, double eps){
+void LinSolver::powerMethod(vector<double> &pi, HeuristicQueue &q, double eps){
     
     cout << "Engaging power method." << endl;
     

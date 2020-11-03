@@ -15,15 +15,15 @@
  */
 
 /* 
- * File:   Queue.cpp
+ * File:   HeuristicQueue.cpp
  * Author: Anders Reenberg Andersen
  * 
  * Created on September 14, 2020, 7:41 PM
  */
 
-#include "Queue.h"
+#include "HeuristicQueue.h"
 #include "HyperQueue.h"
-#include "combinatorial.h"
+#include "Combinatorial.h"
 #include "StatusBar.h"
 
 #include <vector>
@@ -32,7 +32,7 @@
 
 using namespace std;
 
-Queue::Queue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues):
+HeuristicQueue::HeuristicQueue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues):
 hbQueues_pointer(hbQueues),
 Nh(nhq),
 cap(c),
@@ -48,13 +48,13 @@ lowerLim(lowerLim)
     
 }
 
-Queue::Queue(const Queue& orig) {
+HeuristicQueue::HeuristicQueue(const HeuristicQueue& orig) {
 }
 
-Queue::~Queue() {
+HeuristicQueue::~HeuristicQueue() {
 }
 
-void Queue::checkInput(){
+void HeuristicQueue::checkInput(){
     
     if (upperLim.size()!=lowerLim.size()){
         cout << "Error: Limits must be of equal length." << endl;
@@ -75,7 +75,7 @@ void Queue::checkInput(){
     
 }
 
-vector<double> Queue::marginalDist(vector<double> &pi){
+vector<double> HeuristicQueue::marginalDist(vector<double> &pi){
     //derives the marginal distribution from the
     //overall state probability distribution.
     
@@ -100,7 +100,7 @@ vector<double> Queue::marginalDist(vector<double> &pi){
     return(dist);
 }
 
-double Queue::expectedOccupancy(vector<double> &pi){
+double HeuristicQueue::expectedOccupancy(vector<double> &pi){
     
     vector<double> margDist = marginalDist(pi);
     
@@ -118,19 +118,19 @@ double Queue::expectedOccupancy(vector<double> &pi){
     return(y);
 }
 
-double Queue::rejectionProbability(vector<double> &pi){
+double HeuristicQueue::rejectionProbability(vector<double> &pi){
     
     vector<double> margDist = marginalDist(pi);
     
     return(margDist[margDist.size()-1]);
 }
 
-double Queue::expectedOccupancyFraction(vector<double> &pi){
+double HeuristicQueue::expectedOccupancyFraction(vector<double> &pi){
     
     return(expectedOccupancy(pi)/cap);
 }
 
-void Queue::buildChain(){
+void HeuristicQueue::buildChain(){
     //creates and stores the entire transition rate matrix
     
     qColumnIndices.clear(); qColumnIndices.resize(Ns);
@@ -149,7 +149,7 @@ void Queue::buildChain(){
     
 }
 
-void Queue::buildTransposedChain(){
+void HeuristicQueue::buildTransposedChain(){
     //creates and stores the entire <transposed> transition rate matrix
     
     qColumnIndices.clear(); qColumnIndices.resize(Ns);
@@ -174,7 +174,7 @@ void Queue::buildTransposedChain(){
     
 }
 
-void Queue::printChain(){
+void HeuristicQueue::printChain(){
      
 //    for (int i=0; i<Ns; i++){
 //        cout << "idx: ";
@@ -191,7 +191,7 @@ void Queue::printChain(){
 }
 
 
-void Queue::calculateSize(){
+void HeuristicQueue::calculateSize(){
     //calculate and store the size of the state space
     
     Ns = cmb.capWithLimits(cap,upperLim,lowerLim); //size of the queue itself;
@@ -204,7 +204,7 @@ void Queue::calculateSize(){
     
 }
 
-void Queue::initializeState(){
+void HeuristicQueue::initializeState(){
     //initialize the state
     
     sidx = 0;
@@ -220,7 +220,7 @@ void Queue::initializeState(){
     
 }
 
-void Queue::initializeJumbVectors(){
+void HeuristicQueue::initializeJumbVectors(){
     //initialize the jump vectors
     
     toIdxSize = 0;
@@ -243,7 +243,7 @@ void Queue::initializeJumbVectors(){
     
 }
 
-void Queue::maximumNonZero(){
+void HeuristicQueue::maximumNonZero(){
     //derives an upper bound for the number of non-zero elements in the
     //transition rate matrix. This is used to assess if parameters should
     //be stored or calculated on demand.
@@ -253,7 +253,7 @@ void Queue::maximumNonZero(){
     
 }
 
-void Queue::nextCurrentState(){
+void HeuristicQueue::nextCurrentState(){
     //advance to the next current state
     
     //advance state index
@@ -294,7 +294,7 @@ void Queue::nextCurrentState(){
 }
 
 
-void Queue::allOutgoing(){
+void HeuristicQueue::allOutgoing(){
     //all hyper queues can jump to an open/blocked state.
     //queue nodes can discharge or admit a customer when:
     //1. They do not violate the capacity or user-specified limits.
@@ -430,7 +430,7 @@ void Queue::allOutgoing(){
     
 }
 
-void Queue::allIngoing(){
+void HeuristicQueue::allIngoing(){
     //all hyper queues can come from an open/blocked state.
     //queue nodes can come from a discharge or admission of a customer when:
     //1. The old state did not violate the capacity or user-specified limits.
@@ -570,7 +570,7 @@ void Queue::allIngoing(){
     
 }
 
-double Queue::calculateDiagonal(){
+double HeuristicQueue::calculateDiagonal(){
     //calculates the value of the diagonal related
     //to the current state.
     
@@ -632,7 +632,7 @@ double Queue::calculateDiagonal(){
 
 
 
-int Queue::forwardOne(int Ku, vector<int> &j, int targetval, int targetidx){
+int HeuristicQueue::forwardOne(int Ku, vector<int> &j, int targetval, int targetidx){
     
     for (int i=0; i<lowerLim.size(); i++){
         j[i] = state[i];
@@ -676,7 +676,7 @@ int Queue::forwardOne(int Ku, vector<int> &j, int targetval, int targetidx){
 }
 
 
-int Queue::backwardOne(int Ku, vector<int> &j, int targetval, int targetidx){
+int HeuristicQueue::backwardOne(int Ku, vector<int> &j, int targetval, int targetidx){
     
     for (int i=0; i<lowerLim.size(); i++){
         j[i] = state[i];
@@ -723,47 +723,47 @@ int Queue::backwardOne(int Ku, vector<int> &j, int targetval, int targetidx){
 
 
 
-int Queue::hyperOpenStates(int hq){
+int HeuristicQueue::hyperOpenStates(int hq){
     
     return((hbQueues_pointer + hq)->openRates.size());
 }
 
-int Queue::hyperBlockedStates(int hq){
+int HeuristicQueue::hyperBlockedStates(int hq){
     
     return((hbQueues_pointer + hq)->blockedRates.size());
 }
 
-double Queue::getHyperOpenRate(int hq, int idx){
+double HeuristicQueue::getHyperOpenRate(int hq, int idx){
     
     return((hbQueues_pointer + hq)->openRates[idx]);
 }
 
-double Queue::getHyperOpenDist(int hq, int idx){
+double HeuristicQueue::getHyperOpenDist(int hq, int idx){
     
     return((hbQueues_pointer + hq)->openDist[idx]);
 }
 
-double Queue::getHyperBlockedRate(int hq, int idx){
+double HeuristicQueue::getHyperBlockedRate(int hq, int idx){
     
     return((hbQueues_pointer + hq)->blockedRates[idx]);
 }
 
-double Queue::getHyperBlockedDist(int hq, int idx){
+double HeuristicQueue::getHyperBlockedDist(int hq, int idx){
     
     return((hbQueues_pointer + hq)->blockedDist[idx]);
 }
 
-int Queue::getHyperSize(int hq){
+int HeuristicQueue::getHyperSize(int hq){
     
     return((hbQueues_pointer + hq)->numberOfStates);
 }
 
-double Queue::getHyperArrivalRate(int hq){
+double HeuristicQueue::getHyperArrivalRate(int hq){
     
     return((hbQueues_pointer + hq)->arrivalRate);
 }
 
-double Queue::getHyperServiceRate(int hq){
+double HeuristicQueue::getHyperServiceRate(int hq){
     
     return((hbQueues_pointer + hq)->serviceRate);
 }

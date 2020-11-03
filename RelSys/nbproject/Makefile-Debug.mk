@@ -35,11 +35,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/Combinatorial.o \
+	${OBJECTDIR}/EntireSystem.o \
+	${OBJECTDIR}/HeuristicQueue.o \
 	${OBJECTDIR}/HyperQueue.o \
 	${OBJECTDIR}/LinSolver.o \
-	${OBJECTDIR}/Queue.o \
 	${OBJECTDIR}/StatusBar.o \
-	${OBJECTDIR}/combinatorial.o \
+	${OBJECTDIR}/WardData.o \
 	${OBJECTDIR}/main.o
 
 
@@ -67,6 +69,21 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys ${OBJECTFILES} ${LDLIBSOPTIONS}
 
+${OBJECTDIR}/Combinatorial.o: Combinatorial.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Combinatorial.o Combinatorial.cpp
+
+${OBJECTDIR}/EntireSystem.o: EntireSystem.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/EntireSystem.o EntireSystem.cpp
+
+${OBJECTDIR}/HeuristicQueue.o: HeuristicQueue.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/HeuristicQueue.o HeuristicQueue.cpp
+
 ${OBJECTDIR}/HyperQueue.o: HyperQueue.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -77,20 +94,15 @@ ${OBJECTDIR}/LinSolver.o: LinSolver.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LinSolver.o LinSolver.cpp
 
-${OBJECTDIR}/Queue.o: Queue.cpp
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Queue.o Queue.cpp
-
 ${OBJECTDIR}/StatusBar.o: StatusBar.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/StatusBar.o StatusBar.cpp
 
-${OBJECTDIR}/combinatorial.o: combinatorial.cpp
+${OBJECTDIR}/WardData.o: WardData.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/combinatorial.o combinatorial.cpp
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/WardData.o WardData.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
