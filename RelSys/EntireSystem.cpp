@@ -122,17 +122,185 @@ void EntireSystem::allIngoing(){
     //generate all jump indices and rates relative to the current state
     
     fromIdxSize = 0;
+    int jump, prod;
+    vector<int> fwvec(nWards,0);
     
     for (int widx=0; widx<nWards; widx++){
         for (int pidx=(nWards-1); pidx>=0; pidx--){
             
+            prod = 1;
             
-            
-            
+            //came from discharge
+            if (K_use[widx]<getWardCapacity(widx)){
+                //calculate jump
+                if (widx>0){
+                    for (int i=0; i<widx; i++){
+                        prod *= getWardStateSpaceSize(i);
+                    }
+                }
+                if (pidx<(nWards-1)){
+                    jump = forwardOne(K_use[widx],fwvec,
+                        (state[widx][pidx]+1),pidx,widx);
+                }else{
+                    jump = 1;
+                }
+                jump *= prod;
+                jumpFromIdx[fromIdxSize] = sidx+jump;
+                //calculate rate
+                jumpFromRate[fromIdxSize] = getWardServiceRate(pidx)*(state[widx][pidx]+1);
+                
+                fromIdxSize++;
+            }
+            //came from admission
+            if (state[widx][pidx]>0){
+                //calculate jump
+                if (prod==1 && widx>0){
+                    for (int i=0; i<widx; i++){
+                        prod *= getWardStateSpaceSize(i);
+                    }
+                }
+                if (pidx<(nWards-1)){
+                    jump = backwardOne(K_use[widx],fwvec,
+                        (state[widx][pidx]-1),pidx,widx);
+                }else{
+                    jump = 1;
+                }
+                jump *= prod;
+                jumpFromIdx[fromIdxSize] = sidx-jump;
+                //calculate rate
+                if (widx==pidx){
+                    jumpFromRate[fromIdxSize] = getWardArrivalRate(pidx);
+                }else{
+                    jumpFromRate[fromIdxSize] = getWardArrivalRate(pidx)*
+                            getWardRelocationProbabilities(pidx)[widx];
+                }
+                fromIdxSize++;
+            }
         }
     }
+    //calculate diagonal
+    jumpFromIdx[fromIdxSize] = sidx;
+    jumpFromRate[fromIdxSize] = diagonalRate();
+    fromIdxSize++;
     
 }
+
+double EntireSystem::diagonalRate(){
+    
+    double diag = 0;
+    for (int widx=0; widx<nWards; widx++){
+        for (int pidx=(nWards-1); pidx>=0; pidx--){
+    
+            //go to admission
+            if (K_use[widx]<getWardCapacity(widx)){
+                //calculate rate
+                if (widx==pidx){
+                    diag -= getWardArrivalRate(pidx);
+                }else{
+                    diag -= getWardArrivalRate(pidx)*
+                            getWardRelocationProbabilities(pidx)[widx];
+                }
+            }
+            //go to discharge
+            if (state[widx][pidx]>0){
+                //calculate rate
+                diag -= getWardServiceRate(pidx)*state[widx][pidx];
+            }
+        }
+    }
+
+    return(diag);
+}
+
+
+int EntireSystem::forwardOne(int wardCapacityUsed, vector<int> &j, int targetval, int &pidx, int &widx){
+    
+    for (int i=0; i<nWards; i++){
+        j[i] = state[widx][i];
+    }
+    
+    int i, ii, m = 0;
+    
+    bool run = true;
+    while(run){
+        
+        //advance state form by one step
+        m++;
+        
+        i = nWards-1;
+        while (i>=0){
+            if (wardCapacityUsed<getWardCapacity(widx)){
+                j[i]++; wardCapacityUsed++;
+                i = -1; //exit
+            }else if(j[i]>0){
+                wardCapacityUsed -= j[i]; j[i] = 0;
+                i--;
+            }else{
+                i--;
+            }
+        }
+        
+        if ( j[pidx]==targetval ){
+            ii=0; run = false;
+            do{   
+                if (j[ii]!=state[widx][ii] && ii!=pidx){
+                    run = true;
+                }
+                ii++;
+            }while(run==false && ii<nWards);
+            
+        }
+        
+    }
+    
+    return(m);
+}
+
+int EntireSystem::backwardOne(int wardCapacityUsed, vector<int> &j, int targetval, int &pidx, int &widx){
+    
+    for (int i=0; i<nWards; i++){
+        j[i] = state[widx][i];
+    }
+    j[pidx] = targetval;
+    wardCapacityUsed--;
+    
+    int i, ii, m = 0;
+    
+    bool run = true;
+    while(run){
+        
+        //advance state form by one step
+        m++;
+        
+        i = nWards-1;
+        while (i>=0){
+            if (wardCapacityUsed<getWardCapacity(widx)){
+                j[i]++; wardCapacityUsed++;
+                i = -1; //exit
+            }else if(j[i]>0){
+                wardCapacityUsed -= j[i]; j[i] = 0;
+                i--;
+            }else{
+                i--;
+            }
+        }
+        
+        if ( j[pidx]==state[widx][pidx] ){
+            ii=0; run = false;
+            do{   
+                if (j[ii]!=state[widx][ii]){
+                    run = true;
+                }
+                ii++;
+            }while(run==false && ii<nWards);
+            
+        }
+        
+    }
+    
+    return (m);
+}
+
 
 int EntireSystem::getWardID(int ward){
     

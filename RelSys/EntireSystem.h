@@ -70,6 +70,9 @@ private:
     //MARKOV CHAIN METHODS
     void initializeSystem();
     void initializeJumbVectors();
+    int forwardOne(int wardCapacityUsed, vector<int> &j, int targetval, int &pidx, int &widx);
+    int backwardOne(int wardCapacityUsed, vector<int> &j, int targetval, int &pidx, int &widx);
+    double diagonalRate(); //value of diagonal related to the current state
 
     //WARD INFORMATION METHODS AND VARIABLES
     WardData * wards_pointer;

@@ -437,7 +437,7 @@ void HeuristicQueue::allIngoing(){
     //2. The nodes linked to the hyper queues can only admit when the
     //associated hyper queue is in a blocked state.
     
-    int hq, ihq, jump, prod, delta, l, jj, k;
+    int hq, ihq, jump, prod; //delta, l, jj, k;
     //vector<int> uLim, lLim;
     vector<int> fwvec(lowerLim.size(),0);
     
