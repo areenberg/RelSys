@@ -49,6 +49,7 @@ public:
     vector<int> K_use; //current capacity use in each ward
 
     //methods
+    void selfCheck(); //runs a self-check targeting the structure of the transition matrix
     void calculateStateSpaceSize();
     void buildTransposedChain();
     void initializeState(); //initialize the current state
@@ -56,6 +57,11 @@ public:
     void printState();
     
     void allIngoing(); //generate all jump indices and rates relative to the current state 
+    vector<double> marginalDist(int widx, vector<double> &pi);
+
+    double expectedOccupancy(int widx, vector<double> &pi); //returns the expected occupancy of capacity
+    double expectedOccupancyFraction(int widx, vector<double> &pi); //returns the expected fraction of capacity utilized
+    double rejectionProbability(int widx, vector<double> &pi); //returns the rejection probability using the marginal occupancy distribution
 
     //WARD INFORMATION METHODS AND VARIABLES
     int nWards; //number of wards in the system
@@ -73,6 +79,15 @@ private:
     int forwardOne(int wardCapacityUsed, vector<int> &j, int targetval, int &pidx, int &widx);
     int backwardOne(int wardCapacityUsed, vector<int> &j, int targetval, int &pidx, int &widx);
     double diagonalRate(); //value of diagonal related to the current state
+    
+    //self-check methods
+    void nextStateLocalInput(vector<vector<int>> &s, vector<int> &capuse);
+    bool checkOneStateChange(int currentStateIdx, vector<vector<int>> &currentState,vector<vector<int>> &fromState, double rate, int idx);
+    void transposeChain();
+    bool checkDiagonalRates();
+    vector<vector<int>> qColumnIndices_t; //transposed transition matrix
+    vector<vector<double>> qValues_t;
+    
 
     //WARD INFORMATION METHODS AND VARIABLES
     WardData * wards_pointer;

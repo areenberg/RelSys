@@ -40,6 +40,8 @@ OBJECTFILES= \
 	${OBJECTDIR}/HeuristicQueue.o \
 	${OBJECTDIR}/HyperQueue.o \
 	${OBJECTDIR}/LinSolver.o \
+	${OBJECTDIR}/Patient.o \
+	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
 	${OBJECTDIR}/WardData.o \
 	${OBJECTDIR}/main.o
@@ -93,6 +95,16 @@ ${OBJECTDIR}/LinSolver.o: LinSolver.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LinSolver.o LinSolver.cpp
+
+${OBJECTDIR}/Patient.o: Patient.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Patient.o Patient.cpp
+
+${OBJECTDIR}/RelocSimulation.o: RelocSimulation.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/RelocSimulation.o RelocSimulation.cpp
 
 ${OBJECTDIR}/StatusBar.o: StatusBar.cpp
 	${MKDIR} -p ${OBJECTDIR}

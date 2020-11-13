@@ -11,6 +11,7 @@
 #include "LinSolver.h"
 #include "WardData.h"
 #include "EntireSystem.h"
+#include "RelocSimulation.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -27,40 +28,122 @@ int main(int argc, char** argv) {
     
     auto start = high_resolution_clock::now(); //start time 
     
-    //EXACT SYSTEM
-    int nWards = 2;
+    //--------------------------
+    //WARD SETUP
+    //--------------------------
+    
+    int nWards = 3;
     WardData * wd_array = new WardData[nWards];
-    vector<vector<double>> relProbs = {{0.0,1.0},
-                                       {1.0,0.0}};
-    wd_array[0] = WardData(0,2.0,0.5,5,relProbs[0]);
-    wd_array[1] = WardData(1,1.5,0.2,10,relProbs[1]);
+    vector<vector<double>> relProbs = {{0.0,0.5,0.5},
+                                       {0.5,0.0,0.5},
+                                       {0.5,0.5,0.0}};
+    wd_array[0] = WardData(0,1.0,0.25,5,relProbs[0]);
+    wd_array[1] = WardData(1,0.75,0.40,3,relProbs[1]);
+    wd_array[2] = WardData(2,1.25,0.70,3,relProbs[2]);
     
-    EntireSystem sys(nWards,wd_array);
+    //--------------------------
+    //SIMULATION
+    //--------------------------
     
+    RelocSimulation sim(nWards,wd_array);
+    sim.setSeed(123);
+    sim.simulate(1000);
     
-      //HEURISTIC
+    //--------------------------
+    //EXACT SYSTEM
+    //--------------------------
+    
+//    EntireSystem sys(nWards,wd_array);
+//    
+//    cout << "number of states: " << sys.nS << endl;
+//    
+//    //sys.selfCheck();
+//    
+//    vector<double> pi(sys.nS,0); 
+//    srand(time(0)); double sm=0;
+//    for (int i=0; i<sys.nS; i++){
+//        pi[i] = rand()%sys.nS+1;
+//        sm += pi[i]; 
+//    }
+//    for (int i=0; i<sys.nS; i++){
+//        pi[i] /= sm;
+//    }
+//    
+//    LinSolver solver;
+//    solver.sorExactSystem(pi,sys,1.0,1e-9);
+//    
+//    
+//    //PRINT RESULTS
+//    cout << "MARGINAL DISTRIBUTION:" << endl;
+//    for (int widx=0; widx<nWards; widx++){
+//        cout << "Ward " << (widx+1) << "    ";
+//    }
+//    cout << endl;
+//    vector<vector<double>> dist(nWards);
+//    for (int widx=0; widx<nWards; widx++){
+//        dist[widx] = sys.marginalDist(widx,pi);
+//    }
+//    int capMax = 0;
+//    for (int i=0; i<nWards; i++){
+//        if (wd_array[i].capacity>capMax){
+//            capMax = wd_array[i].capacity;
+//        }
+//    }
+//    for (int i=0; i<=capMax; i++){
+//        for (int widx=0; widx<nWards; widx++){
+//            if (i<=wd_array[widx].capacity){
+//                cout << dist[widx][i] << ",";
+//            }else{
+//                cout << " ";
+//            }
+//            
+//        }
+//        cout << endl;
+//    }    
+//        
+//    cout << "STATS:" << endl;
+//    cout << "Expected load" << endl;
+//    for (int widx=0; widx<nWards; widx++){
+//        cout << "Ward " << (widx+1) << " ";
+//    }
+//    cout << endl;
+//    for (int widx=0; widx<nWards; widx++){
+//        cout << sys.expectedOccupancy(widx,pi) << " ";
+//    }
+//    cout << endl;
+//    cout << "Capacity utilization" << endl;
+//    for (int widx=0; widx<nWards; widx++){
+//        cout << sys.expectedOccupancyFraction(widx,pi)*100 << "%" << " ";
+//    }
+//    cout << endl;
+    
+    //--------------------------
+    //HEURISTIC SYSTEM
+    //--------------------------
 //    //specifications of main queue
-//    double arrivalRate = 2.890697;
-//    double serviceRate = 0.4447632;
-//    int capacity = 15;
+//    double arrivalRate = 1.25;
+//    double serviceRate = 0.70;
+//    int capacity = 3;
 //    
 //    //create and add surrogate queues to the system
-//    int nhq = 4; //number of hyper queues
+//    int nhq = 2; //number of hyper queues
 //    HyperQueue * hq_array = new HyperQueue[nhq];
 //    //rates with which relocated patients arrive to the main queue during blockage
-//    double arrRate[nhq] = {3.585529*0.25,3.709466*0.25,2.546503*0.25,3.605887*0.25};
+//    double arrRate[nhq] = {1.0*0.50,0.75*0.50};
 //    //rates with which the relocated patients are served at the main queue
-//    double serRate[nhq] = {0.1364088,0.6260197,0.4431681,0.3161356};
+//    double serRate[nhq] = {0.25,0.40};
 //    for (int i=0; i<nhq; i++){
 //        int statesBlocked = 1;
 //        int statesOpen = 2;
 //        hq_array[i] = HyperQueue(statesBlocked,statesOpen,arrRate[i],serRate[i]);
-//        hq_array[i].fitAll(i); //fit parameters
+//        //hq_array[i].fitAll(i); //fit parameters
 //    }
+//    hq_array[0].fitAll(0); 
+//    hq_array[1].fitAll(1);
 //    
 //    //upper and lower limits in each queue. must include all queues (main and hyper queues)
-//    vector<int> upperLimits = {15,10,10,10,10};
-//    vector<int> lowerLimits = {0,0,0,0,0};
+//    vector<int> upperLimits = {3,3,3};
+//    vector<int> lowerLimits = {0,0,0};
 //    
 //    HeuristicQueue q(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
 //    
@@ -79,21 +162,17 @@ int main(int argc, char** argv) {
 //    }
 //    
 //    LinSolver solver;
-//    solver.sor(pi,q,1.0,1e-6);
-//    //solver.sorOnDemand(pi,q,1.0,1e-6);
-//    //solver.powerMethod(pi,q,1e-6);
+//    solver.sor(pi,q,1.0,1e-9);
 //    
 //    cout << "MARGINAL DISTRIBUTION:" << endl;
 //    vector<double> x = q.marginalDist(pi);
-//    double occ = 0;
 //    for (int i=0; i<x.size(); i++){
 //        cout << x[i] << endl;
 //    }
 //    cout << "STATS:" << endl;
 //    cout << "expected load = " << q.expectedOccupancy(pi) << endl;
 //    cout << "capacity utilization = " << q.expectedOccupancyFraction(pi)*100 << "%" << endl;
-//    cout << "rejection probability = " << q.rejectionProbability(pi) << endl; 
-//    
+//
     auto stop = high_resolution_clock::now(); //stop time 
     auto duration = duration_cast<milliseconds>(stop - start); 
     cout << "Runtime: " << duration.count() << " milliseconds" << endl; 

@@ -226,3 +226,52 @@ void LinSolver::embeddedChain(vector<vector<double>> &values){
     }
     
 }
+
+
+void LinSolver::sorExactSystem(vector<double> &pi, EntireSystem &sys, double relaxation, double eps){
+    //SOR algorithm for the exact system
+    
+    cout << "Engaging SOR for exact system." << endl;
+    
+    double sm, x_new, diff, tol;
+    int maxIter = 1e4, iter = 0;
+    
+    cout << "Building transition matrix..." << endl;
+    cout << "Step 1:" << endl;
+    sys.buildTransposedChain(); //generate and store the entire transposed transition matrix
+    
+    cout << "Step 2:" << endl;
+    scale(sys.qValues); //scale the transposed transition matrix
+    
+    cout << "Solving state distribution..." << endl;
+    StatusBar sbar(1e-4-eps,30);
+    do {
+        tol = 0.0;
+        for (int i=0; i<sys.nS; i++){
+            sm = 0;
+            for (int j=0; j<sys.qColumnIndices[i].size(); j++){
+                sm += sys.qValues[i][j] * pi[sys.qColumnIndices[i][j]];
+            }
+            
+            x_new = pi[i] - relaxation*sm;
+            diff = abs(x_new-pi[i])/pi[i];
+            if (diff>tol){
+                tol = diff;
+            }
+            pi[i] = x_new;
+        }
+        
+        normalize(pi);
+        
+        iter++;
+        if (iter%10==0){
+            //cout << tol << endl;
+            double bval = 1e-4-tol;
+            sbar.updateBar(bval);
+        }
+        
+    }while (tol>eps && iter<maxIter);
+    sbar.endBar();
+    cout << "SOR stats: " << iter << " iterations, tolerance " << tol << endl;
+    
+}

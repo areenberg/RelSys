@@ -9,6 +9,8 @@
       <itemPath>HeuristicQueue.h</itemPath>
       <itemPath>HyperQueue.h</itemPath>
       <itemPath>LinSolver.h</itemPath>
+      <itemPath>Patient.h</itemPath>
+      <itemPath>RelocSimulation.h</itemPath>
       <itemPath>StatusBar.h</itemPath>
       <itemPath>WardData.h</itemPath>
     </logicalFolder>
@@ -24,6 +26,8 @@
       <itemPath>HeuristicQueue.cpp</itemPath>
       <itemPath>HyperQueue.cpp</itemPath>
       <itemPath>LinSolver.cpp</itemPath>
+      <itemPath>Patient.cpp</itemPath>
+      <itemPath>RelocSimulation.cpp</itemPath>
       <itemPath>StatusBar.cpp</itemPath>
       <itemPath>WardData.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
@@ -69,6 +73,14 @@
       <item path="LinSolver.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LinSolver.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Patient.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Patient.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="RelocSimulation.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="RelocSimulation.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -120,6 +132,14 @@
       <item path="LinSolver.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="LinSolver.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="Patient.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Patient.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="RelocSimulation.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="RelocSimulation.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
       </item>
