@@ -27,7 +27,8 @@
 
 #include <iostream>
 #include <vector>
-#include <cstdlib>
+//#include <cstdlib>
+#include <cmath>
 
 LinSolver::LinSolver() {
     

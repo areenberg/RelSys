@@ -22,13 +22,8 @@ using namespace std;
 
 class Patient {
 public:
-    double arrivalTime;
-    double serviceTime;
-    double patientType;
-    double wardTarget;
-    int status;
-    void patientStatus(int stat);
-    
+    double arrivalClock, serviceTime, serviceClock;
+    int patientType, wardTarget;
     //CONSTRUCTORS
     //dummy constructor (not included in cpp-file) 
     Patient() {};

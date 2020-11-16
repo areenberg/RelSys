@@ -23,7 +23,7 @@
 #include "EntireSystem.h"
 #include "StatusBar.h"
 #include <iostream>
-#include <math.h>
+#include <cmath>
 
 EntireSystem::EntireSystem(int nW, WardData* wards):
 wards_pointer(wards),

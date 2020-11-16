@@ -23,7 +23,7 @@
 #include "Patient.h"
 
 Patient::Patient(double arr, double ser, int widx, int pidx):
-arrivalTime(arr),
+arrivalClock(arr),
 serviceTime(ser),
 patientType(pidx),
 wardTarget(widx)
@@ -34,12 +34,4 @@ Patient::Patient(const Patient& orig) {
 }
 
 Patient::~Patient() {
-}
-
-void Patient::patientStatus(int stat){
-    status = stat;
-    //0: Waiting for admission
-    //1: Admitted (in the system)
-    //2: Rejected
-    //3: Discharged
 }

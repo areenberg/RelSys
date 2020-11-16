@@ -37,7 +37,7 @@ public:
   
     //SIMULATION METHODS AND VARIABLES
     void setSeed(int seed);
-    void simulate(double minTime, double minSamples=50); 
+    void simulate(double burnIn, double minTime, int minSamples=50); 
 
     vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combinatiom
     
@@ -55,12 +55,33 @@ private:
     void initializeSystem();
     void calculateArrivalRates();
     void generateArrivalList(int length, double currentClock);
+    void updateArrivalTime(int widx, int pidx); //update the nextArrivalTime matrix
+    void initializeArrivalTimes(double currentClock); //initialize the entire nextArrivalTime matrix
 
     double randomUniform(double from, double to); //generate a random double between from and to
     double randomExponential(double rate); //generate a random exponentially distributed double
 
-    Patient * patient_array;
-
+    int minTimeSamples(vector<int> &openTimes, vector<int> &blockedTimes);
+    int nextServiceIdx(int &inService);
+    void updateServiceArray(int idx, int &inService);
+    bool attemptAdmission(double &currentClock, int &arrIdx, vector<vector<int>> &wardOccupancy, vector<int> &capUse, int &inService);
+    bool attemptDischarge(double & currentClock, int &serIdx, int &inService, vector<vector<int>> &wardOccupancy, vector<int> &capUse);
+    
+    void openTimeTracking(bool &success, double &currentClock, vector<vector<double>> &openTimes,
+    vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
+    
+    void blockedTimeTracking(bool &success, double &currentClock, vector<vector<double>> &blockedTimes,
+    vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
+    
+    vector<vector<double>> openTimes; //sampled open times for each ward
+    vector<vector<double>> blockedTimes; //sampled blocking times for each ward
+    
+    vector<vector<double>> nextArrivalTime;
+    
+    //PATIENT METHODS AND VARIABLES
+    Patient * arrival_array;
+    Patient * service_array;
+    
     //WARD INFORMATION METHODS AND VARIABLES
     WardData * wards_pointer;
     
