@@ -38,8 +38,10 @@ public:
     //SIMULATION METHODS AND VARIABLES
     void setSeed(int seed);
     void simulate(double burnIn, double minTime, int minSamples=50); 
-
-    vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combinatiom
+    
+    vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combination
+    vector<vector<double>> openTimes; //sampled open times for each ward
+    vector<vector<double>> blockedTimes; //sampled blocking times for each ward
     
     //WARD INFORMATION METHODS AND VARIABLES
     int nWards; //number of wards in the system
@@ -61,20 +63,20 @@ private:
     double randomUniform(double from, double to); //generate a random double between from and to
     double randomExponential(double rate); //generate a random exponentially distributed double
 
-    int minTimeSamples(vector<int> &openTimes, vector<int> &blockedTimes);
+    int minTimeSamples();
     int nextServiceIdx(int &inService);
     void updateServiceArray(int idx, int &inService);
-    bool attemptAdmission(double &currentClock, int &arrIdx, vector<vector<int>> &wardOccupancy, vector<int> &capUse, int &inService);
-    bool attemptDischarge(double & currentClock, int &serIdx, int &inService, vector<vector<int>> &wardOccupancy, vector<int> &capUse);
+    bool attemptAdmission(double &currentClock, int &arrIdx, vector<int> &capUse, int &inService);
+    bool attemptDischarge(double &currentClock, int &serIdx, int &inService, vector<int> &capUse);
+    void updateOccupancy(vector<int> &capUse, int &inService);
     
-    void openTimeTracking(bool &success, double &currentClock, vector<vector<double>> &openTimes,
-    vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
+    void openTimeTracking(bool &success, double &currentClock,
+    vector<int> &nOpenTimeSamples, vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
     
-    void blockedTimeTracking(bool &success, double &currentClock, vector<vector<double>> &blockedTimes,
-    vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
+    void blockedTimeTracking(bool &success, double &currentClock,
+    vector<int> &nBlockedTimeSamples, vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
     
-    vector<vector<double>> openTimes; //sampled open times for each ward
-    vector<vector<double>> blockedTimes; //sampled blocking times for each ward
+    void printTimeSamples();
     
     vector<vector<double>> nextArrivalTime;
     

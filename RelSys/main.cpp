@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     
     RelocSimulation sim(nWards,wd_array);
     sim.setSeed(123);
-    sim.simulate(0.0,10);
+    sim.simulate(365,365,500);
     
     
     //--------------------------
