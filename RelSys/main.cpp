@@ -34,9 +34,9 @@ int main(int argc, char** argv) {
     
     int nWards = 3;
     WardData * wd_array = new WardData[nWards];
-    vector<vector<double>> relProbs = {{0.0,0.5,0.5},
-                                       {0.5,0.0,0.5},
-                                       {0.5,0.5,0.0}};
+    vector<vector<double>> relProbs = {{0.0,0.50,0.50},
+                                       {0.50,0.0,0.50},
+                                       {0.50,0.50,0.0}};
     wd_array[0] = WardData(0,1.0,0.25,5,relProbs[0]);
     wd_array[1] = WardData(1,0.75,0.40,3,relProbs[1]);
     wd_array[2] = WardData(2,1.25,0.70,3,relProbs[2]);
@@ -49,6 +49,11 @@ int main(int argc, char** argv) {
     sim.setSeed(123);
     sim.simulate(365,365,500);
     
+    int widx = 2;
+    for (int i=0; i<sim.blockedTimes[widx].size(); i++){
+        //cout << sim.blockedTimes[widx][i] << endl;
+        cout << sim.openTimes[widx][i] << endl;
+    }
     
     //--------------------------
     //EXACT SYSTEM
@@ -122,17 +127,17 @@ int main(int argc, char** argv) {
     //HEURISTIC SYSTEM
     //--------------------------
 //    //specifications of main queue
-//    double arrivalRate = 1.25;
-//    double serviceRate = 0.70;
+//    double arrivalRate = 0.75;
+//    double serviceRate = 0.40;
 //    int capacity = 3;
 //    
 //    //create and add surrogate queues to the system
 //    int nhq = 2; //number of hyper queues
 //    HyperQueue * hq_array = new HyperQueue[nhq];
 //    //rates with which relocated patients arrive to the main queue during blockage
-//    double arrRate[nhq] = {1.0*0.50,0.75*0.50};
+//    double arrRate[nhq] = {1.0*0.50,1.25*0.50};
 //    //rates with which the relocated patients are served at the main queue
-//    double serRate[nhq] = {0.25,0.40};
+//    double serRate[nhq] = {0.25,0.70};
 //    for (int i=0; i<nhq; i++){
 //        int statesBlocked = 1;
 //        int statesOpen = 2;
@@ -173,7 +178,7 @@ int main(int argc, char** argv) {
 //    cout << "STATS:" << endl;
 //    cout << "expected load = " << q.expectedOccupancy(pi) << endl;
 //    cout << "capacity utilization = " << q.expectedOccupancyFraction(pi)*100 << "%" << endl;
-//
+
     auto stop = high_resolution_clock::now(); //stop time 
     auto duration = duration_cast<milliseconds>(stop - start); 
     cout << "Runtime: " << duration.count() << " milliseconds" << endl; 

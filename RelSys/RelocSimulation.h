@@ -28,6 +28,7 @@
 
 #include <iostream>
 #include <vector>
+#include <random>
 
 using namespace std;
 
@@ -37,7 +38,7 @@ public:
   
     //SIMULATION METHODS AND VARIABLES
     void setSeed(int seed);
-    void simulate(double burnIn, double minTime, int minSamples=50); 
+    void simulate(double bIn, double minTime, int minSamples=50); 
     
     vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combination
     vector<vector<double>> openTimes; //sampled open times for each ward
@@ -60,26 +61,33 @@ private:
     void updateArrivalTime(int widx, int pidx); //update the nextArrivalTime matrix
     void initializeArrivalTimes(double currentClock); //initialize the entire nextArrivalTime matrix
 
-    double randomUniform(double from, double to); //generate a random double between from and to
+    double randomUniform(); //generate a random uniform double in the interval (0,1)
     double randomExponential(double rate); //generate a random exponentially distributed double
 
     int minTimeSamples();
     int nextServiceIdx(int &inService);
     void updateServiceArray(int idx, int &inService);
-    bool attemptAdmission(double &currentClock, int &arrIdx, vector<int> &capUse, int &inService);
-    bool attemptDischarge(double &currentClock, int &serIdx, int &inService, vector<int> &capUse);
+    bool attemptAdmission(int &arrIdx, vector<int> &capUse, int &inService);
+    bool attemptDischarge(int &serIdx, int &inService, vector<int> &capUse);
     void updateOccupancy(vector<int> &capUse, int &inService);
     
-    void openTimeTracking(bool &success, double &currentClock,
-    vector<int> &nOpenTimeSamples, vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
+    void openTimeTracking(vector<int> &nOpenTimeSamples,
+ int &targetWard, vector<int> &capUse);
     
-    void blockedTimeTracking(bool &success, double &currentClock,
-    vector<int> &nBlockedTimeSamples, vector<double> &wardStateTimes, int &targetWard, vector<int> &capUse);
+    void blockedTimeTracking(vector<int> &nBlockedTimeSamples,
+ int &targetWard, vector<int> &capUse);
     
     void printTimeSamples();
     
     vector<vector<double>> nextArrivalTime;
+    vector<double> wardStateClocks;
     
+
+    double burnIn, clock; //burn-in time and the simulation clock
+    int simSeed; //seed for the simulation
+    mt19937 rgen; //random generator
+    uniform_real_distribution<> dis;
+
     //PATIENT METHODS AND VARIABLES
     Patient * arrival_array;
     Patient * service_array;
