@@ -42,6 +42,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/LinSolver.o \
 	${OBJECTDIR}/Patient.o \
 	${OBJECTDIR}/PhaseFitter.o \
+	${OBJECTDIR}/RelocEvaluation.o \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
 	${OBJECTDIR}/WardData.o \
@@ -106,6 +107,11 @@ ${OBJECTDIR}/PhaseFitter.o: PhaseFitter.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PhaseFitter.o PhaseFitter.cpp
+
+${OBJECTDIR}/RelocEvaluation.o: RelocEvaluation.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/RelocEvaluation.o RelocEvaluation.cpp
 
 ${OBJECTDIR}/RelocSimulation.o: RelocSimulation.cpp
 	${MKDIR} -p ${OBJECTDIR}

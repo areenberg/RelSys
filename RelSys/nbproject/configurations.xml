@@ -11,6 +11,7 @@
       <itemPath>LinSolver.h</itemPath>
       <itemPath>Patient.h</itemPath>
       <itemPath>PhaseFitter.h</itemPath>
+      <itemPath>RelocEvaluation.h</itemPath>
       <itemPath>RelocSimulation.h</itemPath>
       <itemPath>StatusBar.h</itemPath>
       <itemPath>WardData.h</itemPath>
@@ -29,6 +30,7 @@
       <itemPath>LinSolver.cpp</itemPath>
       <itemPath>Patient.cpp</itemPath>
       <itemPath>PhaseFitter.cpp</itemPath>
+      <itemPath>RelocEvaluation.cpp</itemPath>
       <itemPath>RelocSimulation.cpp</itemPath>
       <itemPath>StatusBar.cpp</itemPath>
       <itemPath>WardData.cpp</itemPath>
@@ -83,6 +85,10 @@
       <item path="PhaseFitter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PhaseFitter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="RelocEvaluation.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="RelocEvaluation.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="RelocSimulation.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -146,6 +152,10 @@
       <item path="PhaseFitter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PhaseFitter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="RelocEvaluation.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="RelocEvaluation.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="RelocSimulation.cpp" ex="false" tool="1" flavor2="0">
       </item>
