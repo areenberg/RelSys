@@ -41,6 +41,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/HyperQueue.o \
 	${OBJECTDIR}/LinSolver.o \
 	${OBJECTDIR}/Patient.o \
+	${OBJECTDIR}/PhaseFitter.o \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
 	${OBJECTDIR}/WardData.o \
@@ -100,6 +101,11 @@ ${OBJECTDIR}/Patient.o: Patient.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Patient.o Patient.cpp
+
+${OBJECTDIR}/PhaseFitter.o: PhaseFitter.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PhaseFitter.o PhaseFitter.cpp
 
 ${OBJECTDIR}/RelocSimulation.o: RelocSimulation.cpp
 	${MKDIR} -p ${OBJECTDIR}

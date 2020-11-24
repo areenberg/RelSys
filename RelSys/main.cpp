@@ -12,6 +12,7 @@
 #include "WardData.h"
 #include "EntireSystem.h"
 #include "RelocSimulation.h"
+#include "PhaseFitter.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -49,11 +50,32 @@ int main(int argc, char** argv) {
     sim.setSeed(123);
     sim.simulate(365,365,500);
     
-    int widx = 2;
-    for (int i=0; i<sim.blockedTimes[widx].size(); i++){
-        //cout << sim.blockedTimes[widx][i] << endl;
-        cout << sim.openTimes[widx][i] << endl;
+    //fitting PH-parameters
+    PhaseFitter ph;
+    //parameters
+    int phases = 1;
+    int EMiterations = 100;
+    int seed = 123;
+    
+    int widx = 2; //ward index
+    ph.setInputSample(sim.blockedTimes[widx]);
+    
+    //set output PH distribution
+    ph.setHyberExponential(phases);
+    
+    //run calculations
+    ph.run(EMiterations,seed);
+    
+    //get the result
+    cout << "Distribution, pi:" << endl;
+    for (int i=0; i<phases; i++){
+        cout << ph.init_dist[i] << endl;
     }
+    cout << "Exit-rates:" << endl;
+    for (int i=0; i<phases; i++){
+        cout << ph.exit_rate_vector[i] << endl;
+    }
+    
     
     //--------------------------
     //EXACT SYSTEM

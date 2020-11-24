@@ -10,6 +10,7 @@
       <itemPath>HyperQueue.h</itemPath>
       <itemPath>LinSolver.h</itemPath>
       <itemPath>Patient.h</itemPath>
+      <itemPath>PhaseFitter.h</itemPath>
       <itemPath>RelocSimulation.h</itemPath>
       <itemPath>StatusBar.h</itemPath>
       <itemPath>WardData.h</itemPath>
@@ -27,6 +28,7 @@
       <itemPath>HyperQueue.cpp</itemPath>
       <itemPath>LinSolver.cpp</itemPath>
       <itemPath>Patient.cpp</itemPath>
+      <itemPath>PhaseFitter.cpp</itemPath>
       <itemPath>RelocSimulation.cpp</itemPath>
       <itemPath>StatusBar.cpp</itemPath>
       <itemPath>WardData.cpp</itemPath>
@@ -77,6 +79,10 @@
       <item path="Patient.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Patient.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PhaseFitter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PhaseFitter.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="RelocSimulation.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -136,6 +142,10 @@
       <item path="Patient.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="Patient.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="PhaseFitter.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="PhaseFitter.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="RelocSimulation.cpp" ex="false" tool="1" flavor2="0">
       </item>
