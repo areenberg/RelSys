@@ -25,6 +25,7 @@
 #define HYBERQUEUE_H
 
 #include <vector>
+#include "RelocSimulation.h"
 
 
 using namespace std;
@@ -47,14 +48,14 @@ public:
     int numberOfStates;
     
     //methods
-    void fitOpenPH(int q);
-    void fitBlockedPH(int q);
-    void fitAll(int q);
+    void fitOpenPH(int seed);
+    void fitBlockedPH(int seed);
+    void fitAll(int seed);
     
     //dummy constructor (not included in cpp-file) 
     HyperQueue() {};
     //parameterized constructor
-    HyperQueue(int statesBlocked, int statesOpen, double aRate, double sRate);
+    HyperQueue(int widx, int statesBlocked, int statesOpen, double aRate, double sRate, RelocSimulation *sm);
     
     HyperQueue(const HyperQueue& orig);
     virtual ~HyperQueue();
@@ -62,7 +63,8 @@ public:
     
 private:
 
-    
+    RelocSimulation *sim_pointer;
+    int wardIndex;
     
 };
 

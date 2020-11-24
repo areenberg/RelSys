@@ -22,13 +22,16 @@
  */
 
 #include "HyperQueue.h"
+#include "RelocSimulation.h"
+#include "PhaseFitter.h"
 
 #include <vector>
 #include <iostream>
 
 using namespace std;
 
-HyperQueue::HyperQueue(int statesBlocked, int statesOpen, double aRate, double sRate):
+HyperQueue::HyperQueue(int widx, int statesBlocked, int statesOpen, double aRate, double sRate, RelocSimulation *sm):
+wardIndex(widx),
 openRates(statesOpen,0),
 openDist(statesOpen,0),
 blockedRates(statesBlocked,0),
@@ -37,7 +40,9 @@ blockedDist(statesBlocked,0),
 numberOfStates(statesBlocked + statesOpen),
 //queue parameters
 arrivalRate(aRate),
-serviceRate(sRate)
+serviceRate(sRate),
+//simulation        
+sim_pointer(sm)
 {    
 }
 
@@ -48,57 +53,71 @@ HyperQueue::~HyperQueue() {
 }
 
 
-void HyperQueue::fitOpenPH(int q){
+void HyperQueue::fitOpenPH(int seed){
     //fits the parameters for the PH
     //distribution accounting for the open rates
     
-    //demo of parameter fitting
-    if (q==0){
-        openRates[0] = 0.199759; openRates[1] = 2.12786;
-        openDist[0] = 0.442177; openDist[1] = 0.557823;
-    }else if (q==1){
-        openRates[0] = 0.315356; openRates[1] = 2.596712;
-        openDist[0] = 0.574079; openDist[1] = 0.425921;
-    }else if (q==2){
-        openRates[0] = 0.453811; openRates[1] = 3.301054;
-        openDist[0] = 0.614592; openDist[1] = 0.385408;
-    }else if (q==3){
-//        openRates[0] = 0.083738; openRates[1] = 4.282059;
-//        openDist[0] = 0.386958; openDist[1] = 0.613042;
-    }else{
-        cout << "Wrong hyperqueue index." << endl;
+    PhaseFitter ph_open;
+    int EMiterations = 100;
+    
+    ph_open.setInputSample(sim_pointer->openTimes[wardIndex]);
+    
+    //set output PH distribution
+    ph_open.setHyberExponential(openRates.size());
+    
+    //run calculations
+    ph_open.run(EMiterations,seed);
+    
+    //get the result
+    cout << "Exit-rates:" << endl;
+    for (int i=0; i<openRates.size(); i++){
+        cout << ph_open.exit_rate_vector[i] << endl;
+        openRates[i] = ph_open.exit_rate_vector[i];
+    }
+    cout << "Distribution, pi:" << endl;
+    for (int i=0; i<openDist.size(); i++){
+        cout << ph_open.init_dist[i] << endl;
+        openDist[i] = ph_open.init_dist[i];
     }
     
 }
 
-void HyperQueue::fitBlockedPH(int q){
+void HyperQueue::fitBlockedPH(int seed){
     //fits the parameters for the PH
     //distribution accounting for the closed rates
     
-    //demo of parameter fitting
-    if (q==0){
-        blockedRates[0] = 1.336454;
-        blockedDist[0] = 1.0;
-    }else if(q==1){
-        blockedRates[0] = 1.296162;
-        blockedDist[0] = 1.0;
-    }else if(q==2){
-        blockedRates[0] = 1.789471;
-        blockedDist[0] = 1.0;        
-    }else if(q==3){
-//        blockedRates[0] = 6.892878;
-//        blockedDist[0] = 1.0;    
-    }else{
-        cout << "Wrong hyperqueue index." << endl;
-    }
+    PhaseFitter ph_blocked;
+    int EMiterations = 100;
     
+    ph_blocked.setInputSample(sim_pointer->blockedTimes[wardIndex]);
+    
+    //set output PH distribution
+    ph_blocked.setHyberExponential(blockedRates.size());
+    
+    //run calculations
+    ph_blocked.run(EMiterations,seed);
+    
+    //get the result
+    cout << "Exit-rates:" << endl;
+    for (int i=0; i<blockedRates.size(); i++){
+        cout << ph_blocked.exit_rate_vector[i] << endl;
+        blockedRates[i] = ph_blocked.exit_rate_vector[i];
+    }
+    cout << "Distribution, pi:" << endl;
+    for (int i=0; i<blockedDist.size(); i++){
+        cout << ph_blocked.init_dist[i] << endl;
+        blockedDist[i] = ph_blocked.init_dist[i];
+    }
     
 }
 
-void HyperQueue::fitAll(int q){
+void HyperQueue::fitAll(int seed){
     //fits all PH parameters
     
-    fitOpenPH(q);
-    fitBlockedPH(q);
+    cout << "WARD " << wardIndex << endl;
+    cout << "Open Parameters" << endl;
+    fitOpenPH(seed);
+    cout << "Blocked Parameters" << endl; 
+    fitBlockedPH(seed);
     
 }

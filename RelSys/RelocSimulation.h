@@ -48,6 +48,8 @@ public:
     int nWards; //number of wards in the system
 
     //CONSTRUCTOR
+    //dummy constructor (not included in cpp-file) 
+    RelocSimulation() {};
     RelocSimulation(int nW, WardData * wards);
     RelocSimulation(const RelocSimulation& orig);
     virtual ~RelocSimulation();

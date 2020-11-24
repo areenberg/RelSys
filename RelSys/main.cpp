@@ -29,6 +29,8 @@ int main(int argc, char** argv) {
     
     auto start = high_resolution_clock::now(); //start time 
     
+    int seed = 123;
+    
     //--------------------------
     //WARD SETUP
     //--------------------------
@@ -46,35 +48,37 @@ int main(int argc, char** argv) {
     //SIMULATION
     //--------------------------
     
-    RelocSimulation sim(nWards,wd_array);
-    sim.setSeed(123);
-    sim.simulate(365,365,500);
+    RelocSimulation * sim_pointer = new RelocSimulation[1];
+    sim_pointer[0] = RelocSimulation(nWards,wd_array);
+
+    sim_pointer[0].setSeed(seed);
+    sim_pointer[0].simulate(365,365,500);
     
-    //fitting PH-parameters
-    PhaseFitter ph;
-    //parameters
-    int phases = 1;
-    int EMiterations = 100;
-    int seed = 123;
-    
-    int widx = 2; //ward index
-    ph.setInputSample(sim.blockedTimes[widx]);
-    
-    //set output PH distribution
-    ph.setHyberExponential(phases);
-    
-    //run calculations
-    ph.run(EMiterations,seed);
-    
-    //get the result
-    cout << "Distribution, pi:" << endl;
-    for (int i=0; i<phases; i++){
-        cout << ph.init_dist[i] << endl;
-    }
-    cout << "Exit-rates:" << endl;
-    for (int i=0; i<phases; i++){
-        cout << ph.exit_rate_vector[i] << endl;
-    }
+//    //fitting PH-parameters
+//    PhaseFitter ph;
+//    //parameters
+//    int phases = 1;
+//    int EMiterations = 100;
+//    int seed = 123;
+//    
+//    int widx = 2; //ward index
+//    ph.setInputSample(sim.blockedTimes[widx]);
+//    
+//    //set output PH distribution
+//    ph.setHyberExponential(phases);
+//    
+//    //run calculations
+//    ph.run(EMiterations,seed);
+//    
+//    //get the result
+//    cout << "Distribution, pi:" << endl;
+//    for (int i=0; i<phases; i++){
+//        cout << ph.init_dist[i] << endl;
+//    }
+//    cout << "Exit-rates:" << endl;
+//    for (int i=0; i<phases; i++){
+//        cout << ph.exit_rate_vector[i] << endl;
+//    }
     
     
     //--------------------------
@@ -148,58 +152,69 @@ int main(int argc, char** argv) {
     //--------------------------
     //HEURISTIC SYSTEM
     //--------------------------
-//    //specifications of main queue
-//    double arrivalRate = 0.75;
-//    double serviceRate = 0.40;
-//    int capacity = 3;
-//    
-//    //create and add surrogate queues to the system
-//    int nhq = 2; //number of hyper queues
-//    HyperQueue * hq_array = new HyperQueue[nhq];
-//    //rates with which relocated patients arrive to the main queue during blockage
-//    double arrRate[nhq] = {1.0*0.50,1.25*0.50};
-//    //rates with which the relocated patients are served at the main queue
-//    double serRate[nhq] = {0.25,0.70};
-//    for (int i=0; i<nhq; i++){
-//        int statesBlocked = 1;
-//        int statesOpen = 2;
-//        hq_array[i] = HyperQueue(statesBlocked,statesOpen,arrRate[i],serRate[i]);
-//        //hq_array[i].fitAll(i); //fit parameters
-//    }
-//    hq_array[0].fitAll(0); 
-//    hq_array[1].fitAll(1);
-//    
-//    //upper and lower limits in each queue. must include all queues (main and hyper queues)
-//    vector<int> upperLimits = {3,3,3};
-//    vector<int> lowerLimits = {0,0,0};
-//    
-//    HeuristicQueue q(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
-//    
-//    
-//    
-//    cout << "number of states = " << q.Ns << endl;
-//    
-//    vector<double> pi(q.Ns,0); 
-//    srand(time(0)); double sm=0;
-//    for (int i=0; i<q.Ns; i++){
-//        pi[i] = rand()%q.Ns+1;
-//        sm += pi[i]; 
-//    }
-//    for (int i=0; i<q.Ns; i++){
-//        pi[i] /= sm;
-//    }
-//    
-//    LinSolver solver;
-//    solver.sor(pi,q,1.0,1e-9);
-//    
-//    cout << "MARGINAL DISTRIBUTION:" << endl;
-//    vector<double> x = q.marginalDist(pi);
-//    for (int i=0; i<x.size(); i++){
-//        cout << x[i] << endl;
-//    }
-//    cout << "STATS:" << endl;
-//    cout << "expected load = " << q.expectedOccupancy(pi) << endl;
-//    cout << "capacity utilization = " << q.expectedOccupancyFraction(pi)*100 << "%" << endl;
+    
+    int widx, main_widx = 1;
+    double arr;
+    
+    //create and add surrogate queues to the system
+    int nhq = 2; //number of hyper queues
+    HyperQueue * hq_array = new HyperQueue[nhq];
+    
+    int statesBlocked = 1;
+    int statesOpen = 2;
+    
+    widx = 0;
+    arr = wd_array[widx].arrivalRate*wd_array[widx].relocationProbabilities[main_widx];
+    hq_array[0] = HyperQueue(widx,statesBlocked,statesOpen,
+            arr,wd_array[widx].serviceRate,sim_pointer);
+    hq_array[0].fitAll(seed); 
+    
+    widx = 2;
+    arr = wd_array[widx].arrivalRate*wd_array[widx].relocationProbabilities[main_widx];
+    hq_array[1] = HyperQueue(widx,statesBlocked,statesOpen,
+            arr,wd_array[widx].serviceRate,sim_pointer);
+    hq_array[1].fitAll(seed); 
+    
+    
+    //specifications of main queue
+    double arrivalRate = wd_array[main_widx].arrivalRate;
+    double serviceRate = wd_array[main_widx].serviceRate;
+    int capacity = wd_array[main_widx].capacity;
+    
+    //upper and lower limits in each queue. must include all queues (main and hyper queues)
+    vector<int> upperLimits = {wd_array[main_widx].capacity,wd_array[main_widx].capacity,wd_array[main_widx].capacity};
+    vector<int> lowerLimits = {0,0,0};
+    
+    HeuristicQueue q(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
+    
+    
+    
+    cout << "number of states = " << q.Ns << endl;
+    
+    //initial state distribution
+    vector<double> pi(q.Ns,0); 
+    srand(time(0)); double sm=0;
+    for (int i=0; i<q.Ns; i++){
+        pi[i] = rand()%q.Ns+1;
+        sm += pi[i]; 
+    }
+    for (int i=0; i<q.Ns; i++){
+        pi[i] /= sm;
+    }
+    
+    //solve for steady-state distribution
+    LinSolver solver;
+    solver.sor(pi,q,1.0,1e-9);
+    
+    //print results
+    cout << "MARGINAL DISTRIBUTION:" << endl;
+    vector<double> x = q.marginalDist(pi);
+    for (int i=0; i<x.size(); i++){
+        cout << x[i] << endl;
+    }
+    cout << "STATS:" << endl;
+    cout << "expected load = " << q.expectedOccupancy(pi) << endl;
+    cout << "capacity utilization = " << q.expectedOccupancyFraction(pi)*100 << "%" << endl;
 
     auto stop = high_resolution_clock::now(); //stop time 
     auto duration = duration_cast<milliseconds>(stop - start); 

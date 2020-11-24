@@ -352,15 +352,16 @@ void PhaseFitter::rungekutta(int p, double *avector, double *gvector, double *bv
 
 double PhaseFitter::density(double t, int type, double *par)
 {
-  if (t <= 0)
+  if(t <= 0){
     return(0);
-  else {
+  }else{
     switch(type) {
     case 1:
-      if ((t >= par[0]) && (t <= par[1]))
+      if ((t >= par[0]) && (t <= par[1])){
 	return(1/(par[1]-par[0]));
-      else
+      }else{
 	return(0);
+      }  
       break;
     case 2:
       return(1/(sqrt(2*3.141593)*par[1]*exp((t-par[0])*(t-par[0])
@@ -381,9 +382,10 @@ double PhaseFitter::density(double t, int type, double *par)
       /*this is where you should write your density f(t)*/
       break;
     default:
-      return 0.0;
+      return(0.0);
     }
   }
+  return(0);
 }
 
 void PhaseFitter::ExportToMatlab_Phasetype(int dim, double h, double dt, double truncpoint,
