@@ -69,14 +69,14 @@ void HyperQueue::fitOpenPH(int seed){
     ph_open.run(EMiterations,seed);
     
     //get the result
-    cout << "Exit-rates:" << endl;
+    //cout << "Exit-rates:" << endl;
     for (int i=0; i<openRates.size(); i++){
-        cout << ph_open.exit_rate_vector[i] << endl;
+        //cout << ph_open.exit_rate_vector[i] << endl;
         openRates[i] = ph_open.exit_rate_vector[i];
     }
-    cout << "Distribution, pi:" << endl;
+    //cout << "Distribution, pi:" << endl;
     for (int i=0; i<openDist.size(); i++){
-        cout << ph_open.init_dist[i] << endl;
+        //cout << ph_open.init_dist[i] << endl;
         openDist[i] = ph_open.init_dist[i];
     }
     
@@ -98,14 +98,14 @@ void HyperQueue::fitBlockedPH(int seed){
     ph_blocked.run(EMiterations,seed);
     
     //get the result
-    cout << "Exit-rates:" << endl;
+    //cout << "Exit-rates:" << endl;
     for (int i=0; i<blockedRates.size(); i++){
-        cout << ph_blocked.exit_rate_vector[i] << endl;
+        //cout << ph_blocked.exit_rate_vector[i] << endl;
         blockedRates[i] = ph_blocked.exit_rate_vector[i];
     }
-    cout << "Distribution, pi:" << endl;
+    //cout << "Distribution, pi:" << endl;
     for (int i=0; i<blockedDist.size(); i++){
-        cout << ph_blocked.init_dist[i] << endl;
+        //cout << ph_blocked.init_dist[i] << endl;
         blockedDist[i] = ph_blocked.init_dist[i];
     }
     
@@ -114,10 +114,10 @@ void HyperQueue::fitBlockedPH(int seed){
 void HyperQueue::fitAll(int seed){
     //fits all PH parameters
     
-    cout << "WARD " << wardIndex << endl;
-    cout << "Open Parameters" << endl;
+    //cout << "WARD " << wardIndex << endl;
+    //cout << "Open Parameters" << endl;
     fitOpenPH(seed);
-    cout << "Blocked Parameters" << endl; 
+    //cout << "Blocked Parameters" << endl; 
     fitBlockedPH(seed);
     
 }

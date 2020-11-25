@@ -275,7 +275,7 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
 
 void RelocSimulation::printTimeSamples(){
     
-    cout << "\n----------------------------" << endl;
+    cout << "----------------------------\nSIM STATS:" << endl;
     cout << "*Number of open-time samples*" << endl;
     for (int i=0; i<openTimes.size(); i++){
         cout << "Ward" << (i+1) << ": " << openTimes[i].size();

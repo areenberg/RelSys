@@ -1645,7 +1645,7 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
     stepindicator = 1;
   } 
   
-  cout << "Fitting parameters..." << flush;  
+  //cout << "Fitting parameters..." << flush;  
   for (k=1; k <= NoOfEMsteps; k++) {
     if (stepindicator == 1)
       RKstep = set_steplength(p, T);
@@ -1663,7 +1663,7 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
     if ((k < 6) || ( (k % 25)==0 || k==NoOfEMsteps )) {
       //printf("\nEM(%d)",k);
       //show_pi_T(p, pi, T, t);
-      SavePhases(p, pi, T);
+      //SavePhases(p, pi, T);
       if (NoOfInt == 0)
 	compute_loglikelihood(RKstep, p, pi, T, t, stepindicator, avector, ka,
 			      NULL);
@@ -1673,7 +1673,7 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
     }
     
   }
-  cout << "done." << endl;
+  //cout << "done." << endl;
 }
 
 int PhaseFitter::search_partner(void)
@@ -1881,9 +1881,9 @@ void PhaseFitter::setInputDensity(vector<vector<double>>& q_in, vector<double> &
     
     pi_in_point = pi_in.data();
    
-    for (int i=0; i<pi_in.size(); i++){
-        cout << "pi[" << i << "] = " << pi_in_point[i] << endl;
-    }
+//    for (int i=0; i<pi_in.size(); i++){
+//        cout << "pi[" << i << "] = " << pi_in_point[i] << endl;
+//    }
     
     //tell the program that the input uses a density function (instead of sampled observations)
     sampleOrDensity = 2;

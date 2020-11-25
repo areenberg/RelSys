@@ -34,6 +34,7 @@ int main(int argc, char** argv) {
     //WARD SETUP
     //--------------------------
     
+    //setup wards
     int nWards = 3;
     WardData * wd_array = new WardData[nWards];
     vector<vector<double>> relProbs = {{0.0,0.50,0.50},
@@ -43,11 +44,21 @@ int main(int argc, char** argv) {
     wd_array[1] = WardData(1,0.75,0.40,3,relProbs[1]);
     wd_array[2] = WardData(2,1.25,0.70,3,relProbs[2]);
     
+    //setup model object
     RelocEvaluation mdl(nWards,wd_array);
+    
+    //simulate samples
     int seed = 123;
     mdl.runSimulation(seed,365,365,500);
+    
+    //evaluate ward
     int widx = 0; //ward index to be evaluated
-    mdl.runHeuristic(0);
+    mdl.runHeuristic(widx);
+    
+    cout << "MARGINAL DISTRIBUTION" << endl;
+    for (int i=0; i<mdl.marginalDist.size(); i++){
+        cout << mdl.marginalDist[i] << endl;
+    }
     
     //--------------------------
     //SIMULATION

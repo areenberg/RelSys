@@ -102,6 +102,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
             hq_array[i].fitAll(seed);
         }
         
+        
         //specifications of main queue
         double arrivalRate = getWardArrivalRate(main_widx);
         double serviceRate = getWardServiceRate(main_widx);
@@ -114,6 +115,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
         //create the main (heuristic) queue object
         HeuristicQueue hqueue(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
         
+        cout << "Evaluating Ward " << (main_widx+1) << "..." << endl;
         cout << "Number of states = " << hqueue.Ns << endl;
     
         //solve for steady-state distribution
@@ -128,15 +130,17 @@ void RelocEvaluation::runHeuristic(int main_widx){
         expOccFraction = hqueue.expectedOccupancyFraction(pi);
         blockingProbability = marginalDist[marginalDist.size()-1];
         
-        //print and store some general metrics
-        cout << "STATS:" << endl;
-        
-        cout << "expected load = " << expectedOccupancy << endl;
-        cout << "capacity utilization = " << expOccFraction*100 << "%" << endl;
         
         auto stop = high_resolution_clock::now(); //stop time 
         auto duration = duration_cast<milliseconds>(stop - start); 
-        cout << "Runtime: " << duration.count() << " milliseconds" << endl; 
+        cout << "Runtime excl. simulation: " << duration.count() << " milliseconds\n" << endl;
+        
+        //print and store some general metrics
+        cout << "\nWARD " << (main_widx+1) << " STATS:" << endl;
+        
+        cout << "Expected load = " << expectedOccupancy << endl;
+        cout << "Capacity utilization = " << expOccFraction*100 << "%\n" << endl;
+        
         
     }else{
         cout << "Execution failed because simulation was not available." << endl;
