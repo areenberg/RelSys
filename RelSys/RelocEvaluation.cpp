@@ -65,7 +65,14 @@ void RelocEvaluation::runSimulation(int sd, int burnIn,
     seed = sd;
     
     sim_pointer[0].setSeed(seed);
+    
+    auto start = high_resolution_clock::now();
+    
     sim_pointer[0].simulate(burnIn,minTime,minSamples);
+    
+    auto stop = high_resolution_clock::now(); //stop time 
+    auto duration = duration_cast<milliseconds>(stop - start); 
+    cout << "Runtime of simulation: " << duration.count() << " milliseconds\n" << endl;
     
     simReady = true;
 }
@@ -109,8 +116,11 @@ void RelocEvaluation::runHeuristic(int main_widx){
         int capacity = getWardCapacity(main_widx);
     
         //upper and lower limits in each queue. must include all queues (main and hyper queues)
-        vector<int> upperLimits(nWards,capacity);
+        vector<int> upperLimits(nWards,0);
         vector<int> lowerLimits(nWards,0);
+        //automatically adjust truncation
+        setUpperLimits(upperLimits,main_widx);
+        setLowerLimits(lowerLimits,main_widx);
         
         //create the main (heuristic) queue object
         HeuristicQueue hqueue(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
@@ -133,7 +143,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
         
         auto stop = high_resolution_clock::now(); //stop time 
         auto duration = duration_cast<milliseconds>(stop - start); 
-        cout << "Runtime excl. simulation: " << duration.count() << " milliseconds\n" << endl;
+        cout << "Runtime of CTMC (excl. simulation): " << duration.count() << " milliseconds\n" << endl;
         
         //print and store some general metrics
         cout << "\nWARD " << (main_widx+1) << " STATS:" << endl;
@@ -148,6 +158,45 @@ void RelocEvaluation::runHeuristic(int main_widx){
     }
     
 }
+
+void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
+    //finds the upper truncation limit for each patient
+    //type in the main ward.
+    //finds the smallest truncation that has at least tailden probability
+    //mass in the upper tail of the distribution.
+    
+    //tail cut-off probability mass
+    double tailden = 1e-4;
+    
+    vector<vector<double>> dd = sim_pointer[0].denDist[main_widx];
+    double sm;
+    int k;
+    
+    cout << "Upper truncation cap. limits" << endl;
+    for (int pidx=0; pidx<nWards; pidx++){
+        k = getWardCapacity(main_widx); sm = dd[pidx][k];
+        while (k>0 && sm<tailden){
+            k--;
+            sm += dd[pidx][k];
+        }
+        upperLimits[pidx] = k;
+        cout << upperLimits[pidx] << " " << flush;
+    }
+    cout << endl;
+    
+}
+
+void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
+    //lower truncation limits are not adjusted (for now).
+    
+    cout << "Lower truncation cap. limits" << endl;
+    for (int pidx=0; pidx<nWards; pidx++){
+        cout << lowerLimits[pidx] << " " << flush;
+    }
+    cout << endl;
+    
+}
+
 
 void RelocEvaluation::initializeStateDistribution(HeuristicQueue &hqueue){
     //initial state distribution

@@ -154,8 +154,9 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
     int patientArraySize, maxOcc, inService, arrIdx, 
             serIdx, targetWard;
     bool succeeded, note = false;
+    bool adm;
     
-    //vector<vector<int>> wardOccupancy;
+    vector<vector<int>> wardOccupancy;
     vector<int> nOpenTimeSamples(nWards,0);
     vector<int> nBlockedTimeSamples(nWards,0);
     wardStateClocks.resize(nWards,0);
@@ -189,6 +190,9 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
     //tracking
     openTimes.resize(nWards);
     blockedTimes.resize(nWards);
+    //initialize the frequency/density
+    //ward-patient distributions.
+    initFreqDenDist();  
     
     //-------------------
     //Simulate
@@ -229,7 +233,7 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
                 }
             }else{
                 clock = nextArrClock;
-                succeeded = attemptAdmission(arrIdx,capUse,inService);
+                succeeded = attemptAdmission(arrIdx,capUse,wardOccupancy,inService);
                 if (succeeded){
                     openTimeTracking(nOpenTimeSamples,
                         service_array[inService-1].wardTarget,capUse);
@@ -237,15 +241,14 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
             }
         }else{
             clock = nextArrClock; 
-            succeeded = attemptAdmission(arrIdx,capUse,inService);
+            succeeded = attemptAdmission(arrIdx,capUse,wardOccupancy,inService);
             if (succeeded){
                 openTimeTracking(nOpenTimeSamples,
                     service_array[inService-1].wardTarget,capUse);
             }
         }
         
-        updateOccupancy(capUse,inService);
-    
+        updateOccupancy(capUse,wardOccupancy,inService);
         
 //        cout << "new array:" << endl;
 //        for (int i=0; i<inService; i++){
@@ -267,6 +270,9 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
         }
         
     }
+    
+    freqToDensity();
+    
     cout << "done." << endl;
     
     printTimeSamples();
@@ -296,13 +302,75 @@ void RelocSimulation::printTimeSamples(){
     
 }
 
-void RelocSimulation::updateOccupancy(vector<int> &capUse, int &inService){
+void RelocSimulation::initFreqDenDist(){
     
+    freqDist.resize(nWards); //frequency distribution
+    denDist.resize(nWards); //density distribution
+    
+    for (int widx=0; widx<nWards; widx++){
+        freqDist[widx].resize(nWards);
+        denDist[widx].resize(nWards);
+        for (int pidx=0; pidx<nWards; pidx++){
+            int c = getWardCapacity(widx)+1;
+            freqDist[widx][pidx].resize(c,0);
+            denDist[widx][pidx].resize(c,0);
+        }
+    }
+    
+}
+
+void RelocSimulation::updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy, int &inService){
+    
+    //ward occupancy (all patients)
     capUse.clear();
     capUse.resize(nWards,0);
     
     for (int i=0; i<inService; i++){
         capUse[service_array[i].wardTarget]++;
+    }
+    
+    //ward occupancy (each patient type)
+    wardOccupancy.clear();
+    wardOccupancy.resize(nWards);
+    for (int widx=0; widx<nWards; widx++){
+        wardOccupancy[widx].resize(nWards,0);
+    }
+    for (int i=0; i<inService; i++){
+        wardOccupancy[service_array[i].wardTarget][service_array[i].patientType]++;
+    }
+    
+}
+
+void RelocSimulation::occupancyDistTracking(vector<vector<int>> &wardOccupancy,
+    vector<int> &capUse, int &targetWard, int &patientType){
+    
+    if (clock>burnIn){
+        if ( (targetWard!=patientType && getWardCapacity(patientType)==capUse[patientType]) ||
+                targetWard==patientType ){
+            freqDist[targetWard][patientType][wardOccupancy[targetWard][patientType]]++;
+        }
+    }
+}
+
+void RelocSimulation::freqToDensity(){
+    
+    vector<vector<int>> sm(nWards);
+    
+    for (int widx=0; widx<nWards; widx++){
+        sm[widx].resize(nWards,0);
+        for (int pidx=0; pidx<nWards; pidx++){
+            for (int i=0; i<freqDist[widx][pidx].size(); i++){
+                sm[widx][pidx] += freqDist[widx][pidx][i];
+            }
+        }
+    }
+    
+    for (int widx=0; widx<nWards; widx++){
+        for (int pidx=0; pidx<nWards; pidx++){
+            for (int i=0; i<denDist[widx][pidx].size(); i++){
+                denDist[widx][pidx][i] = (double) freqDist[widx][pidx][i]/ (double) sm[widx][pidx];
+            }
+        }
     }
     
 }
@@ -339,6 +407,7 @@ void RelocSimulation::blockedTimeTracking(
 }
 
 
+
 bool RelocSimulation::attemptDischarge(int &serIdx, int &inService, vector<int> &capUse){
     
     //subtract patient from service
@@ -351,13 +420,15 @@ bool RelocSimulation::attemptDischarge(int &serIdx, int &inService, vector<int> 
     return(true);
 }
 
-bool RelocSimulation::attemptAdmission(int &arrIdx, vector<int> &capUse, int &inService){
+bool RelocSimulation::attemptAdmission(int &arrIdx, vector<int> &capUse, 
+        vector<vector<int>> &wardOccupancy, int &inService){
     
     bool Ok = false;
     if (arrival_array[arrIdx].wardTarget==arrival_array[arrIdx].patientType &&
             capUse[arrival_array[arrIdx].wardTarget]<getWardCapacity(arrival_array[arrIdx].wardTarget)){
         Ok = true;
-    }else if(capUse[arrival_array[arrIdx].patientType]==getWardCapacity(arrival_array[arrIdx].patientType) &&
+    }else if(arrival_array[arrIdx].wardTarget!=arrival_array[arrIdx].patientType &&
+            capUse[arrival_array[arrIdx].patientType]==getWardCapacity(arrival_array[arrIdx].patientType) &&
             capUse[arrival_array[arrIdx].wardTarget]<getWardCapacity(arrival_array[arrIdx].wardTarget)){
         Ok = true;
     }
@@ -373,6 +444,10 @@ bool RelocSimulation::attemptAdmission(int &arrIdx, vector<int> &capUse, int &in
         //adjust number of patients currently in service
         inService++;
     }
+    
+    //track regardless of admission accepted or rejected
+    occupancyDistTracking(wardOccupancy,capUse,arrival_array[arrIdx].wardTarget,
+                    arrival_array[arrIdx].patientType);
     
     //move to next arrival
     arrIdx++;

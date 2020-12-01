@@ -42,7 +42,6 @@ public:
     void runSimulation(int seed, int burnIn,
         int minTime, int minSamples=50);
     
-    
     //VARIABLES
     vector<double> pi; //state distribution
     vector<double> marginalDist; //marginal distribution of the main queue
@@ -56,6 +55,8 @@ private:
     //METHODS
     void initializeSystem();
     void initializeStateDistribution(HeuristicQueue &hqueue);
+    void setUpperLimits(vector<int> &upperLimits, int &main_widx);
+    void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
     //VARIABLES
     bool simReady;

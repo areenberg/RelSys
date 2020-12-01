@@ -44,6 +44,10 @@ public:
     vector<vector<double>> openTimes; //sampled open times for each ward
     vector<vector<double>> blockedTimes; //sampled blocking times for each ward
     
+    //ward-patient occupancy
+    vector<vector<vector<int>>> freqDist; //frequency distribution
+    vector<vector<vector<double>>> denDist; //density distribution
+    
     //WARD INFORMATION METHODS AND VARIABLES
     int nWards; //number of wards in the system
 
@@ -69,15 +73,22 @@ private:
     int minTimeSamples();
     int nextServiceIdx(int &inService);
     void updateServiceArray(int idx, int &inService);
-    bool attemptAdmission(int &arrIdx, vector<int> &capUse, int &inService);
+    bool attemptAdmission(int &arrIdx, vector<int> &capUse,
+        vector<vector<int>> &wardOccupancy, int &inService);
     bool attemptDischarge(int &serIdx, int &inService, vector<int> &capUse);
-    void updateOccupancy(vector<int> &capUse, int &inService);
+    void updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy, int &inService);
     
     void openTimeTracking(vector<int> &nOpenTimeSamples,
  int &targetWard, vector<int> &capUse);
     
     void blockedTimeTracking(vector<int> &nBlockedTimeSamples,
  int &targetWard, vector<int> &capUse);
+    
+    void occupancyDistTracking(vector<vector<int>> &wardOccupancy,
+    vector<int> &capUse, int &targetWard, int &patientType);
+    
+    void initFreqDenDist(); //initialize the frequency/density ward-patient distributions
+    void freqToDensity(); //calculates the occupancy density distribution
     
     void printTimeSamples();
     

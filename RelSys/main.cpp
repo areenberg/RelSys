@@ -49,10 +49,10 @@ int main(int argc, char** argv) {
     
     //simulate samples
     int seed = 123;
-    mdl.runSimulation(seed,365,365,500);
+    mdl.runSimulation(seed,365,365,1000);
     
     //evaluate ward
-    int widx = 0; //ward index to be evaluated
+    int widx = 2; //ward index to be evaluated
     mdl.runHeuristic(widx);
     
     cout << "MARGINAL DISTRIBUTION" << endl;
