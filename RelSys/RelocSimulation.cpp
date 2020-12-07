@@ -154,7 +154,7 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
     int patientArraySize, maxOcc, inService, arrIdx, 
             serIdx, targetWard;
     bool succeeded, note = false;
-    bool adm;
+    //bool adm;
     
     vector<vector<int>> wardOccupancy;
     vector<int> nOpenTimeSamples(nWards,0);
@@ -275,9 +275,99 @@ void RelocSimulation::simulate(double bIn, double minTime, int minSamples){
     
     cout << "done." << endl;
     
+    //re-sample time tracking
+    subsetTimeSamples(minSamples);
+    
+    //print open/blocked time sample sizes
     printTimeSamples();
     
 }
+
+void RelocSimulation::subsetTimeSamples(int &minSamples){
+    
+    vector<int> idx; //indices to remove or move
+    vector<double> x(minSamples,0);
+    int from=0,to;
+    
+    //open time samples
+    for (int i=0; i<openTimes.size(); i++){
+        if(openTimes[i].size()>minSamples){
+            x.clear(); x.resize(minSamples,0);
+            idx.clear();
+            to=openTimes[i].size()-1;
+            idx = randomIndices(from,to,minSamples);
+            for (int j=0; j<x.size(); j++){
+                x[j] = openTimes[i][idx[j]];
+            }
+            openTimes[i].resize(minSamples,0);
+            for (int j=0; j<minSamples; j++){
+                openTimes[i][j] = x[j];
+            }
+                
+        }    
+    }
+    
+    //blocked time samples
+    for (int i=0; i<blockedTimes.size(); i++){
+        if(blockedTimes[i].size()>minSamples){
+            x.clear(); x.resize(minSamples,0);
+            idx.clear();
+            to = blockedTimes[i].size()-1;
+            idx = randomIndices(from,to,minSamples);
+            for (int j=0; j<x.size(); j++){
+                x[j] = blockedTimes[i][idx[j]];
+            }
+            blockedTimes[i].resize(minSamples,0);
+            for (int j=0; j<minSamples; j++){
+                blockedTimes[i][j] = x[j];
+            }
+                
+        }    
+    }
+    
+}
+
+vector<int> RelocSimulation::randomIndices(int &from, int &to, int &len){
+    
+    int l,added,nn,
+            span,idx;
+    bool rerun;
+    
+    span = (to-from)+1;
+    l = min(len,span);
+    vector<int> vec(l,0);
+    if (l<len || len==span){
+        for (int i=0; i<vec.size(); i++){
+            vec[i] = i;
+        }
+    }else{
+        added=0;
+        while (added<l){
+            rerun = true;
+            while (rerun){
+                nn = floor(randomUniform()*span+from);
+                if (added==0){
+                    vec[added] = nn;
+                    added++;
+                    rerun=false;
+                }else{
+                    idx=0;
+                    while (idx<l && vec[idx]!=nn){
+                        idx++;
+                    }
+                    if (idx==l){
+                        vec[added] = nn;
+                        added++;
+                        rerun=false;
+                    }
+                }
+            }
+        }
+    }
+    
+    return(vec);
+}
+
 
 void RelocSimulation::printTimeSamples(){
     

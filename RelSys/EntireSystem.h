@@ -55,6 +55,7 @@ public:
     void initializeState(); //initialize the current state
     void nextCurrentState(); //move to the next state
     void printState();
+    void printStateSpace();
     
     void allIngoing(); //generate all jump indices and rates relative to the current state 
     vector<double> marginalDist(int widx, vector<double> &pi);

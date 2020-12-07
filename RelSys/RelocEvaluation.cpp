@@ -99,16 +99,17 @@ void RelocEvaluation::runHeuristic(int main_widx){
         }
         
         //prepare and fit PH parameters for each surrogate (hyper) queue
+        cout << "Fitting PH parameters ..." << endl;
         HyperQueue * hq_array = new HyperQueue[nhq];
         for (int i=0; i<nhq; i++){
             arr =  getWardArrivalRate(hyperWidx_vector[i])*getWardRelocationProbabilities(hyperWidx_vector[i])[main_widx];
             
             hq_array[i] = HyperQueue(hyperWidx_vector[i],statesBlocked,statesOpen,
                 arr,getWardServiceRate(hyperWidx_vector[i]),sim_pointer);
-            
+            cout << "Fit " << (i+1) << endl;
             hq_array[i].fitAll(seed);
         }
-        
+        cout << "Done." << endl;
         
         //specifications of main queue
         double arrivalRate = getWardArrivalRate(main_widx);
@@ -119,6 +120,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
         vector<int> upperLimits(nWards,0);
         vector<int> lowerLimits(nWards,0);
         //automatically adjust truncation
+        cout << "Setting limits..." << endl;
         setUpperLimits(upperLimits,main_widx);
         setLowerLimits(lowerLimits,main_widx);
         
@@ -166,20 +168,36 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     //mass in the upper tail of the distribution.
     
     //tail cut-off probability mass
-    double tailden = 1e-4;
+    double tailden = 1e-3;
     
-    vector<vector<double>> dd = sim_pointer[0].denDist[main_widx];
-    double sm;
-    int k;
+    //vector<vector<double>> dd = sim_pointer[0].denDist[main_widx];
+    vector<vector<int>> fd = sim_pointer[0].freqDist[main_widx];
+    double sm,mn,k,p;
     
     cout << "Upper truncation cap. limits" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
-        k = getWardCapacity(main_widx); sm = dd[pidx][k];
-        while (k>0 && sm<tailden){
-            k--;
-            sm += dd[pidx][k];
+        
+        //old approach
+//        k = getWardCapacity(main_widx); sm = dd[pidx][k];
+//        while (k>0 && sm<tailden){
+//            k--;
+//            sm += dd[pidx][k];
+//        }
+//        upperLimits[pidx] = k;
+        
+        //truncation using Chebyshev's inequality
+        mn = sampleMean(fd[pidx]);
+        k = ceil(mn);
+        if ((k+1)<getWardCapacity(main_widx)){
+            do{
+                k++;
+                p = chebyshevBound(k,fd[pidx]);
+            }while(k<getWardCapacity(main_widx) && p>tailden);
+            upperLimits[pidx] = k;
+        }else{
+            upperLimits[pidx] = getWardCapacity(main_widx);
         }
-        upperLimits[pidx] = k;
+            
         cout << upperLimits[pidx] << " " << flush;
     }
     cout << endl;
@@ -197,6 +215,76 @@ void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
     
 }
 
+double RelocEvaluation::sampleMean(vector<int> &freqDist){
+    
+    double y; int sm;
+    sm=0;
+    for (int i=0; i<freqDist.size(); i++){
+        sm += freqDist[i];
+    }
+    y=0;
+    for (int i=0; i<freqDist.size(); i++){
+        y += (freqDist[i]/sm)*i;
+    }
+    
+    return(y);
+}
+
+double RelocEvaluation::sampleSD(vector<int> &freqDist){
+    
+    double n, xhat, sqdiff, diff;
+    xhat = sampleMean(freqDist);
+    n=0;
+    for (int i=0; i<freqDist.size(); i++){
+        n += freqDist[i];
+    }
+    sqdiff = 0;
+    for (int i=0; i<freqDist.size(); i++){
+        for (int j=0; j<freqDist[i]; j++){
+            diff = i-xhat;
+            sqdiff += pow(diff,2.0);
+        }
+    }
+    
+    return(sqrt((1.0/(n-1.0))*sqdiff));
+}
+
+double RelocEvaluation::chebyshevBound(double &x, vector<int> &freqDist){
+    //sample version of Chebyshev's inequality. 
+    //assumes input variable x is larger than the mean
+    //of freqDist.
+    
+    double n,p,mn,sd,k,ginput;
+    mn = sampleMean(freqDist);
+    sd = sampleSD(freqDist);
+    n=0;
+    for (int i=0; i<freqDist.size(); i++){
+        n += freqDist[i];
+    }
+    k = (x-mn)/sd;
+    ginput = (n*pow(k,2.0))/(n-1+pow(k,2.0));
+    
+    p = Gfunction((n+1),ginput)/(n+1);
+    p *= pow((n/(n+1)),0.5);
+    
+    return(p);
+}
+
+double RelocEvaluation::Gfunction(double q, double x){
+    
+    double a, R;
+    R = floor(q/x);
+    a = (q*(q-R))/(1+R*(q-R));
+    
+    if ((int)R%2==0){
+        return(R); 
+    }else if(x<a){
+        return(R);
+    }else{
+        return(R-1);
+    }
+    
+}
 
 void RelocEvaluation::initializeStateDistribution(HeuristicQueue &hqueue){
     //initial state distribution

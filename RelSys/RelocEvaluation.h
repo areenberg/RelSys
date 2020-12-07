@@ -58,6 +58,12 @@ private:
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
+    double chebyshevBound(double &x, vector<int> &freqDist);
+    double Gfunction(double q, double x);
+    double sampleMean(vector<int> &freqDist);
+    double sampleSD(vector<int> &freqDist);
+    
+    
     //VARIABLES
     bool simReady;
     int nWards, seed;

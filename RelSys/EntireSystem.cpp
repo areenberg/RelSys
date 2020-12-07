@@ -23,6 +23,7 @@
 #include "EntireSystem.h"
 #include "StatusBar.h"
 #include <iostream>
+#include <fstream>
 #include <cmath>
 
 EntireSystem::EntireSystem(int nW, WardData* wards):
@@ -116,6 +117,32 @@ void EntireSystem::printState(){
         cout << endl;
     }
     cout << endl; //make some space for the next print
+    
+}
+
+void EntireSystem::printStateSpace(){
+    //print state space to file
+    
+    ofstream file;
+    file.open ("StateSpace.csv");
+    
+    initializeState();
+    for (int i=0; i<nS; i++){
+        
+        for (int widx=0; widx<nWards; widx++){
+            for (int pidx=0; pidx<nWards; pidx++){
+                if (pidx==(nWards-1) && widx==(nWards-1)){
+                    file << state[widx][pidx];
+                }else{
+                    file << state[widx][pidx] << ",";
+                }
+            }   
+        }
+        file << "\n";
+        
+        nextCurrentState();
+    }
+    file.close();
     
 }
 

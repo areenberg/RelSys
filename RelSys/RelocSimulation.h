@@ -69,7 +69,8 @@ private:
 
     double randomUniform(); //generate a random uniform double in the interval (0,1)
     double randomExponential(double rate); //generate a random exponentially distributed double
-
+    vector<int> randomIndices(int &from, int &to, int &len);
+    
     int minTimeSamples();
     int nextServiceIdx(int &inService);
     void updateServiceArray(int idx, int &inService);
@@ -83,6 +84,8 @@ private:
     
     void blockedTimeTracking(vector<int> &nBlockedTimeSamples,
  int &targetWard, vector<int> &capUse);
+    
+    void subsetTimeSamples(int &minSamples); //randomly limits time samples to a sub-set of size minSamples 
     
     void occupancyDistTracking(vector<vector<int>> &wardOccupancy,
     vector<int> &capUse, int &targetWard, int &patientType);

@@ -28,6 +28,7 @@ using namespace std::chrono;
 
 int main(int argc, char** argv) {
     
+    
     auto start = high_resolution_clock::now(); //start time 
     
     //--------------------------
@@ -37,11 +38,11 @@ int main(int argc, char** argv) {
     //setup wards
     int nWards = 3;
     WardData * wd_array = new WardData[nWards];
-    vector<vector<double>> relProbs = {{0.0,0.50,0.50},
-                                       {0.50,0.0,0.50},
-                                       {0.50,0.50,0.0}};
-    wd_array[0] = WardData(0,1.0,0.25,5,relProbs[0]);
-    wd_array[1] = WardData(1,0.75,0.40,3,relProbs[1]);
+    vector<vector<double>> relProbs = {{0.0,0.5,0.5},
+                                       {0.5,0.0,0.5},
+                                       {0.5,0.5,0.0}};
+    wd_array[0] = WardData(0,1.0,0.25,3,relProbs[0]);
+    wd_array[1] = WardData(1,0.75,0.40,2,relProbs[1]);
     wd_array[2] = WardData(2,1.25,0.70,3,relProbs[2]);
     
     //setup model object
@@ -49,7 +50,7 @@ int main(int argc, char** argv) {
     
     //simulate samples
     int seed = 123;
-    mdl.runSimulation(seed,365,365,1000);
+    mdl.runSimulation(seed,365,365,50);
     
     //evaluate ward
     int widx = 2; //ward index to be evaluated
@@ -61,47 +62,12 @@ int main(int argc, char** argv) {
     }
     
     //--------------------------
-    //SIMULATION
-    //--------------------------
-    
-//    RelocSimulation * sim_pointer = new RelocSimulation[1];
-//    sim_pointer[0] = RelocSimulation(nWards,wd_array);
-//
-//    sim_pointer[0].setSeed(seed);
-//    sim_pointer[0].simulate(365,365,500);
-    
-//    //fitting PH-parameters
-//    PhaseFitter ph;
-//    //parameters
-//    int phases = 1;
-//    int EMiterations = 100;
-//    int seed = 123;
-//    
-//    int widx = 2; //ward index
-//    ph.setInputSample(sim.blockedTimes[widx]);
-//    
-//    //set output PH distribution
-//    ph.setHyberExponential(phases);
-//    
-//    //run calculations
-//    ph.run(EMiterations,seed);
-//    
-//    //get the result
-//    cout << "Distribution, pi:" << endl;
-//    for (int i=0; i<phases; i++){
-//        cout << ph.init_dist[i] << endl;
-//    }
-//    cout << "Exit-rates:" << endl;
-//    for (int i=0; i<phases; i++){
-//        cout << ph.exit_rate_vector[i] << endl;
-//    }
-    
-    
-    //--------------------------
     //EXACT SYSTEM
     //--------------------------
     
+//    //<<The EntireSystem class is currently buggy!>>
 //    EntireSystem sys(nWards,wd_array);
+//    sys.printStateSpace();
 //    
 //    cout << "number of states: " << sys.nS << endl;
 //    
@@ -122,33 +88,20 @@ int main(int argc, char** argv) {
 //    
 //    
 //    //PRINT RESULTS
-//    cout << "MARGINAL DISTRIBUTION:" << endl;
-//    for (int widx=0; widx<nWards; widx++){
-//        cout << "Ward " << (widx+1) << "    ";
-//    }
-//    cout << endl;
+//    cout << "MARGINAL DISTRIBUTIONS:" << endl;
+//    
 //    vector<vector<double>> dist(nWards);
 //    for (int widx=0; widx<nWards; widx++){
 //        dist[widx] = sys.marginalDist(widx,pi);
 //    }
-//    int capMax = 0;
-//    for (int i=0; i<nWards; i++){
-//        if (wd_array[i].capacity>capMax){
-//            capMax = wd_array[i].capacity;
+//    
+//    for (int widx=0; widx<nWards; widx++){
+//        for (int i=0; i<dist[widx].size(); i++){
+//            cout << dist[widx][i] << endl;
 //        }
+//        cout << "#" << endl;
 //    }
-//    for (int i=0; i<=capMax; i++){
-//        for (int widx=0; widx<nWards; widx++){
-//            if (i<=wd_array[widx].capacity){
-//                cout << dist[widx][i] << ",";
-//            }else{
-//                cout << " ";
-//            }
-//            
-//        }
-//        cout << endl;
-//    }    
-//        
+//    
 //    cout << "STATS:" << endl;
 //    cout << "Expected load" << endl;
 //    for (int widx=0; widx<nWards; widx++){

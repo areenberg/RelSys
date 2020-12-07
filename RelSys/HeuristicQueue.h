@@ -51,7 +51,7 @@ public:
     //methods
     void buildChain();
     void buildTransposedChain();
-    void printChain();
+    void printStateSpace();
     
     void initializeState(); //initialize the current state
     void nextCurrentState(); //move to the next state

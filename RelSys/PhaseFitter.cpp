@@ -13,7 +13,7 @@
 
 
 #include "PhaseFitter.h"
-
+#include "StatusBar.h"
 
 #include<stdio.h>
 #include<stdlib.h>
@@ -1645,8 +1645,13 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
     stepindicator = 1;
   } 
   
-  //cout << "Fitting parameters..." << flush;  
+  //cout << "Fitting parameters..." << flush;
+  StatusBar sbar(NoOfEMsteps,30);  
   for (k=1; k <= NoOfEMsteps; k++) {
+    
+    //update and print status bar
+    sbar.updateBar((double) k);  
+    
     if (stepindicator == 1)
       RKstep = set_steplength(p, T);
     if (NoOfInt == 0) {
@@ -1673,6 +1678,7 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
     }
     
   }
+  sbar.endBar();
   //cout << "done." << endl;
 }
 

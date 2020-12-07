@@ -174,23 +174,6 @@ void HeuristicQueue::buildTransposedChain(){
     
 }
 
-void HeuristicQueue::printChain(){
-     
-//    for (int i=0; i<Ns; i++){
-//        cout << "idx: ";
-//        for (int j=0; j<qColumnIndices[i].size(); j++){
-//            cout << qColumnIndices[i][j] << "  ";
-//        }
-//        cout << endl << "rates: ";
-//        for (int j=0; j<qColumnIndices[i].size(); j++){
-//            cout << qValues[i][j] << "  ";
-//        }
-//        cout << endl;
-//    }
-    
-}
-
-
 void HeuristicQueue::calculateSize(){
     //calculate and store the size of the state space
     

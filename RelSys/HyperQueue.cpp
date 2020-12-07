@@ -115,9 +115,9 @@ void HyperQueue::fitAll(int seed){
     //fits all PH parameters
     
     //cout << "WARD " << wardIndex << endl;
-    //cout << "Open Parameters" << endl;
+    cout << "Open Parameters" << endl;
     fitOpenPH(seed);
-    //cout << "Blocked Parameters" << endl; 
+    cout << "Blocked Parameters" << endl; 
     fitBlockedPH(seed);
     
 }
