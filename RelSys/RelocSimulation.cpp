@@ -606,11 +606,12 @@ int RelocSimulation::minTimeSamples(){
 
 
 double RelocSimulation::randomExponential(double rate){
-    //generate a random uniform double in the interval (0,1)
+    //generate a random exponential double
     return(log(1-randomUniform())/(-rate));
 }
 
 double RelocSimulation::randomUniform(){
+    //generate a random uniform number in the range [0,1)
     //double r = (double)rand() / RAND_MAX;
     double r = dis(rgen);
     return(r);
