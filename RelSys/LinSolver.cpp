@@ -25,10 +25,14 @@
 #include "LinSolver.h"
 #include "StatusBar.h"
 
-#include <iostream>
 #include <vector>
 //#include <cstdlib>
 #include <cmath>
+#include <unistd.h>
+#include <ios>
+#include <iostream>
+#include <fstream>
+
 
 LinSolver::LinSolver() {
     
@@ -56,6 +60,9 @@ void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, do
     
     cout << "Step 2:" << endl;
     scale(q.qValues); //scale the transposed transition matrix
+    
+    //get memory consumption at runtime (for Linux operating systems)
+    vmemory = memUsage();
     
     cout << "Solving state distribution..." << endl;
     StatusBar sbar(1e-4-eps,30);
@@ -275,4 +282,32 @@ void LinSolver::sorExactSystem(vector<double> &pi, EntireSystem &sys, double rel
     sbar.endBar();
     cout << "SOR stats: " << iter << " iterations, tolerance " << tol << endl;
     
+}
+
+
+double LinSolver::memUsage(){
+    //memory usage in kilobytes at runtime for Linux operating systems
+    //from tutorialspoint.com, How to get memory usage at runtime using C++? 
+    
+   double vmem = 0.0;
+   //resident_set = 0.0;
+   ifstream stat_stream("/proc/self/stat",ios_base::in); //get info from proc directory
+   //create some variables to get info
+   string pid, comm, state, ppid, pgrp, session, tty_nr;
+   string tpgid, flags, minflt, cminflt, majflt, cmajflt;
+   string utime, stime, cutime, cstime, priority, nice;
+   string O, itrealvalue, starttime;
+   unsigned long vsize;
+   long rss;
+   stat_stream >> pid >> comm >> state >> ppid >> pgrp >> session >> tty_nr
+   >> tpgid >> flags >> minflt >> cminflt >> majflt >> cmajflt
+   >> utime >> stime >> cutime >> cstime >> priority >> nice
+   >> O >> itrealvalue >> starttime >> vsize >> rss; // don't care about the rest
+   stat_stream.close();
+   //long page_size_kb = sysconf(_SC_PAGE_SIZE) / 1024; // for x86-64 is configured
+   //to use 2MB pages
+   vmem = vsize / 1024.0;
+   //resident_set = rss * page_size_kb;
+    
+   return(vmem);
 }

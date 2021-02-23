@@ -44,6 +44,7 @@ public:
     //SOR algorithm for the exact system
     void sorExactSystem(vector<double> &pi, EntireSystem &q, double relaxation, double eps);
     
+    double vmemory;
     
     LinSolver();
     LinSolver(const LinSolver& orig);
@@ -51,10 +52,10 @@ public:
     
 private:
 
-    
     void scale(vector<vector<double>> &values);
     void normalize(vector<double> &pi);
     void embeddedChain(vector<vector<double>> &values);
+    double memUsage();
     
 };
 

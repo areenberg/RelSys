@@ -46,7 +46,9 @@ public:
     vector<double> pi; //state distribution
     vector<double> marginalDist; //marginal distribution of the main queue
     double blockingProbability, expectedOccupancy, expOccFraction;
+    double vmemory; //virtual memory consumption during runtime in kilobytes
     
+    RelocEvaluation() {}; //dummy constructor 
     RelocEvaluation(int nW, WardData * wards);
     RelocEvaluation(const RelocEvaluation& orig);
     virtual ~RelocEvaluation();
@@ -62,7 +64,6 @@ private:
     double Gfunction(double q, double x);
     double sampleMean(vector<int> &freqDist);
     double sampleSD(vector<int> &freqDist);
-    
     
     //VARIABLES
     bool simReady;

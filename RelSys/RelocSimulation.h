@@ -40,11 +40,14 @@ public:
     void setSeed(int seed);
     void simulate(double bIn, double minTime, int minSamples=50); 
     
+    double randomLogNormal(double mean, double std);
+    
     vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combination
     vector<vector<double>> openTimes; //sampled open times for each ward
     vector<vector<double>> blockedTimes; //sampled blocking times for each ward
     
     //ward-patient occupancy
+    vector<vector<int>> wardFreqDist; //marginal frequency distribution
     vector<vector<vector<int>>> freqDist; //frequency distribution
     vector<vector<vector<double>>> denDist; //density distribution
     
@@ -69,6 +72,7 @@ private:
 
     double randomUniform(); //generate a random uniform double in the interval (0,1)
     double randomExponential(double rate); //generate a random exponentially distributed double
+    //double randomLogNormal(double mean, double std);
     vector<int> randomIndices(int &from, int &to, int &len);
     
     int minTimeSamples();
@@ -120,6 +124,12 @@ private:
     int getWardStateSpaceSize(int ward);
     void calculateWardStateSpaceSize(int ward, int numberOfWards);
 
+    //LOG-NORMAL SIMULATION METHODS
+    double logNormalCdfInv(double cdf,double mu,double sigma);
+    double normalCdfInv(double cdf, double mu, double sigma);
+    double normal01CdfInv(double p);
+    double r8polyValueHorner(int m,double c[],double x);
+    
 };
 
 #endif /* RELOCSIMULATION_H */

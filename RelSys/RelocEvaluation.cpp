@@ -29,10 +29,11 @@
 #include "RelocSimulation.h"
 #include "PhaseFitter.h"
 
-#include <vector>
 #include <iostream>
+#include <vector>
 #include <random>
 #include <chrono>
+#include <cmath>
 
 using namespace std;
 using namespace std::chrono;
@@ -136,6 +137,8 @@ void RelocEvaluation::runHeuristic(int main_widx){
         double solverTolerance = 1e-9;
         solver.sor(pi,hqueue,1.0,solverTolerance);
         
+        vmemory = solver.vmemory; //estimate of maximum memory usage
+        
         //store the marginal distribution and some other metrics
         marginalDist = hqueue.marginalDist(pi);
         expectedOccupancy = hqueue.expectedOccupancy(pi);
@@ -172,18 +175,19 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     
     //vector<vector<double>> dd = sim_pointer[0].denDist[main_widx];
     vector<vector<int>> fd = sim_pointer[0].freqDist[main_widx];
-    double sm,mn,k,p;
+    
+//    cout << "Freq. distribution:" << endl;
+//    for (int i=0; i<fd.size(); i++){
+//        for (int j=0; j<fd[i].size(); j++){
+//            cout << fd[i][j] << " " << flush;
+//        }
+//        cout << endl;
+//    }
+    
+    double mn,k,p;
     
     cout << "Upper truncation cap. limits" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
-        
-        //old approach
-//        k = getWardCapacity(main_widx); sm = dd[pidx][k];
-//        while (k>0 && sm<tailden){
-//            k--;
-//            sm += dd[pidx][k];
-//        }
-//        upperLimits[pidx] = k;
         
         //truncation using Chebyshev's inequality
         mn = sampleMean(fd[pidx]);
@@ -217,7 +221,7 @@ void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
 
 double RelocEvaluation::sampleMean(vector<int> &freqDist){
     
-    double y; int sm;
+    double y,sm;
     sm=0;
     for (int i=0; i<freqDist.size(); i++){
         sm += freqDist[i];
@@ -274,7 +278,7 @@ double RelocEvaluation::Gfunction(double q, double x){
     
     double a, R;
     R = floor(q/x);
-    a = (q*(q-R))/(1+R*(q-R));
+    a = (q*(q-R))/(1.0+R*(q-R));
     
     if ((int)R%2==0){
         return(R); 
@@ -305,7 +309,6 @@ void RelocEvaluation::initializeStateDistribution(HeuristicQueue &hqueue){
     }
     
 }
-
 
 int RelocEvaluation::getWardID(int ward){
     

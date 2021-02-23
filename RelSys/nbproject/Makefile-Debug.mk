@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/Combinatorial.o \
 	${OBJECTDIR}/EntireSystem.o \
+	${OBJECTDIR}/Experiments.o \
 	${OBJECTDIR}/HeuristicQueue.o \
 	${OBJECTDIR}/HyperQueue.o \
 	${OBJECTDIR}/LinSolver.o \
@@ -82,6 +83,11 @@ ${OBJECTDIR}/EntireSystem.o: EntireSystem.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/EntireSystem.o EntireSystem.cpp
+
+${OBJECTDIR}/Experiments.o: Experiments.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Experiments.o Experiments.cpp
 
 ${OBJECTDIR}/HeuristicQueue.o: HeuristicQueue.cpp
 	${MKDIR} -p ${OBJECTDIR}
