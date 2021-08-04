@@ -103,28 +103,28 @@ int main(int argc, char** argv) {
     //In contrary to the heuristic evaluation, the entire system is evaluated at the
     //same time. However, for the sake of this demonstration we choose only to print
     //the results from a single queue.
-    int widx = 0;
+    int sim_widx = 0;
 
     //get the result
     cout << "--- RESULTS ---" << endl;
    
     cout << "Marginal frequency distribution:" << endl;
-    for (int i=0; i<sim_mdl.wardFreqDist[widx].size(); i++){
-        cout << sim_mdl.wardFreqDist[widx][i] << endl;
+    for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
+        cout << sim_mdl.wardFreqDist[sim_widx][i] << endl;
     }
     cout << "Marginal density distribution:" << endl;
-    for (int i=0; i<sim_mdl.wardFreqDist[widx].size(); i++){
-        cout << sim_mdl.wardDenDist[widx][i] << endl; //corresponds to marginalDist in the heuristic evaluation
+    for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
+        cout << sim_mdl.wardDenDist[sim_widx][i] << endl; //corresponds to marginalDist in the heuristic evaluation
     }
     
     cout << "Probability of rejection:" << endl;
-    cout << sim_mdl.blockingProbability[widx] << endl;
+    cout << sim_mdl.blockingProbability[sim_widx] << endl;
 
     cout << "Expected server occupancy:" << endl;
-    cout << sim_mdl.expectedOccupancy[widx] << endl;
+    cout << sim_mdl.expectedOccupancy[sim_widx] << endl;
 
     cout << "Expected fraction of servers occupied:" << endl;
-    cout << sim_mdl.expOccFraction[widx] << endl;
+    cout << sim_mdl.expOccFraction[sim_widx] << endl;
         
     return 0;
 }
