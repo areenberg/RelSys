@@ -78,7 +78,7 @@ Note that the relocation probabilities do not have to sum to one. If the sum is 
     
 ```
 
-In the following, we show how to evaluate the system and get the results using both the heuristic approach and the discrete-event simulation, respectively. You will notice that the procedure is almost the same in both cases.
+The queueing objects are now ready to be plugged into the model object. In the following, we show how to create a model object, evaluate the system and get the results using both the heuristic approach and the discrete-event simulation, respectively. You will notice that the procedure is almost the same in both cases.
 
 ## `RelocEvaluation` - Heuristic evaluation
 
