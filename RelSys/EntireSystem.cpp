@@ -26,7 +26,7 @@
 #include <fstream>
 #include <cmath>
 
-EntireSystem::EntireSystem(int nW, WardData* wards):
+EntireSystem::EntireSystem(int nW, QueueData* wards):
 wards_pointer(wards),
 nWards(nW)
 {

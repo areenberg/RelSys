@@ -20,9 +20,9 @@
  * 
  */
 
-#include "Patient.h"
+#include "Customer.h"
 
-Patient::Patient(double arr, double ser, int widx, int pidx):
+Customer::Customer(double arr, double ser, int widx, int pidx):
 arrivalClock(arr),
 serviceTime(ser),
 patientType(pidx),
@@ -30,8 +30,8 @@ wardTarget(widx)
 {
 }
 
-Patient::Patient(const Patient& orig) {
+Customer::Customer(const Customer& orig) {
 }
 
-Patient::~Patient() {
+Customer::~Customer() {
 }

@@ -6,13 +6,8 @@
  * Created on August 4, 2021, 02:11 PM
  */
 
-#include "HeuristicQueue.h"
-#include "HyperQueue.h"
-#include "LinSolver.h"
-#include "WardData.h"
-#include "EntireSystem.h"
+#include "QueueData.h"
 #include "RelocSimulation.h"
-#include "PhaseFitter.h"
 #include "RelocEvaluation.h"
 
 #include <iostream>
@@ -22,13 +17,13 @@ using namespace std;
 
 
 int main(int argc, char** argv) {
-    //Test change
+
     //--------------------------
     //QUEUE SETUP
     //--------------------------
     
     //total number of queues    
-    int nWards = 4; 
+    int nQueues = 4; 
     
     //arrival rates for each queue
     vector<double> arrivalRates = {1.0,0.5,2.5,2.0};
@@ -46,18 +41,18 @@ int main(int argc, char** argv) {
                                        {0.2,0.5,0.3,0.0}};
     
     //now create the queue objects
-    WardData * wd_array = new WardData[nWards];
-    wd_array[0] = WardData(0,arrivalRates[0],serviceRates[0],capacity[0],relProbs[0]);
-    wd_array[1] = WardData(1,arrivalRates[1],serviceRates[1],capacity[1],relProbs[1]);
-    wd_array[2] = WardData(2,arrivalRates[2],serviceRates[2],capacity[2],relProbs[2]);
-    wd_array[3] = WardData(3,arrivalRates[3],serviceRates[3],capacity[3],relProbs[3]);
+    QueueData * wd_array = new QueueData[nQueues];
+    wd_array[0] = QueueData(0,arrivalRates[0],serviceRates[0],capacity[0],relProbs[0]);
+    wd_array[1] = QueueData(1,arrivalRates[1],serviceRates[1],capacity[1],relProbs[1]);
+    wd_array[2] = QueueData(2,arrivalRates[2],serviceRates[2],capacity[2],relProbs[2]);
+    wd_array[3] = QueueData(3,arrivalRates[3],serviceRates[3],capacity[3],relProbs[3]);
     
     //--------------------------
     //HEURISTIC EVALUATION
     //--------------------------
     
     //setup model object
-    RelocEvaluation mdl(nWards,wd_array);
+    RelocEvaluation mdl(nQueues,wd_array);
     
     //first simulate open/blocked time-windows
     int seed = 123;
@@ -89,7 +84,7 @@ int main(int argc, char** argv) {
     //--------------------------
        
     //setup simulation model object
-    RelocSimulation sim_mdl(nWards,wd_array);
+    RelocSimulation sim_mdl(nQueues,wd_array);
         
     //setup and run simulation
     sim_mdl.setSeed(123); //set the seed

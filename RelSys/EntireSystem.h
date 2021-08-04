@@ -25,7 +25,7 @@
 #ifndef ENTIRESYSTEM_H
 #define ENTIRESYSTEM_H
 
-#include "WardData.h"
+#include "QueueData.h"
 
 #include <iostream>
 #include <vector>
@@ -68,7 +68,7 @@ public:
     int nWards; //number of wards in the system
 
     //CONSTRUCTOR
-    EntireSystem(int nW, WardData * wards);
+    EntireSystem(int nW, QueueData * wards);
     EntireSystem(const EntireSystem& orig);
     virtual ~EntireSystem();
 
@@ -91,7 +91,7 @@ private:
     
 
     //WARD INFORMATION METHODS AND VARIABLES
-    WardData * wards_pointer;
+    QueueData * wards_pointer;
     
     //methods
     int getWardID(int ward);

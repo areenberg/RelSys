@@ -36,17 +36,17 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 # Object Files
 OBJECTFILES= \
 	${OBJECTDIR}/Combinatorial.o \
+	${OBJECTDIR}/Customer.o \
 	${OBJECTDIR}/EntireSystem.o \
 	${OBJECTDIR}/Experiments.o \
 	${OBJECTDIR}/HeuristicQueue.o \
 	${OBJECTDIR}/HyperQueue.o \
 	${OBJECTDIR}/LinSolver.o \
-	${OBJECTDIR}/Patient.o \
 	${OBJECTDIR}/PhaseFitter.o \
+	${OBJECTDIR}/QueueData.o \
 	${OBJECTDIR}/RelocEvaluation.o \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
-	${OBJECTDIR}/WardData.o \
 	${OBJECTDIR}/main.o
 
 
@@ -79,6 +79,11 @@ ${OBJECTDIR}/Combinatorial.o: Combinatorial.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Combinatorial.o Combinatorial.cpp
 
+${OBJECTDIR}/Customer.o: Customer.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Customer.o Customer.cpp
+
 ${OBJECTDIR}/EntireSystem.o: EntireSystem.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
@@ -104,15 +109,15 @@ ${OBJECTDIR}/LinSolver.o: LinSolver.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/LinSolver.o LinSolver.cpp
 
-${OBJECTDIR}/Patient.o: Patient.cpp
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Patient.o Patient.cpp
-
 ${OBJECTDIR}/PhaseFitter.o: PhaseFitter.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/PhaseFitter.o PhaseFitter.cpp
+
+${OBJECTDIR}/QueueData.o: QueueData.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/QueueData.o QueueData.cpp
 
 ${OBJECTDIR}/RelocEvaluation.o: RelocEvaluation.cpp
 	${MKDIR} -p ${OBJECTDIR}
@@ -128,11 +133,6 @@ ${OBJECTDIR}/StatusBar.o: StatusBar.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/StatusBar.o StatusBar.cpp
-
-${OBJECTDIR}/WardData.o: WardData.cpp
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} "$@.d"
-	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/WardData.o WardData.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}

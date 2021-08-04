@@ -24,7 +24,7 @@
 #include "Experiments.h"
 #include "RelocSimulation.h"
 #include "RelocEvaluation.h"
-#include "WardData.h"
+#include "QueueData.h"
 #include "StatusBar.h"
 
 #include <vector>
@@ -39,7 +39,7 @@ using namespace std;
 using namespace std::chrono;
 
 
-Experiments::Experiments(int nW, WardData * wards, int sd):
+Experiments::Experiments(int nW, QueueData * wards, int sd):
 wards_pointer(wards),
 nWards(nW),
 seed(sd)

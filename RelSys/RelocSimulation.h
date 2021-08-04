@@ -23,8 +23,8 @@
 #ifndef RELOCSIMULATION_H
 #define RELOCSIMULATION_H
 
-#include "WardData.h"
-#include "Patient.h"
+#include "QueueData.h"
+#include "Customer.h"
 
 #include <iostream>
 #include <vector>
@@ -63,7 +63,7 @@ public:
     //CONSTRUCTOR
     //dummy constructor (not included in cpp-file) 
     RelocSimulation() {};
-    RelocSimulation(int nW, WardData * wards);
+    RelocSimulation(int nW, QueueData * wards);
     RelocSimulation(const RelocSimulation& orig);
     virtual ~RelocSimulation();
 
@@ -122,11 +122,11 @@ private:
     uniform_real_distribution<> dis;
 
     //PATIENT METHODS AND VARIABLES
-    Patient * arrival_array;
-    Patient * service_array;
+    Customer * arrival_array;
+    Customer * service_array;
     
     //WARD INFORMATION METHODS AND VARIABLES
-    WardData * wards_pointer;
+    QueueData * wards_pointer;
     
     //methods
     int getWardID(int ward);

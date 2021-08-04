@@ -16,15 +16,15 @@
 
 
 
-#ifndef WARDDATA_H
-#define WARDDATA_H
+#ifndef QUEUEDATA_H
+#define QUEUEDATA_H
 
 #include <iostream>
 #include <vector>
 
 using namespace std;
 
-class WardData {
+class QueueData {
 public:
     
     //nr and capacity of the ward
@@ -46,11 +46,11 @@ public:
     void calculateWardStateSpace(int wardsTotal);
     
     //dummy constructor (not included in cpp-file) 
-    WardData() {};
+    QueueData() {};
     //parameterized constructor
-    WardData(int wdnr, double arrRate, double serRate, int cap, vector<double> relProbs);
-    WardData(const WardData& orig);
-    virtual ~WardData();
+    QueueData(int wdnr, double arrRate, double serRate, int cap, vector<double> relProbs);
+    QueueData(const QueueData& orig);
+    virtual ~QueueData();
     
 private:
 

@@ -25,7 +25,7 @@
 #include "HeuristicQueue.h"
 #include "HyperQueue.h"
 #include "LinSolver.h"
-#include "WardData.h"
+#include "QueueData.h"
 #include "RelocSimulation.h"
 #include "PhaseFitter.h"
 
@@ -38,7 +38,7 @@
 using namespace std;
 using namespace std::chrono;
 
-RelocEvaluation::RelocEvaluation(int nW, WardData * wards):
+RelocEvaluation::RelocEvaluation(int nW, QueueData * wards):
 wards_pointer(wards),
 nWards(nW),
 simReady(false)        
