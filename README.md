@@ -11,8 +11,10 @@ The tool is written in C++ and currently employs two different approaches for ev
 
 # How does it work
 
-Consider a number of parallel M/M/c/c queues. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue, which is often denoted an Erlang loss or Erlang-B system, a customer is rejected (and lost from the system) if there are no idle servers upon arrival to the queue. However, in the RelSys-modeling tool, we allow customers to be transferred to one of the other queues with known probability. If there is an idle server in the alternative queue, the customer is served with an exponentially distributed time with the same rate-parameter as the customer would have had in the original queue. Thus, the system is multiclass. 
+Consider a number of parallel M/M/c/c queues. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue, which is often denoted an Erlang loss or Erlang-B system, a customer is rejected (and lost from the system) if there are no idle servers upon arrival to the queue. However, in the RelSys-modeling tool, we allow customers to be transferred to one of the other queues with known probability. If there is an idle server in the alternative queue, the customer is served with an exponentially distributed time with the same rate-parameter as the customer would have had in the original queue. Thus, the system is *multiclass*. 
 
+
+<img src="https://github.com/areenberg/RelSys/blob/development/example_system.pdf" width="435" height="90">
 
 # Getting started
 
