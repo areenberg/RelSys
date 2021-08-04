@@ -107,7 +107,7 @@ Next, some minor setup is required. Note that the heuristic approach evaluates o
 
 ```
 
-The system can now be evaluated
+The system is now ready to be evaluated.
 
 ```c++
 
