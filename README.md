@@ -41,7 +41,7 @@ Start by loading the fundamental classes.
 
 ```
 
-Now, specify the parameters. Note that in this example we consider a system of four queues.
+Now, specify the parameters. In this example we consider a system of four queues.
 
 ```c++
 
@@ -91,7 +91,7 @@ First, create the model object using the aforementioned queueing array, `wd_arra
 
 ```
 
-Next, some minor setup is required. Note that the heuristic approach evaluates only *one queue at a time*. Thus, the target queue needs to be specified. In the following, we do this using the variable `widx`.
+Next, some minor setup is required. Important: The heuristic approach evaluates only *one queue at a time*. Thus, the target queue needs to be specified. In the following, we do this using the variable `widx`.
 
 ```c++
 
@@ -159,7 +159,7 @@ Once again, create the model object using the aforementioned queueing array, `wd
     
 ```
 
-And again, some minor setup is required before we can proceed. Note that the simulation evaluates all queues at the same time, so this time we do not have to settle on a single queue.
+And again, some minor setup is required before we can proceed. The simulation evaluates all queues at the same time, so this time we do not have to settle on a single queue.
 
 ```c++
 
