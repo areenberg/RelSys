@@ -4,6 +4,7 @@ RelSys is a tool for evaluating a system of M/M/c/c queues that are connected *o
 
 # Getting Started
 
+This is how to get started
 
 
 # How to Cite
