@@ -6,8 +6,9 @@ The tool is written in C++ and currently employs two different approaches for ev
 
 1. How does it work
 2. Getting started
-3. How to cite
-4. Licence
+3. Further details
+4. How to cite
+5. Licence
 
 # How does it work
 
@@ -15,10 +16,210 @@ Consider a number of parallel M/M/c/c queues. That is, queues where customers ar
 
 <img src="https://github.com/areenberg/RelSys/blob/development/images/example_system.jpeg" width="399" height="500">
 
+## Structure
+
+The setup is fairly simple. First one must create an array of objects that accounts for each queue. The queue-array is then fed to a model object where the system is evaluated. Each modeling approach has its own class and the results can be pulled directly from the model when the evaluation is completed. An elaborate description of each step is presented in the section *Getting started*. 
+
+## Input parameters
+
+There are four overall input parameters:
+
+* Arrival rates.
+* Service rates.
+* Capacities.
+* Relocation probabilities (a vector for each queue).
+
 # Getting started
 
-This is how to get started
+Start by loading the fundamental classes.
 
+```c++
+
+#include "QueueData.h" //information about each queue
+#include "RelocEvaluation.h" //to evaluate the system using the heuristic approach
+#include "RelocSimulation.h" //to evaluate the system using discrete-event simulation
+
+```
+
+Now, specify the parameters. Note that in this example we consider a system of four queues.
+
+```c++
+
+    //total number of queues    
+    int nQueues = 4; 
+    
+    //arrival rates for each queue
+    vector<double> arrivalRates = {1.0,0.5,2.5,2.0};
+    
+    //service rates for each queue
+    vector<double> serviceRates = {0.04,0.02,0.1,0.1};
+    
+    //capacity of each queue
+    vector<int> capacity = {30,40,10,15};
+    
+    //fraction of rejected customers that are moved to an alternative queue node
+    vector<vector<double>> relProbs = {{0.0,0.1,0,8,0.1},
+                                       {0.1,0.0,0.3,0.1},
+                                       {0.4,0.5,0.0,0.1},
+                                       {0.2,0.5,0.3,0.0}};
+
+```
+
+Note that the relocation probabilities do not have to sum to one. If the sum is less than one a fraction of the customers are lost without trying to relocate them first. The next step is to create the queues.
+    
+```c++    
+    
+    //the queueing objects
+    QueueData * wd_array = new QueueData[nQueues];
+    wd_array[0] = QueueData(0,arrivalRates[0],serviceRates[0],capacity[0],relProbs[0]);
+    wd_array[1] = QueueData(1,arrivalRates[1],serviceRates[1],capacity[1],relProbs[1]);
+    wd_array[2] = QueueData(2,arrivalRates[2],serviceRates[2],capacity[2],relProbs[2]);
+    wd_array[3] = QueueData(3,arrivalRates[3],serviceRates[3],capacity[3],relProbs[3]);
+    
+```
+
+In the following, we show how to evaluate the system and get the results using both the heuristic approach and the discrete-event simulation, respectively. You will notice that the procedure is almost the same in both cases.
+
+## `RelocEvaluation` - Heuristic evaluation
+
+First, create the model object using the aforementioned queueing array, `wd_array`.
+
+```c++
+
+    //setup model object
+    RelocEvaluation mdl(nQueues,wd_array);
+
+```
+
+Next, some minor setup is required. Note that the heuristic approach evaluates only *one queue at a time*. Thus, the target queue needs to be specified. In the following, we do this using the variable `widx`.
+
+```c++
+
+    //minor setup and preliminary calculations
+    int seed = 123;
+    double bin = 365;
+    double minTime = 365;
+    int minSamples = 50
+    mdl.runSimulation(seed,bin,minTime,minSamples);
+    
+    //choose a queue to evaluate
+    int widx = 0; //queue index to be evaluated
+
+```
+
+The system can now be evaluated
+
+```c++
+
+    mdl.runHeuristic(widx);
+
+```
+
+Note that the memory consumption as well as the runtime might be *very* high depending on the size of the system.
+
+### Getting the results
+
+The `RelocEvaluation` class features four types of performance measures. These are:
+
+* Marginal probability distribution: `vector<double> marginalDist`.
+* Probability of rejection: `double blockingProbability`.
+* Expected server occupancy: `double expectedOccupancy`.
+* Expected fraction of servers occupied: `double expOccFraction`. 
+
+All four performance measures are stored in the model object when the evaluation of the system is complete. 
+
+```c++
+
+    cout << "--- RESULTS ---" << endl;
+   
+    cout << "Marginal probability distribution:" << endl;
+    for (int i=0; i<mdl.marginalDist.size(); i++){
+        cout << mdl.marginalDist[i] << endl;
+    }
+    
+    cout << "Probability of rejection:" << endl;
+    cout << mdl.blockingProbability << endl;
+
+    cout << "Expected server occupancy:" << endl;
+    cout << mdl.expectedOccupancy << endl;
+
+    cout << "Expected fraction of servers occupied:" << endl;
+    cout << mdl.expOccFraction << endl;
+
+```
+
+## `RelocSimulation` - Evaluation by simulation
+
+Once again, create the model object using the aforementioned queueing array, `wd_array`.
+
+```c++
+
+    //setup simulation model object
+    RelocSimulation sim_mdl(nQueues,wd_array);
+    
+```
+
+And again, some minor setup is required before we can proceed. Note that the simulation evaluates all queues at the same time, so this time we do not have to settle on a single queue.
+
+```c++
+
+    //setup and run simulation
+    sim_mdl.setSeed(123); //set the seed
+    double burnIn = 365; //burn-in time
+    double minTime = 50000; //minimum simulation time
+    vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
+    sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
+    
+```
+
+The system can now be evaluated
+
+```c++
+
+    sim_mdl.simulate(burnIn,minTime,maxWardSamples);
+
+```
+
+The simulation has much lower memory requirements than the heuristic approach and therefore able to evaluate much larger systems. The runtime and the precision depends greatly on when the simulation is terminated. In the above, the minimum simulation-time is specified using `minTime`. 
+
+### Getting the results
+
+The `RelocSimulation` class features five types of performance measures. These are:
+
+* Marginal frequency distribution: `vector<vector<int>> wardFreqDist`.
+* Marginal probability distribution: `vector<vector<double>> wardDenDist`.
+* Probability of rejection: `vector<double> blockingProbability`.
+* Expected server occupancy: `vector<double> expectedOccupancy`.
+* Expected fraction of servers occupied: `vector<double> expOccFraction`. 
+
+Recall that in contrary to the heuristic approach, the simulation evaluates the entire system at the same time. However, for the sake of this demonstration we chose only to print the results from a single queue.
+
+```c++
+
+    cout << "Marginal frequency distribution:" << endl;
+    for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
+        cout << sim_mdl.wardFreqDist[sim_widx][i] << endl;
+    }
+    cout << "Marginal density distribution:" << endl;
+    for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
+        cout << sim_mdl.wardDenDist[sim_widx][i] << endl; //corresponds to marginalDist in the heuristic evaluation
+    }
+    
+    cout << "Probability of rejection:" << endl;
+    cout << sim_mdl.blockingProbability[sim_widx] << endl;
+
+    cout << "Expected server occupancy:" << endl;
+    cout << sim_mdl.expectedOccupancy[sim_widx] << endl;
+
+    cout << "Expected fraction of servers occupied:" << endl;
+    cout << sim_mdl.expOccFraction[sim_widx] << endl;
+
+```
+
+# Further details
+
+Further details about the initial setup and methods in `RelocEvaluation` and `RelocSimulation`.
+Coming soon. 
 
 # How to cite
 
