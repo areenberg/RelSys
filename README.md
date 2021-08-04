@@ -172,7 +172,7 @@ And again, some minor setup is required before we can proceed. The simulation ev
     
 ```
 
-The system can now be evaluated
+The system can now be evaluated.
 
 ```c++
 
