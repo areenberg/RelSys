@@ -59,6 +59,9 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <ccTool>
+          <commandLine>-O3</commandLine>
+        </ccTool>
       </compileType>
       <item path="Combinatorial.cpp" ex="false" tool="1" flavor2="0">
       </item>

@@ -69,7 +69,8 @@ void RelocEvaluation::runSimulation(int sd, int burnIn,
     
     auto start = high_resolution_clock::now();
     
-    sim_pointer[0].simulate(burnIn,minTime,minSamples);
+    vector<int> dummyVec(1,-1);
+    sim_pointer[0].simulate(burnIn,minTime,dummyVec,minSamples);
     
     auto stop = high_resolution_clock::now(); //stop time 
     auto duration = duration_cast<milliseconds>(stop - start); 

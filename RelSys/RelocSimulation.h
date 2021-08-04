@@ -38,16 +38,22 @@ public:
   
     //SIMULATION METHODS AND VARIABLES
     void setSeed(int seed);
-    void simulate(double bIn, double minTime, int minSamples=50); 
-    
-    double randomLogNormal(double mean, double std);
+    void simulate(double bIn, double minTime, 
+        vector<int> maxWardSamples=vector<int>(1,-1),int minSamples=50); 
+    void selectLogNormalServiceTime(double mult=1.0); //selects the log-normal distribution for service times 
+    void disableTimeSampling(); //disables sampling of time-window sampling
     
     vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combination
     vector<vector<double>> openTimes; //sampled open times for each ward
     vector<vector<double>> blockedTimes; //sampled blocking times for each ward
     
     //ward-patient occupancy
-    vector<vector<int>> wardFreqDist; //marginal frequency distribution
+    vector<vector<int>> wardFreqDist; //marginal frequency distributions
+    vector<vector<double>> wardDenDist; //marginal density distributions
+    vector<double> blockingProbability; //blocking probability
+    vector<double> expectedOccupancy; //expected server occupancy
+    vector<double> expOccFraction; //expected fraction of servers occupied
+    vector<int> nWardFreq; //number of samples in the marginal distributions
     vector<vector<vector<int>>> freqDist; //frequency distribution
     vector<vector<vector<double>>> denDist; //density distribution
     
@@ -72,22 +78,21 @@ private:
 
     double randomUniform(); //generate a random uniform double in the interval (0,1)
     double randomExponential(double rate); //generate a random exponentially distributed double
-    //double randomLogNormal(double mean, double std);
+    double randomLogNormal(double mean, double std);
     vector<int> randomIndices(int &from, int &to, int &len);
     
-    int minTimeSamples();
+    int wardSamplesToGo();
+    int minTimeSamples(int &mS);
     int nextServiceIdx(int &inService);
     void updateServiceArray(int idx, int &inService);
     bool attemptAdmission(int &arrIdx, vector<int> &capUse,
         vector<vector<int>> &wardOccupancy, int &inService);
     bool attemptDischarge(int &serIdx, int &inService, vector<int> &capUse);
     void updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy, int &inService);
+    double genServiceTime(int idx); //generate a random service time for the patient
     
-    void openTimeTracking(vector<int> &nOpenTimeSamples,
- int &targetWard, vector<int> &capUse);
-    
-    void blockedTimeTracking(vector<int> &nBlockedTimeSamples,
- int &targetWard, vector<int> &capUse);
+    void openTimeTracking(int &targetWard, vector<int> &capUse);
+    void blockedTimeTracking(int &targetWard, vector<int> &capUse);
     
     void subsetTimeSamples(int &minSamples); //randomly limits time samples to a sub-set of size minSamples 
     
@@ -96,16 +101,24 @@ private:
     
     void initFreqDenDist(); //initialize the frequency/density ward-patient distributions
     void freqToDensity(); //calculates the occupancy density distribution
+    void performanceMeasures(); //derives a number of performance measures    
     
     void printTimeSamples();
     
+    bool timeSamplingEnabled;
+    vector<int> nOpenTimeSamples;
+    vector<int> nBlockedTimeSamples;
     vector<vector<double>> nextArrivalTime;
     vector<double> wardStateClocks;
-    
+    vector<int> maxWrdSam;
+    bool serTimeExponential; //if true, then service times are exponential; other log-normal
+    double stdMult; //modifies the standard deviation in the log-normal random generator
 
     double burnIn, clock; //burn-in time and the simulation clock
     int simSeed; //seed for the simulation
-    mt19937 rgen; //random generator
+    //mt19937 rgen; //random generator
+    //default_random_engine rgen;
+    default_random_engine rgen;
     uniform_real_distribution<> dis;
 
     //PATIENT METHODS AND VARIABLES

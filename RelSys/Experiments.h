@@ -43,8 +43,11 @@ public:
     //stores the marginal distribution of widx as a CSV-file
     void heuristicExperiment(int nRep, int widx, string label);   
     void simulationExperiment(double burnIn, double minTime, 
-        int nRep, int widx, string label);   
-    
+        int nRep, int widx, string label, bool logNormal=false, double stdMult=1.0);   
+    void KSExperiment(double burnIn, double minTime,
+        int reps, bool logNormal, double stdMult, vector<vector<int>> obsDists);
+    void chiSqExperiment(double burnIn, double minTime, int reps, bool logNormal, double stdMult,
+        vector<vector<int>> obsDists, int method);
     
     //VARIABLES
     vector<vector<double>> distResults; //marginal distributions (columns are replications)
@@ -63,6 +66,18 @@ private:
     vector<int> generateSeeds(int nRep);
     void saveResults(string label);
     bool numberExists(int y, vector<int> list);
+    double KSStatistic(vector<double>& dist1, vector<double>& dist2);
+    int nLargerThan(double x, vector<double> v);
+    void chiSqExperiment_method0(double& burnIn, double& minTime,
+        int& reps, bool& logNormal, double& stdMult,
+        vector<vector<int>>& obsDists, int& method);
+    void chiSqExperiment_method1(double& burnIn, double& minTime,
+        int& reps, bool& logNormal, double& stdMult,
+        vector<vector<int>>& obsDists, int& method);
+    vector<double> consolidateDist(vector<double>& dist,
+        vector<int>& cleft, vector<int>& cright);
+    vector<double> wilsonScoreInterval(double p, int n);
+    
     
     //VARIABLES
     int nWards, seed;
