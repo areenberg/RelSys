@@ -202,7 +202,7 @@ Recall that in contrary to the heuristic approach, the simulation evaluates the 
     for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
         cout << sim_mdl.wardFreqDist[sim_widx][i] << endl;
     }
-    cout << "Marginal density distribution:" << endl;
+    cout << "Marginal probability distribution:" << endl;
     for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
         cout << sim_mdl.wardDenDist[sim_widx][i] << endl;
     }
