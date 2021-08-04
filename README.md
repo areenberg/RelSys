@@ -204,7 +204,7 @@ Recall that in contrary to the heuristic approach, the simulation evaluates the 
     }
     cout << "Marginal density distribution:" << endl;
     for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
-        cout << sim_mdl.wardDenDist[sim_widx][i] << endl; //corresponds to marginalDist in the heuristic evaluation
+        cout << sim_mdl.wardDenDist[sim_widx][i] << endl;
     }
     
     cout << "Probability of rejection:" << endl;
