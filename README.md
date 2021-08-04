@@ -1,5 +1,5 @@
 # RelSys
-A tool for evaluating a system of M/M/c/c queues that are connected through customer rejections.
+RelSys is a tool for evaluating a system of M/M/c/c queues that are connected *only* through customer rejections.
 
 
 # Getting Started
