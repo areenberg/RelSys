@@ -16,7 +16,7 @@ Consider a number of parallel M/M/c/c queues. That is, queues where customers ar
 
 <img src="https://github.com/areenberg/RelSys/blob/development/images/example_system.jpeg" width="399" height="500">
 
-## Structure
+## Briefly about the structure
 
 The setup is fairly simple. First one must create an array of objects that accounts for each queue. The queue-array is then fed to a model object where the system is evaluated. Each modeling approach has its own class and the results can be pulled directly from the model when the evaluation is completed. An elaborate description of each step is presented in the section *Getting started*. 
 
