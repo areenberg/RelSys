@@ -192,9 +192,11 @@ The `RelocSimulation` class features five types of performance measures. These a
 * Expected server occupancy: `vector<double> expectedOccupancy`.
 * Expected fraction of servers occupied: `vector<double> expOccFraction`. 
 
-Recall that in contrary to the heuristic approach, the simulation evaluates the entire system at the same time. However, for the sake of this demonstration we chose only to print the results from a single queue.
+Recall that in contrary to the heuristic approach, the simulation evaluates the entire system at the same time. However, for the sake of this demonstration we chose only to print the results from a single queue, `sim_widx`.
 
 ```c++
+    
+    int sim_widx = 0;
 
     cout << "Marginal frequency distribution:" << endl;
     for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
