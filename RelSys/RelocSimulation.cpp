@@ -22,7 +22,7 @@
  */
 
 #include "RelocSimulation.h"
-#include "Patient.h"
+#include "Customer.h"
 
 #include <math.h>
 #include <vector>
@@ -33,7 +33,7 @@
 
 using namespace std;
 
-RelocSimulation::RelocSimulation(int nW, WardData * wards):
+RelocSimulation::RelocSimulation(int nW, QueueData * wards):
 wards_pointer(wards),
 nWards(nW),
 serTimeExponential(true),
@@ -139,7 +139,7 @@ void RelocSimulation::generateArrivalList(int length, double currentClock){
         //append patient
         arrClock = nextArrivalTime[min_widx][min_pidx];
         serTime = genServiceTime(min_pidx);
-        arrival_array[i] = Patient(arrClock,serTime,min_widx,min_pidx);
+        arrival_array[i] = Customer(arrClock,serTime,min_widx,min_pidx);
         
         //update ward-patient
         updateArrivalTime(min_widx,min_pidx);
@@ -178,7 +178,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     
     //patient arrivals
     patientArraySize = 1e5;
-    arrival_array = new Patient[patientArraySize];
+    arrival_array = new Customer[patientArraySize];
     generateArrivalList(patientArraySize,clock);
     arrIdx = 0;
     
@@ -187,7 +187,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     for (int widx=0; widx<nWards; widx++){
         maxOcc += getWardCapacity(widx);
     }
-    service_array = new Patient[maxOcc];
+    service_array = new Customer[maxOcc];
     
     //occupancy of the system
     vector<int> capUse(nWards,0);
@@ -625,7 +625,7 @@ bool RelocSimulation::attemptAdmission(int &arrIdx, vector<int> &capUse,
     if (Ok){
         
         //insert into service array
-        service_array[inService] = Patient(arrival_array[arrIdx].arrivalClock,arrival_array[arrIdx].serviceTime,
+        service_array[inService] = Customer(arrival_array[arrIdx].arrivalClock,arrival_array[arrIdx].serviceTime,
                 arrival_array[arrIdx].wardTarget,arrival_array[arrIdx].patientType);
         //calculate and insert clock at discharge
         service_array[inService].serviceClock = clock + service_array[inService].serviceTime;
@@ -659,7 +659,7 @@ void RelocSimulation::updateServiceArray(int idx, int &inService){
             widx = service_array[i+1].wardTarget;
             pidx = service_array[i+1].patientType;
             
-            service_array[i] = Patient(arrClock,serTime,widx,pidx);
+            service_array[i] = Customer(arrClock,serTime,widx,pidx);
             service_array[i].serviceClock = serClock;
         }
     }

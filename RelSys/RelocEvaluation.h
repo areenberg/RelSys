@@ -26,7 +26,7 @@
 
 #include "HeuristicQueue.h"
 #include "HyperQueue.h"
-#include "WardData.h"
+#include "QueueData.h"
 #include "RelocSimulation.h"
 
 
@@ -49,7 +49,7 @@ public:
     double vmemory; //virtual memory consumption during runtime in kilobytes
     
     RelocEvaluation() {}; //dummy constructor 
-    RelocEvaluation(int nW, WardData * wards);
+    RelocEvaluation(int nW, QueueData * wards);
     RelocEvaluation(const RelocEvaluation& orig);
     virtual ~RelocEvaluation();
 private:
@@ -75,7 +75,7 @@ private:
     
     
     //WARD INFORMATION METHODS AND VARIABLES
-    WardData * wards_pointer;
+    QueueData * wards_pointer;
     
     //methods
     int getWardID(int ward);

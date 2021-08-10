@@ -5,17 +5,17 @@
                    displayName="Header Files"
                    projectFiles="true">
       <itemPath>Combinatorial.h</itemPath>
+      <itemPath>Customer.h</itemPath>
       <itemPath>EntireSystem.h</itemPath>
       <itemPath>Experiments.h</itemPath>
       <itemPath>HeuristicQueue.h</itemPath>
       <itemPath>HyperQueue.h</itemPath>
       <itemPath>LinSolver.h</itemPath>
-      <itemPath>Patient.h</itemPath>
       <itemPath>PhaseFitter.h</itemPath>
+      <itemPath>QueueData.h</itemPath>
       <itemPath>RelocEvaluation.h</itemPath>
       <itemPath>RelocSimulation.h</itemPath>
       <itemPath>StatusBar.h</itemPath>
-      <itemPath>WardData.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ResourceFiles"
                    displayName="Resource Files"
@@ -25,17 +25,17 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>Combinatorial.cpp</itemPath>
+      <itemPath>Customer.cpp</itemPath>
       <itemPath>EntireSystem.cpp</itemPath>
       <itemPath>Experiments.cpp</itemPath>
       <itemPath>HeuristicQueue.cpp</itemPath>
       <itemPath>HyperQueue.cpp</itemPath>
       <itemPath>LinSolver.cpp</itemPath>
-      <itemPath>Patient.cpp</itemPath>
       <itemPath>PhaseFitter.cpp</itemPath>
+      <itemPath>QueueData.cpp</itemPath>
       <itemPath>RelocEvaluation.cpp</itemPath>
       <itemPath>RelocSimulation.cpp</itemPath>
       <itemPath>StatusBar.cpp</itemPath>
-      <itemPath>WardData.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
@@ -67,6 +67,10 @@
       </item>
       <item path="Combinatorial.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Customer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Customer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="EntireSystem.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="EntireSystem.h" ex="false" tool="3" flavor2="0">
@@ -87,13 +91,13 @@
       </item>
       <item path="LinSolver.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Patient.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Patient.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="PhaseFitter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PhaseFitter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="QueueData.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="QueueData.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="RelocEvaluation.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -106,10 +110,6 @@
       <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="StatusBar.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="WardData.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="WardData.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -138,6 +138,10 @@
       </item>
       <item path="Combinatorial.h" ex="false" tool="3" flavor2="0">
       </item>
+      <item path="Customer.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="Customer.h" ex="false" tool="3" flavor2="0">
+      </item>
       <item path="EntireSystem.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="EntireSystem.h" ex="false" tool="3" flavor2="0">
@@ -158,13 +162,13 @@
       </item>
       <item path="LinSolver.h" ex="false" tool="3" flavor2="0">
       </item>
-      <item path="Patient.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="Patient.h" ex="false" tool="3" flavor2="0">
-      </item>
       <item path="PhaseFitter.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="PhaseFitter.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="QueueData.cpp" ex="false" tool="1" flavor2="0">
+      </item>
+      <item path="QueueData.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="RelocEvaluation.cpp" ex="false" tool="1" flavor2="0">
       </item>
@@ -177,10 +181,6 @@
       <item path="StatusBar.cpp" ex="false" tool="1" flavor2="0">
       </item>
       <item path="StatusBar.h" ex="false" tool="3" flavor2="0">
-      </item>
-      <item path="WardData.cpp" ex="false" tool="1" flavor2="0">
-      </item>
-      <item path="WardData.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="main.cpp" ex="false" tool="1" flavor2="0">
       </item>

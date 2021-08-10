@@ -26,14 +26,14 @@
 
 #include "RelocSimulation.h"
 #include "RelocEvaluation.h"
-#include "WardData.h"
+#include "QueueData.h"
 
 #include <vector>
 #include <string>
 
 class Experiments {
 public:
-    Experiments(int nW, WardData * wards, int sd);
+    Experiments(int nW, QueueData * wards, int sd);
     Experiments(const Experiments& orig);
     virtual ~Experiments();
     
@@ -88,7 +88,7 @@ private:
     
     
     //WARD INFORMATION METHODS AND VARIABLES
-    WardData * wards_pointer;
+    QueueData * wards_pointer;
     
     //methods
     int getWardID(int ward);

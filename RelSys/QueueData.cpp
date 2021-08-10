@@ -21,10 +21,10 @@
  * Created on November 1, 2020, 7:14 PM
  */
 
-#include "WardData.h"
+#include "QueueData.h"
 #include "Combinatorial.h"
 
-WardData::WardData(int wdnr, double arrRate, double serRate, int cap, vector<double> relProbs):
+QueueData::QueueData(int wdnr, double arrRate, double serRate, int cap, vector<double> relProbs):
 wardnr(wdnr),
 arrivalRate(arrRate),
 serviceRate(serRate),        
@@ -33,14 +33,14 @@ relocationProbabilities(relProbs)
 {   
 }
 
-WardData::WardData(const WardData& orig) {
+QueueData::QueueData(const QueueData& orig) {
 }
 
-WardData::~WardData() {
+QueueData::~QueueData() {
 }
 
 
-void WardData::calculateWardStateSpace(int wardsTotal){
+void QueueData::calculateWardStateSpace(int wardsTotal){
     //calculates the local ward state space size
     
     Combinatorial cmb;

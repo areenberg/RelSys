@@ -15,23 +15,23 @@
  */
 
 
-#ifndef PATIENT_H
-#define PATIENT_H
+#ifndef CUSTOMER_H
+#define CUSTOMER_H
 
 using namespace std;
 
-class Patient {
+class Customer {
 public:
     double arrivalClock, serviceTime, serviceClock;
     int patientType, wardTarget;
     //CONSTRUCTORS
     //dummy constructor (not included in cpp-file) 
-    Patient() {};
-    Patient(double arr, double ser, int widx, int pidx);
-    Patient(const Patient& orig);
-    virtual ~Patient();
+    Customer() {};
+    Customer(double arr, double ser, int widx, int pidx);
+    Customer(const Customer& orig);
+    virtual ~Customer();
     
 private:
 };
 
-#endif /* PATIENT_H */
+#endif /* CUSTOMER_H */
