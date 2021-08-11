@@ -71,7 +71,7 @@ int main(int argc, char** argv) {
         wd_array[i] = QueueData(i,
                                 sysParam.queueArrivalRate(i),
                                 sysParam.queueServiceRate(i),
-                                capacity[0],
+                                capacity[i],
                                 sysParam.queueRelProbability(i));
     }
 
