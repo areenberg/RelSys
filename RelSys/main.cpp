@@ -6,9 +6,11 @@
  * Created on August 4, 2021, 02:11 PM
  */
 
+#include "CustomerData.h"
 #include "QueueData.h"
 #include "RelocSimulation.h"
 #include "RelocEvaluation.h"
+#include "SystemParameters.h"
 
 #include <iostream>
 #include <vector>
@@ -19,33 +21,59 @@ using namespace std;
 int main(int argc, char** argv) {
 
     //--------------------------
+    //CUSTOMER SETUP
+    //--------------------------
+    
+    //total number of customer types
+    int nCustomerTypes = 4; 
+
+    //arrival rates for each customer type
+    vector<double> arrivalRates = {1.0,1.5,0.5,2.5};
+    
+    //mean service time for each customer type
+    vector<double> serviceTimes = {10,50,25,5};
+    
+    //fraction of rejected customers that are moved to an alternative queue node
+    //this is an nCustomerTypes x nQueues matrix
+    vector<vector<double>> relProbs = {{0.0,0.4,0.1,0.5},
+                                       {0.0,0.0,0.2,0.3}, //<<-- note: these do not have to sum to one
+                                       {0.2,0.0,0.0,0.8},
+                                       {0.9,0.05,0.05,0.0}};
+    
+    //queue indices preferred by each customer type
+    vector<int> preferredQueue = {0,1,2,3};
+    
+    //create the customer type objects
+    CustomerData * custs_array = new CustomerData[nCustomerTypes];
+    for (int i=0; i<nCustomerTypes; i++){
+        custs_array[i] = CustomerData(preferredQueue[i],
+                                      arrivalRates[i],
+                                      serviceTimes[i],
+                                      relProbs[i]);
+    }
+    
+    //--------------------------
     //QUEUE SETUP
     //--------------------------
     
     //total number of queues    
     int nQueues = 4; 
     
-    //arrival rates for each queue
-    vector<double> arrivalRates = {1.0,0.5,2.5,2.0};
-    
-    //service rates for each queue
-    vector<double> serviceRates = {0.04,0.02,0.1,0.1};
-    
     //capacity of each queue
-    vector<int> capacity = {30,40,10,15};
+    vector<int> capacity = {15,18,12,16};
     
-    //fraction of rejected customers that are moved to an alternative queue node
-    vector<vector<double>> relProbs = {{0.0,0.1,0,8,0.1},
-                                       {0.1,0.0,0.3,0.1}, //<<-- note: these do not have to sum to one
-                                       {0.4,0.5,0.0,0.1},
-                                       {0.2,0.5,0.3,0.0}};
+    //calculate system input parameters from customer types to queues
+    SystemParameters sysParam(nQueues,nCustomerTypes,custs_array);
     
     //now create the queue objects
     QueueData * wd_array = new QueueData[nQueues];
-    wd_array[0] = QueueData(0,arrivalRates[0],serviceRates[0],capacity[0],relProbs[0]);
-    wd_array[1] = QueueData(1,arrivalRates[1],serviceRates[1],capacity[1],relProbs[1]);
-    wd_array[2] = QueueData(2,arrivalRates[2],serviceRates[2],capacity[2],relProbs[2]);
-    wd_array[3] = QueueData(3,arrivalRates[3],serviceRates[3],capacity[3],relProbs[3]);
+    for (int i=0; i<nQueues; i++){
+        wd_array[i] = QueueData(i,
+                                sysParam.queueArrivalRate(i),
+                                sysParam.queueServiceRate(i),
+                                capacity[0],
+                                sysParam.queueRelProbability(i));
+    }
     
     //--------------------------
     //HEURISTIC EVALUATION
@@ -89,7 +117,7 @@ int main(int argc, char** argv) {
     //setup and run simulation
     sim_mdl.setSeed(123); //set the seed
     double burnIn = 365; //burn-in time
-    double minTime = 50000; //minimum simulation time
+    double minTime = 100000; //minimum simulation time
     vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
     sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
     

@@ -152,10 +152,10 @@ void RelocEvaluation::runHeuristic(int main_widx){
         cout << "Runtime of CTMC (excl. simulation): " << duration.count() << " milliseconds\n" << endl;
         
         //print and store some general metrics
-        cout << "\nWARD " << (main_widx+1) << " STATS:" << endl;
+        //cout << "\nWARD " << (main_widx+1) << " STATS:" << endl;
         
-        cout << "Expected load = " << expectedOccupancy << endl;
-        cout << "Capacity utilization = " << expOccFraction*100 << "%\n" << endl;
+        //cout << "Expected load = " << expectedOccupancy << endl;
+        //cout << "Capacity utilization = " << expOccFraction*100 << "%\n" << endl;
         
         
     }else{

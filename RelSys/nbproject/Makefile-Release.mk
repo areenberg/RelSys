@@ -37,6 +37,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/Combinatorial.o \
 	${OBJECTDIR}/Customer.o \
+	${OBJECTDIR}/CustomerData.o \
 	${OBJECTDIR}/EntireSystem.o \
 	${OBJECTDIR}/Experiments.o \
 	${OBJECTDIR}/HeuristicQueue.o \
@@ -47,6 +48,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/RelocEvaluation.o \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
+	${OBJECTDIR}/SystemParameters.o \
 	${OBJECTDIR}/main.o
 
 
@@ -83,6 +85,11 @@ ${OBJECTDIR}/Customer.o: Customer.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/Customer.o Customer.cpp
+
+${OBJECTDIR}/CustomerData.o: CustomerData.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/CustomerData.o CustomerData.cpp
 
 ${OBJECTDIR}/EntireSystem.o: EntireSystem.cpp
 	${MKDIR} -p ${OBJECTDIR}
@@ -133,6 +140,11 @@ ${OBJECTDIR}/StatusBar.o: StatusBar.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/StatusBar.o StatusBar.cpp
+
+${OBJECTDIR}/SystemParameters.o: SystemParameters.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -O2 -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SystemParameters.o SystemParameters.cpp
 
 ${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
