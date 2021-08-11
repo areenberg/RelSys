@@ -1753,7 +1753,7 @@ void PhaseFitter::run(int NoOfEMsteps, int intSeed, int inDType, double trP, dou
         //scanf("%d", &NoOfEMsteps);
         EMiterate(NoOfEMsteps, p, pi, T, t, gvector, avector, bvector, cmatrix, 
         Bmean, Zmean, Nmean, kg, ka, kb, kc, ett, g_left, a_left, b_left,c_left);
-        SavePhases(p, pi, T);
+        //SavePhases(p, pi, T);
         
         show_pi_T(p, pi, T, t);
         //printf("\nFitting completed.\n");
