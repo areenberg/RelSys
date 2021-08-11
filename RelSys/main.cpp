@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     int nCustomerTypes = 4; 
 
     //arrival rates for each customer type
-    vector<double> arrivalRates = {1.0,1.5,0.5,2.5};
+    vector<double> arrivalRates = {1.2,1.8,0.5,2.5};
     
     //mean service time for each customer type
     vector<double> serviceTimes = {10,50,25,5};
