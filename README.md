@@ -157,7 +157,7 @@ Note that the relocation probabilities (`relProbs`) do not have to sum to one. I
 
 The queueing objects are now ready to be plugged into the model object. In the following, we show how to create a model object, evaluate the system and get the results using both the heuristic approach and the discrete-event simulation, respectively. You will notice that the procedure is almost the same in both cases.
 
-## `RelocEvaluation` -- Evaluation with a CTMC approximation
+## `RelocEvaluation` - Evaluation with a CTMC approximation
 
 First, create the model object using the aforementioned queueing array, `wd_array`.
 
