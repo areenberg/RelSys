@@ -14,7 +14,7 @@ The tool is written in C++ and currently employs two different approaches for ev
 
 Consider a number of parallel queues with finite capacity. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue (also denoted the Erlang loss or Erlang-B system), a customer is rejected and lost from the system if all the servers are occupied upon arrival. However, in the RelSys-modeling tool, we allow customers to be transferred with a probability to one of the other queues. If there is an idle server in the alternative queue, the customer is accepted and served with an exponentially distributed time with the same rate-parameter as the customer would have had in the original queue. Thus the system is multiclass. The figure below depicts an example featuring two queues where customers are relocated (i.e. transferred) with a probability to the other queue whenever the preferred queue is full. 
 
-<img src="https://github.com/areenberg/RelSys/blob/development/images/example_system.jpeg" width="399" height="500">
+<img src="https://github.com/areenberg/RelSys/blob/development/images/example_system.jpeg" width="400" height="500">
 
 ## Briefly about the setup
 
@@ -25,7 +25,8 @@ The setup is divided into:
 3. *Model choice and evaluation*, where a modeling approach is selected (either `RelocEvaluation` or `RelocSimulation`) and a solution is found.
 4. *Get the results*, where results are printed/saved using the methods from the model objects. E.g. `mdl.blockingProbability` to get the probability of customer blocking.
 
- 
+
+<img src="https://github.com/areenberg/RelSys/blob/development/images/programSetupGraph.jpg" width="400" height="500">
 
 ## Input parameters
 
