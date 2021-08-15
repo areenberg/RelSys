@@ -52,7 +52,7 @@ void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, do
     cout << "Engaging SOR." << endl;
     
     double sm, x_new, diff, tol;
-    int maxIter = 1e4, iter = 0;
+    int maxIter = 1e5, iter = 0;
     
     cout << "Building transition matrix..." << endl;
     cout << "Step 1:" << endl;

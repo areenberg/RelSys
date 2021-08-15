@@ -28,18 +28,18 @@ int main(int argc, char** argv) {
     int nCustomerTypes = 4;
 
     //arrival rates for each customer type
-    vector<double> arrivalRates = {1.2,1.8,0.5,2.5};
+    vector<double> arrivalRates = {0.8,2.5,0.8,2.8};
 
     //mean service time for each customer type
-    vector<double> serviceTimes = {10,50,25,5};
+    vector<double> serviceTimes = {10,5,20,8};
 
     //fraction of rejected customers that are moved to an alternative queue node
     //this is an nCustomerTypes x nQueues matrix
     vector<vector<double>> relProbs = {{0.0,0.4,0.1,0.5},
-                                       {0.0,0.0,0.2,0.3}, //<<-- note: these do not have to sum to one
-                                       {0.2,0.0,0.0,0.8},
-                                       {0.9,0.05,0.05,0.0}};
-
+                                       {0.3,0.0,0.5,0.0}, //<<-- note: these do not have to sum to one
+                                       {0.0,0.5,0.0,0.5},
+                                       {0.2,0.3,0.5,0.0}};
+    
     //queue indices preferred by each customer type
     vector<int> preferredQueue = {0,1,2,3};
 
@@ -60,7 +60,7 @@ int main(int argc, char** argv) {
     int nQueues = 4;
 
     //capacity of each queue
-    vector<int> capacity = {15,18,12,16};
+    vector<int> capacity = {15,20,10,30};
 
     //calculate system input parameters from customer types to queues
     SystemParameters sysParam(nQueues,nCustomerTypes,custs_array);
@@ -76,7 +76,7 @@ int main(int argc, char** argv) {
     }
 
     //--------------------------
-    //HEURISTIC EVALUATION
+    //CTMC APPROX EVALUATION
     //--------------------------
 
     //setup model object
@@ -84,7 +84,9 @@ int main(int argc, char** argv) {
 
     //first simulate open/blocked time-windows
     int seed = 123;
-    mdl.runSimulation(seed,365,365,50);
+    int bin = 365;
+    int mt = 365;
+    mdl.runSimulation(seed,bin,mt,50);
 
     //choose a queue to evaluate
     int widx = 0; //queue index to be evaluated
