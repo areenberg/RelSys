@@ -68,7 +68,7 @@ int main(int argc, char** argv) {
     //now create the queue objects
     QueueData * wd_array = new QueueData[nQueues];
     for (int i=0; i<nQueues; i++){
-        wd_array[i] = QueueData(i,
+        wd_array[i] = QueueData(i, //<<-- important: this input must always equal the index of the queue in the array
                                 sysParam.queueArrivalRate(i),
                                 sysParam.queueServiceRate(i),
                                 capacity[i],
