@@ -37,6 +37,9 @@ There are four overall input parameters:
 * Capacities.
 * Relocation probabilities (a vector for each queue).
 
+## Output methods
+
+
 # Getting started
 
 Start by loading the fundamental classes.
