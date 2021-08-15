@@ -1,6 +1,6 @@
 # RelSys (Not up to date)
-RelSys is a tool for evaluating a multiclass system of M/M/c/c queues that are connected *only* through customer relocations (i.e. customers that are transferred to an alternative queue instead of being rejected from the system).
-The tool is written in C++ and currently employs two different approaches for evaluating the system. The first is a heuristic mathematical model, which is based on a continuous-time Markov chain, and the second is a discrete-event simulation. The setup of the system is the same in both cases, but each approach comes with different methods for evaluating the system and viewing the results.
+RelSys is a tool for evaluating a system of queues with finite capacity and multiple classes of customers. The queues are connected, but *only* through customer relocations (i.e. customers that are transferred to an alternative queue instead of being rejected from the system).
+The tool is written in C++ and currently employs two different approaches for evaluating the system. The first (`RelocEvaluation`) is a heuristic mathematical model, which is based on a continuous-time Markov chain, and the second (`RelocSimulation`) is a discrete-event simulation. The input is the same in both cases, but each approach comes with different methods for evaluating the system and viewing the results.
 
 # Table of contents
 
@@ -12,13 +12,20 @@ The tool is written in C++ and currently employs two different approaches for ev
 
 # How does it work
 
-Consider a number of parallel M/M/c/c queues. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue, which is often denoted an Erlang loss or Erlang-B system, a customer is rejected (and lost from the system) if all the servers are occupied upon arrival. However, in the RelSys-modeling tool, we allow customers to be transferred to one of the other queues with known probability. If there is an idle server in the alternative queue, the customer is served with an exponentially distributed time with the same rate-parameter as the customer would have had in the original queue. Thus, the system is *multiclass*. The figure below depicts an example featuring two queues where customers are relocated (i.e. transferred) with a probability to the other queue whenever the preferred queue is full. 
+Consider a number of parallel queues with finite capacity. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue (also denoted the Erlang loss or Erlang-B system), a customer is rejected and lost from the system if all the servers are occupied upon arrival. However, in the RelSys-modeling tool, we allow customers to be transferred with a probability to one of the other queues. If there is an idle server in the alternative queue, the customer is accepted and served with an exponentially distributed time with the same rate-parameter as the customer would have had in the original queue. Thus the system is multiclass. The figure below depicts an example featuring two queues where customers are relocated (i.e. transferred) with a probability to the other queue whenever the preferred queue is full. 
 
 <img src="https://github.com/areenberg/RelSys/blob/development/images/example_system.jpeg" width="399" height="500">
 
-## Briefly about the structure
+## Briefly about the setup
 
-The setup is fairly simple. First one must create an array of objects that accounts for each queue. The queue-array is then fed to a model object where the system is evaluated. Each modeling approach has its own class and the results can be pulled directly from the model when the evaluation is completed. An elaborate description of each step is presented in the section *Getting started*. 
+The setup is divided into:
+
+1. *Customer setup*, where objects for each customer type are created using the `CustomerData` class.
+2. *Queue setup*, where objects for each queue are created using the `QueueData` class. Data from the customer objects are used in the creation of the queue objects through a class called `SystemParameters`.
+3. *Model choice and evaluation*, where a modeling approach is selected (either `RelocEvaluation` or `RelocSimulation`) and a solution is found.
+4. *Get the results*, where results are printed/saved using the methods from the model objects. E.g. `mdl.blockingProbability` to get the probability of customer blocking.
+
+ 
 
 ## Input parameters
 
