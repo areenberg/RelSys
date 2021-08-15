@@ -1,4 +1,4 @@
-# RelSys (Not up to date)
+# RelSys
 RelSys is a tool for evaluating a system of queues with finite capacity and multiple classes of customers. The queues are connected, but *only* through customer relocations (i.e. customers that are transferred to an alternative queue instead of being rejected from the system).
 The tool is written in C++ and currently employs two different approaches for evaluating the system. The first (`RelocEvaluation`) is a heuristic mathematical model, which is based on a continuous-time Markov chain, and the second (`RelocSimulation`) is a discrete-event simulation. The input is the same in both cases, but each approach comes with different methods for evaluating the system and viewing the results.
 
