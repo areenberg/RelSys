@@ -26,7 +26,7 @@ The setup is divided into:
 4. *Get the results*, where results are printed/saved using the methods from the model objects. E.g. `mdl.blockingProbability` to get the probability of customer blocking.
 
 
-<img src="https://github.com/areenberg/RelSys/blob/master/images/programSetupGraph.jpg" width="550" height="600">
+<img src="https://github.com/areenberg/RelSys/blob/master/images/programSetupGraph.jpg" width="500" height="650">
 
 ## Input parameters
 
