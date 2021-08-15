@@ -63,6 +63,9 @@
         <rebuildPropChanged>false</rebuildPropChanged>
       </toolsSet>
       <compileType>
+        <cTool>
+          <commandLine>-O3</commandLine>
+        </cTool>
         <ccTool>
           <commandLine>-O3</commandLine>
         </ccTool>
@@ -135,9 +138,11 @@
       <compileType>
         <cTool>
           <developmentMode>5</developmentMode>
+          <commandLine>-O3</commandLine>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <commandLine>-O3</commandLine>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>
