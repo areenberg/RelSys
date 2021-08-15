@@ -174,8 +174,8 @@ Next, some minor setup is required. Important: The CTMC approach evaluates only 
 
     //minor setup and preliminary calculations
     int seed = 123;
-    double bin = 365;
-    double minTime = 365;
+    int bin = 365;
+    int minTime = 365;
     int minSamples = 50
     mdl.runSimulation(seed,bin,minTime,minSamples);
     
