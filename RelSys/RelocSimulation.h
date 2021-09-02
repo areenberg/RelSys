@@ -83,12 +83,12 @@ private:
     
     int wardSamplesToGo();
     int minTimeSamples();
-    int nextServiceIdx(int &inService);
-    void updateServiceArray(int idx, int &inService);
+    int nextServiceIdx();
+    void updateServiceArray(int idx);
     bool attemptAdmission(int &arrIdx, vector<int> &capUse,
-        vector<vector<int>> &wardOccupancy, int &inService);
-    bool attemptDischarge(int &serIdx, int &inService, vector<int> &capUse);
-    void updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy, int &inService);
+        vector<vector<int>> &wardOccupancy);
+    bool attemptDischarge(int &serIdx);
+    void updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy);
     double genServiceTime(int idx); //generate a random service time for the patient
     
     void openTimeTracking(int &targetWard, vector<int> &capUse);
@@ -116,6 +116,7 @@ private:
 
     double burnIn, clock; //burn-in time and the simulation clock
     int simSeed; //seed for the simulation
+    int inService; //number of customers in service
     //mt19937 rgen; //random generator
     //default_random_engine rgen;
     default_random_engine rgen;
