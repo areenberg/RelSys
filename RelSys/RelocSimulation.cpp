@@ -213,9 +213,10 @@ void RelocSimulation::simulate(double bIn, double minTime,
     //-------------------
     //Simulate
     //-------------------
+    
     //cout << "Running simulation..." << flush;
     while (arrIdx<patientArraySize && ( (clock<minTime && wardSamplesToGo()>0) || 
-            minTimeSamples(minSamples)<minSamples)){
+            minTimeSamples()<minSamples)){
         
         //clock at next arrival
         nextArrClock = arrival_array[arrIdx].arrivalClock;
@@ -275,14 +276,13 @@ void RelocSimulation::simulate(double bIn, double minTime,
         if (arrIdx==(patientArraySize-1)){
             generateArrivalList(patientArraySize,clock);
             arrIdx = 0;
-        }else if(note==false && clock>minTime && minTimeSamples(minSamples)<minSamples){
+        }else if(note==false && clock>minTime && minTimeSamples()<minSamples){
             //cout << "still collecting samples..." << flush;
             note = true;
-        }else if(note==false && clock<minTime && minTimeSamples(minSamples)>=minSamples){
+        }else if(note==false && clock<minTime && minTimeSamples()>=minSamples){
             //cout << "state-time samples collected..." << flush;
             note = true;
         }
-        
     }
     
     freqToDensity();
@@ -298,9 +298,8 @@ void RelocSimulation::simulate(double bIn, double minTime,
     }
     
     //clean up a bit
-    delete[] arrival_array;
-    delete[] service_array;
-    
+    arrival_array = new Customer[1];
+    service_array = new Customer[1];
 }
 
 int RelocSimulation::wardSamplesToGo(){
@@ -647,7 +646,6 @@ bool RelocSimulation::attemptAdmission(int &arrIdx, vector<int> &capUse,
 void RelocSimulation::updateServiceArray(int idx, int &inService){
     //removes a patient in service and adjusts the entire list
     //assumes the patient <<has been subtracted>> from inService
-    
     if (idx<inService){
         double arrClock, serTime, serClock;
         int widx, pidx;
@@ -685,12 +683,10 @@ int RelocSimulation::nextServiceIdx(int &inService){
     
 }
 
-int RelocSimulation::minTimeSamples(int &mS){
+int RelocSimulation::minTimeSamples(){
     
-    int mn;
     if (timeSamplingEnabled){
-    
-        mn = numeric_limits<int>::max();
+        int mn = numeric_limits<int>::max();
         for (int i=0; i<openTimes.size(); i++){
             if (mn>openTimes[i].size()){
                 mn = openTimes[i].size();
@@ -701,12 +697,10 @@ int RelocSimulation::minTimeSamples(int &mS){
                 mn = blockedTimes[i].size();
             }
         }
-    
+        return(mn);
     }else{
-        mn=mS;
+        return(numeric_limits<int>::max());
     }
-    
-    return(mn);
 }
 
 

@@ -82,7 +82,7 @@ private:
     vector<int> randomIndices(int &from, int &to, int &len);
     
     int wardSamplesToGo();
-    int minTimeSamples(int &mS);
+    int minTimeSamples();
     int nextServiceIdx(int &inService);
     void updateServiceArray(int idx, int &inService);
     bool attemptAdmission(int &arrIdx, vector<int> &capUse,
