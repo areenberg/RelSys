@@ -559,7 +559,11 @@ void RelocSimulation::performanceMeasures(){
     for (int widx=0; widx<nWards; widx++){
         wardDenDist[widx].resize(wardFreqDist[widx].size(),0);
         for (int i=0; i<wardFreqDist[widx].size(); i++){
-            wardDenDist[widx][i] = (double)wardFreqDist[widx][i]/(double)nWardFreq[widx];
+            if (nWardFreq[widx]==0){
+                wardDenDist[widx][i]=0;
+            }else{
+                wardDenDist[widx][i] = (double)wardFreqDist[widx][i]/(double)nWardFreq[widx];
+            }
             expectedOccupancy[widx] += i*wardDenDist[widx][i];
         }
     }
