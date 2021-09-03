@@ -47,14 +47,19 @@ RelocSimulation::RelocSimulation(const RelocSimulation& orig) {
 }
 
 RelocSimulation::~RelocSimulation() {
-    nextArrivalTime.clear();
-    nOpenTimeSamples.clear();
-    nBlockedTimeSamples.clear();
-    wardStateClocks.clear();
 }
 
 void RelocSimulation::initializeSystem(){
     calculateArrivalRates();
+    
+    //pre-allocate memory for arrivals and services
+    patientArraySize = 1000;
+    arrival_array = new Customer[patientArraySize];
+    maxOcc = 0;
+    for (int widx=0; widx<nWards; widx++){
+        maxOcc += getWardCapacity(widx);
+    }
+    service_array = new Customer[maxOcc];
 }
 
 void RelocSimulation::disableTimeSampling(){
@@ -155,10 +160,14 @@ void RelocSimulation::simulate(double bIn, double minTime,
     //minSamples is the minimal number of sampled open/blocked times.
     //default value for minSamples=50.
     
+//    for (int i=0; i<nWards; i++){
+//        cout << getWardCapacity(i) << " " << flush;
+//    }
+//    cout << endl;
+    
     //variables
     double nextArrClock, nextSerClock;
-    int patientArraySize, maxOcc, arrIdx, 
-            serIdx, targetWard;
+    int arrIdx, serIdx, targetWard;
     bool succeeded, note = false;
     
     vector<vector<int>> wardOccupancy;
@@ -177,17 +186,11 @@ void RelocSimulation::simulate(double bIn, double minTime,
     clock = 0;
     
     //patient arrivals
-    patientArraySize = 1e5;
-    arrival_array = new Customer[patientArraySize];
     generateArrivalList(patientArraySize,clock);
     arrIdx = 0;
     
     //patients in service
-    maxOcc = 0; inService = 0;
-    for (int widx=0; widx<nWards; widx++){
-        maxOcc += getWardCapacity(widx);
-    }
-    service_array = new Customer[maxOcc];
+    inService = 0;
     
     //occupancy of the system
     vector<int> capUse(nWards,0);
@@ -202,7 +205,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     maxWrdSam.resize(nWards);
     if (maxWardSamples.size()==1 && maxWardSamples[0]==-1){
         for (int i=0; i<nWards; i++){
-            maxWrdSam[i] = INT_MAX;
+            maxWrdSam[i] = numeric_limits<int>::max();
         }
     }else{
         for (int i=0; i<nWards; i++){
@@ -213,11 +216,6 @@ void RelocSimulation::simulate(double bIn, double minTime,
     //-------------------
     //Simulate
     //-------------------
-//    for (int i=0; i<nWards; i++){
-//        cout << getWardCapacity(i) << " " << flush;
-//    }
-//    cout << endl;
-    
     
     //cout << "Running simulation..." << flush;
     while (arrIdx<patientArraySize && ( (clock<minTime && wardSamplesToGo()>0) || 
@@ -293,21 +291,15 @@ void RelocSimulation::simulate(double bIn, double minTime,
         }
     }
     
+    //cout << "done." << endl;
     freqToDensity();
     performanceMeasures();
-    
-    //cout << "done." << endl;
-    
     if (timeSamplingEnabled){
         //re-sample time tracking
         subsetTimeSamples(minSamples);
         //print open/blocked time sample sizes
         printTimeSamples();
     }
-    
-    //clean up a bit
-    arrival_array = new Customer[1];
-    service_array = new Customer[1];
     
 }
 
@@ -558,13 +550,14 @@ void RelocSimulation::performanceMeasures(){
     expectedOccupancy.resize(nWards,0);
     for (int widx=0; widx<nWards; widx++){
         wardDenDist[widx].resize(wardFreqDist[widx].size(),0);
-        for (int i=0; i<wardFreqDist[widx].size(); i++){
-            if (nWardFreq[widx]==0){
-                wardDenDist[widx][i]=0;
-            }else{
+        if (nWardFreq[widx]==0){
+           wardDenDist[widx][0]=1.0;
+           expectedOccupancy[widx]=0.0;
+        }else{
+            for (int i=0; i<wardFreqDist[widx].size(); i++){
                 wardDenDist[widx][i] = (double)wardFreqDist[widx][i]/(double)nWardFreq[widx];
+                expectedOccupancy[widx] += i*wardDenDist[widx][i];
             }
-            expectedOccupancy[widx] += i*wardDenDist[widx][i];
         }
     }
     //blocking probability and fraction of occupied servers

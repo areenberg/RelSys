@@ -117,6 +117,7 @@ private:
     double burnIn, clock; //burn-in time and the simulation clock
     int simSeed; //seed for the simulation
     int inService; //number of customers in service
+    int patientArraySize, maxOcc; //size of patient arrival and service arrays
     //mt19937 rgen; //random generator
     //default_random_engine rgen;
     default_random_engine rgen;
