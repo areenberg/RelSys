@@ -59,7 +59,9 @@ public:
     
     //WARD INFORMATION METHODS AND VARIABLES
     int nWards; //number of wards in the system
-
+    
+    long int runtime;
+    
     //CONSTRUCTOR
     //dummy constructor (not included in cpp-file) 
     RelocSimulation() {};
@@ -72,7 +74,8 @@ private:
     //SIMULATION METHODS AND VARIABLES
     void initializeSystem();
     void calculateArrivalRates();
-    void generateArrivalList(int length, double currentClock);
+    void generateArrivalList(double currentClock);
+    void generateArrival();
     void updateArrivalTime(int widx, int pidx); //update the nextArrivalTime matrix
     void initializeArrivalTimes(double currentClock); //initialize the entire nextArrivalTime matrix
 
@@ -83,21 +86,18 @@ private:
     
     int wardSamplesToGo();
     int minTimeSamples();
-    int nextServiceIdx();
-    void updateServiceArray(int idx);
-    bool attemptAdmission(int &arrIdx, vector<int> &capUse,
-        vector<vector<int>> &wardOccupancy);
-    bool attemptDischarge(int &serIdx);
-    void updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy);
+    void nextServiceIdx();
+    bool attemptAdmission(int &arrIdx);
+    bool attemptDischarge();
+    void updateOccupancy();
     double genServiceTime(int idx); //generate a random service time for the patient
     
-    void openTimeTracking(int &targetWard, vector<int> &capUse);
-    void blockedTimeTracking(int &targetWard, vector<int> &capUse);
+    void openTimeTracking(int &targetWard);
+    void blockedTimeTracking(int &targetWard);
     
     void subsetTimeSamples(int &minSamples); //randomly limits time samples to a sub-set of size minSamples 
     
-    void occupancyDistTracking(vector<vector<int>> &wardOccupancy,
-    vector<int> &capUse, int &targetWard, int &patientType);
+    void occupancyDistTracking(int &targetWard, int &patientType);
     
     void initFreqDenDist(); //initialize the frequency/density ward-patient distributions
     void freqToDensity(); //calculates the occupancy density distribution
@@ -111,12 +111,16 @@ private:
     vector<vector<double>> nextArrivalTime;
     vector<double> wardStateClocks;
     vector<int> maxWrdSam;
+    vector<vector<int>> wardOccupancy;
+    vector<int> capUse;
     bool serTimeExponential; //if true, then service times are exponential; other log-normal
     double stdMult; //modifies the standard deviation in the log-normal random generator
 
+    int min_widx, min_pidx;
     double burnIn, clock; //burn-in time and the simulation clock
     int simSeed; //seed for the simulation
     int inService; //number of customers in service
+    int serIdx,insIdx; //indices for next service and recently inserted
     int patientArraySize, maxOcc; //size of patient arrival and service arrays
     //mt19937 rgen; //random generator
     //default_random_engine rgen;
@@ -124,8 +128,8 @@ private:
     uniform_real_distribution<> dis;
 
     //PATIENT METHODS AND VARIABLES
-    Customer * arrival_array;
     Customer * service_array;
+    Customer * nextArrival;
     
     //WARD INFORMATION METHODS AND VARIABLES
     QueueData * wards_pointer;

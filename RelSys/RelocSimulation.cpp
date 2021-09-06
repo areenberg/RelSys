@@ -29,7 +29,7 @@
 #include <iostream>
 #include <limits.h>
 #include <cstdlib>
-//#include <random>
+#include <chrono>
 
 using namespace std;
 
@@ -52,9 +52,7 @@ RelocSimulation::~RelocSimulation() {
 void RelocSimulation::initializeSystem(){
     calculateArrivalRates();
     
-    //pre-allocate memory for arrivals and services
-    patientArraySize = 1000;
-    arrival_array = new Customer[patientArraySize];
+    //pre-allocate memory for services
     maxOcc = 0;
     for (int widx=0; widx<nWards; widx++){
         maxOcc += getWardCapacity(widx);
@@ -93,10 +91,10 @@ void RelocSimulation::setSeed(int seed){
 
 void RelocSimulation::initializeArrivalTimes(double currentClock){
     //allocate memory and fill in the entire nextArrivalTime matrix
-    nextArrivalTime.clear();
-    nextArrivalTime.resize(nWards);
     for (int i=0; i<nWards; i++){
-        nextArrivalTime[i].resize(nWards,currentClock);
+        for (int j=0; j<nWards; j++){
+            nextArrivalTime[i][j]=currentClock;
+        }
     }
     
     for (int widx=0; widx<nWards; widx++){
@@ -114,44 +112,63 @@ void RelocSimulation::updateArrivalTime(int widx, int pidx){
     
 }
 
-void RelocSimulation::generateArrivalList(int length, double currentClock){
-    //generate a long list of future arrivals with arrival times offset
-    //by currentClock
+void RelocSimulation::generateArrival(){
     
-    initializeArrivalTimes(currentClock);
-    
-    //append patients to the list
-    double arrClock, serTime, mn;
-    int min_widx, min_pidx;
-    //vector<int> genWidx(nWards,0);
-    //vector<int> genPidx(nWards,0);
-    
-    for (int i=0; i<length; i++){
-        
-        mn = numeric_limits<double>::max();
-        
-        //find minimum arrival time        
-        for (int widx=0; widx<nWards; widx++){
-            for (int pidx=0; pidx<nWards; pidx++){
-                if (nextArrivalTime[widx][pidx]<mn){
-                    mn = nextArrivalTime[widx][pidx];
-                    min_widx = widx; min_pidx = pidx;
-                }
+    //find minimum arrival time
+    double mn = numeric_limits<double>::max(); 
+    for (int widx=0; widx<nWards; widx++){
+       for (int pidx=0; pidx<nWards; pidx++){
+           if (nextArrivalTime[widx][pidx]<mn){
+               mn = nextArrivalTime[widx][pidx];
+               min_widx = widx; min_pidx = pidx;
             }
-        }        
+        }
+    }        
         
-        
-        //append patient
-        arrClock = nextArrivalTime[min_widx][min_pidx];
-        serTime = genServiceTime(min_pidx);
-        arrival_array[i] = Customer(arrClock,serTime,min_widx,min_pidx);
-        
-        //update ward-patient
-        updateArrivalTime(min_widx,min_pidx);
-    }
-    
+    //create
+    nextArrival = new Customer(nextArrivalTime[min_widx][min_pidx],
+            genServiceTime(min_pidx),min_widx,min_pidx);
+    updateArrivalTime(min_widx,min_pidx);
     
 }
+
+//void RelocSimulation::generateArrivalList(double currentClock){
+//    //generate a long list of future arrivals with arrival times offset
+//    //by currentClock
+//    
+//    initializeArrivalTimes(currentClock);
+//    
+//    //append patients to the list
+//    double arrClock, serTime, mn;
+//    int min_widx, min_pidx;
+//    //vector<int> genWidx(nWards,0);
+//    //vector<int> genPidx(nWards,0);
+//    
+//    for (int i=0; i<patientArraySize; i++){
+//        
+//        mn = numeric_limits<double>::max();
+//        
+//        //find minimum arrival time        
+//        for (int widx=0; widx<nWards; widx++){
+//            for (int pidx=0; pidx<nWards; pidx++){
+//                if (nextArrivalTime[widx][pidx]<mn){
+//                    mn = nextArrivalTime[widx][pidx];
+//                    min_widx = widx; min_pidx = pidx;
+//                }
+//            }
+//        }        
+//        
+//        
+//        //append patient
+//        arrClock = nextArrivalTime[min_widx][min_pidx];
+//        serTime = genServiceTime(min_pidx);
+//        arrival_array[i] = Customer(arrClock,serTime,min_widx,min_pidx);
+//        
+//        //update ward-patient
+//        updateArrivalTime(min_widx,min_pidx);
+//    }
+//    
+//}
 
 void RelocSimulation::simulate(double bIn, double minTime,
         vector<int> maxWardSamples, int minSamples){
@@ -164,20 +181,33 @@ void RelocSimulation::simulate(double bIn, double minTime,
 //        cout << getWardCapacity(i) << " " << flush;
 //    }
 //    cout << endl;
+
     
     //variables
-    double nextArrClock, nextSerClock;
-    int arrIdx, serIdx, targetWard;
-    bool succeeded, note = false;
+    int arrIdx, targetWard;
+    bool succeeded;
+
+    //--------------------
+    //Initialize
+    //--------------------
     
-    vector<vector<int>> wardOccupancy;
+    capUse.resize(nWards,0);
+    wardOccupancy.resize(nWards);
+    nextArrivalTime.resize(nWards);
+    for (int widx=0; widx<nWards; widx++){
+         wardOccupancy[widx].resize(nWards,0);
+         nextArrivalTime[widx].resize(nWards,0);
+    }
+    
     nOpenTimeSamples.resize(nWards,0);
     nBlockedTimeSamples.resize(nWards,0);
     wardStateClocks.resize(nWards,0);
     
-    //--------------------
-    //Initialize
-    //--------------------
+    //dummy customers in service_array
+    for (int i=0; i<maxOcc; i++){
+        service_array[i] = Customer(numeric_limits<double>::max(),0.0,-1,-1);
+        service_array[i].active=false;
+    }
     
     //burn-in time
     burnIn = bIn;
@@ -186,11 +216,14 @@ void RelocSimulation::simulate(double bIn, double minTime,
     clock = 0;
     
     //patient arrivals
-    generateArrivalList(patientArraySize,clock);
-    arrIdx = 0;
+    //generateArrivalList(clock);
+    //arrIdx = 0;
+    initializeArrivalTimes(clock);
+    generateArrival();
     
     //patients in service
     inService = 0;
+    serIdx = 0;
     
     //occupancy of the system
     vector<int> capUse(nWards,0);
@@ -216,82 +249,53 @@ void RelocSimulation::simulate(double bIn, double minTime,
     //-------------------
     //Simulate
     //-------------------
-    
-    //cout << "Running simulation..." << flush;
-    while (arrIdx<patientArraySize && ( (clock<minTime && wardSamplesToGo()>0) || 
-            minTimeSamples()<minSamples)){
-        
-        //clock at next arrival
-        nextArrClock = arrival_array[arrIdx].arrivalClock;
-        
-        
-//        cout << "sim. clock = " << clock << endl;
-        
-//        for (int i=0; i<nWards; i++){
-//            cout << wardStateClocks[i] << ", ";
-//        }
-//        cout << endl;
-//        cout << "admission widx=" << arrival_array[arrIdx].wardTarget << ", pidx=" << arrival_array[arrIdx].patientType << ", adm.clock=" << nextArrClock << endl; 
-//        cout << "cap use=" << capUse[arrival_array[arrIdx].wardTarget] << ", cap lim=" << getWardCapacity(arrival_array[arrIdx].wardTarget) << endl;
-//    
-//        cout << "old array:" << endl;
-//        for (int i=0; i<inService; i++){
-//            cout << service_array[i].serviceClock << "," << service_array[i].wardTarget << "," << service_array[i].patientType << endl;    
-//        }
-    
+    auto start = chrono::system_clock::now();
+    cout << "Running simulation..." << flush;
+    while ( (clock<minTime && wardSamplesToGo()>0) || (timeSamplingEnabled && minTimeSamples()<minSamples) ){
         
         if (inService>0){
-            //clock at next discharge
-            serIdx = nextServiceIdx();
             
-            nextSerClock = service_array[serIdx].serviceClock;
-//            cout << "inService=" << inService << ", serIdx=" << serIdx << ", nextSerClock=" << nextSerClock << endl;
+            nextServiceIdx();
             
-            if (nextSerClock<nextArrClock){
-                clock = nextSerClock;
+            if (service_array[serIdx].serviceClock<nextArrival->arrivalClock){
+            
+                clock = service_array[serIdx].serviceClock;
                 targetWard = service_array[serIdx].wardTarget;
-                succeeded = attemptDischarge(serIdx);
+                succeeded = attemptDischarge();
                 if (timeSamplingEnabled && succeeded){
-                    blockedTimeTracking(targetWard,capUse);
+                    blockedTimeTracking(targetWard);
                 }
+                
             }else{
-                clock = nextArrClock;
-                succeeded = attemptAdmission(arrIdx,capUse,wardOccupancy);
+
+                clock = nextArrival->arrivalClock;
+                succeeded = attemptAdmission(arrIdx);
                 if (timeSamplingEnabled && succeeded){
-                    openTimeTracking(service_array[inService-1].wardTarget,capUse);
+                    openTimeTracking(nextArrival->wardTarget);
                 }
+                generateArrival();
             }
+
         }else{
-            clock = nextArrClock; 
-            succeeded = attemptAdmission(arrIdx,capUse,wardOccupancy);
+            clock = nextArrival->arrivalClock; 
+            succeeded = attemptAdmission(arrIdx);
             if (timeSamplingEnabled && succeeded){
-                openTimeTracking(service_array[inService-1].wardTarget,capUse);
+                openTimeTracking(nextArrival->wardTarget);
             }
+            generateArrival();
+
         }
         
-        updateOccupancy(capUse,wardOccupancy);
-        
-//        cout << "new array:" << endl;
-//        for (int i=0; i<inService; i++){
-//            cout << service_array[i].serviceClock << "," << service_array[i].wardTarget << "," << service_array[i].patientType << endl; 
-//        }
-//        cout << "----------" << endl;
-    
+        updateOccupancy();
         
         //generate a new batch of patient arrivals
-        if (arrIdx==(patientArraySize-1)){
-            generateArrivalList(patientArraySize,clock);
-            arrIdx = 0;
-        }else if(note==false && clock>minTime && minTimeSamples()<minSamples){
-            //cout << "still collecting samples..." << flush;
-            note = true;
-        }else if(note==false && clock<minTime && minTimeSamples()>=minSamples){
-            //cout << "state-time samples collected..." << flush;
-            note = true;
-        }
+        //if (arrIdx==(patientArraySize-1)){
+            //generateArrivalList(clock);
+            //arrIdx = 0;
+        //}
+        
     }
-    
-    //cout << "done." << endl;
+    cout << "done." << endl;
     freqToDensity();
     performanceMeasures();
     if (timeSamplingEnabled){
@@ -301,6 +305,10 @@ void RelocSimulation::simulate(double bIn, double minTime,
         printTimeSamples();
     }
     
+    auto stop = chrono::system_clock::now();
+    auto elapsed = chrono::duration_cast<chrono::milliseconds>(stop - start);
+    runtime = elapsed.count();
+    cout << "runtime: " << runtime << " ms" << endl;
 }
 
 int RelocSimulation::wardSamplesToGo(){
@@ -475,30 +483,39 @@ void RelocSimulation::initFreqDenDist(){
     
 }
 
-void RelocSimulation::updateOccupancy(vector<int> &capUse, vector<vector<int>> &wardOccupancy){
+void RelocSimulation::updateOccupancy(){
     
     //ward occupancy (all patients)
-    capUse.clear();
-    capUse.resize(nWards,0);
-    
-    for (int i=0; i<inService; i++){
-        capUse[service_array[i].wardTarget]++;
+    for (int i=0; i<nWards; i++){
+        capUse[i]=0;
     }
+    
+    for (int i=0; i<maxOcc; i++){
+        if (service_array[i].active){
+            capUse[service_array[i].wardTarget]++;
+        }
+    }
+    
+//    for (int i=0; i<nWards; i++){
+//        cout << capUse[i] << " " << flush;
+//    }
+//    cout << endl;
     
     //ward occupancy (each patient type)
-    wardOccupancy.clear();
-    wardOccupancy.resize(nWards);
     for (int widx=0; widx<nWards; widx++){
-        wardOccupancy[widx].resize(nWards,0);
+        for (int i=0; i<nWards; i++){
+            wardOccupancy[widx][i]=0;
+        }
     }
-    for (int i=0; i<inService; i++){
-        wardOccupancy[service_array[i].wardTarget][service_array[i].patientType]++;
+    for (int i=0; i<maxOcc; i++){
+        if (service_array[i].active){
+            wardOccupancy[service_array[i].wardTarget][service_array[i].patientType]++;
+        }
     }
     
 }
 
-void RelocSimulation::occupancyDistTracking(vector<vector<int>> &wardOccupancy,
-    vector<int> &capUse, int &targetWard, int &patientType){
+void RelocSimulation::occupancyDistTracking(int &targetWard, int &patientType){
     
     if (clock>burnIn){
         if ( (targetWard!=patientType && getWardCapacity(patientType)==capUse[patientType]) ||
@@ -571,7 +588,7 @@ void RelocSimulation::performanceMeasures(){
 }
 
 
-void RelocSimulation::openTimeTracking(int &targetWard, vector<int> &capUse){
+void RelocSimulation::openTimeTracking(int &targetWard){
     
     if ((capUse[targetWard]+1)==getWardCapacity(targetWard)){
         if (clock>burnIn){
@@ -584,7 +601,7 @@ void RelocSimulation::openTimeTracking(int &targetWard, vector<int> &capUse){
     
 }
     
-void RelocSimulation::blockedTimeTracking(int &targetWard, vector<int> &capUse){
+void RelocSimulation::blockedTimeTracking(int &targetWard){
     
     if (capUse[targetWard]==getWardCapacity(targetWard)){
         if (clock>burnIn){
@@ -602,111 +619,84 @@ void RelocSimulation::blockedTimeTracking(int &targetWard, vector<int> &capUse){
 
 
 
-bool RelocSimulation::attemptDischarge(int &serIdx){
+bool RelocSimulation::attemptDischarge(){
     
     //subtract patient from service
     inService--;
     
-    updateServiceArray(serIdx);
+    service_array[serIdx].active=false;
+//    cout << "served: " << serIdx << endl;
     
     return(true);
 }
 
-bool RelocSimulation::attemptAdmission(int &arrIdx, vector<int> &capUse, 
-        vector<vector<int>> &wardOccupancy){
-    
+bool RelocSimulation::attemptAdmission(int &arrIdx){
     bool Ok = false;
-    if (arrival_array[arrIdx].wardTarget==arrival_array[arrIdx].patientType &&
-            capUse[arrival_array[arrIdx].wardTarget]<getWardCapacity(arrival_array[arrIdx].wardTarget)){
+    if (nextArrival->wardTarget==nextArrival->patientType &&
+            capUse[nextArrival->wardTarget]<getWardCapacity(nextArrival->wardTarget)){
         Ok = true;
-    }else if(arrival_array[arrIdx].wardTarget!=arrival_array[arrIdx].patientType &&
-            capUse[arrival_array[arrIdx].patientType]==getWardCapacity(arrival_array[arrIdx].patientType) &&
-            capUse[arrival_array[arrIdx].wardTarget]<getWardCapacity(arrival_array[arrIdx].wardTarget)){
+    }else if(nextArrival->wardTarget!=nextArrival->patientType &&
+            capUse[nextArrival->patientType]==getWardCapacity(nextArrival->patientType) &&
+            capUse[nextArrival->wardTarget]<getWardCapacity(nextArrival->wardTarget)){
         Ok = true;
     }
     
     if (Ok){
         
+        //find an available slot
+        insIdx=0;
+        while (service_array[insIdx].active){
+            insIdx++;
+        }
+
         //insert into service array
-        service_array[inService] = Customer(arrival_array[arrIdx].arrivalClock,arrival_array[arrIdx].serviceTime,
-                arrival_array[arrIdx].wardTarget,arrival_array[arrIdx].patientType);
+        service_array[insIdx] = Customer(nextArrival->arrivalClock,nextArrival->serviceTime,
+                nextArrival->wardTarget,nextArrival->patientType);
         //calculate and insert clock at discharge
-        service_array[inService].serviceClock = clock + service_array[inService].serviceTime;
+        service_array[insIdx].serviceClock = clock + service_array[insIdx].serviceTime;
         
+//        cout << "admission: " << insIdx << endl;
+                
+                
         //adjust number of patients currently in service
         inService++;
     }
     
     //track regardless of admission accepted or rejected
-    occupancyDistTracking(wardOccupancy,capUse,arrival_array[arrIdx].wardTarget,
-                    arrival_array[arrIdx].patientType);
+    occupancyDistTracking(nextArrival->wardTarget,
+                    nextArrival->patientType);
     
     //move to next arrival
-    arrIdx++;
+    //arrIdx++;
     
     return(Ok);
 }
-    
-void RelocSimulation::updateServiceArray(int idx){
-    //removes a patient in service and adjusts the entire list
-    //assumes the patient <<has been subtracted>> from inService
-    
-    if (idx<inService){
-        double arrClock, serTime, serClock;
-        int widx, pidx;
-        
-        for (int i=idx; i<inService; i++){
-            arrClock = service_array[i+1].arrivalClock;
-            serTime = service_array[i+1].serviceTime;
-            serClock = service_array[i+1].serviceClock;
-            widx = service_array[i+1].wardTarget;
-            pidx = service_array[i+1].patientType;
-            
-            service_array[i] = Customer(arrClock,serTime,widx,pidx);
-            service_array[i].serviceClock = serClock;
-        }
-    }
-       
-}
 
-int RelocSimulation::nextServiceIdx(){
+void RelocSimulation::nextServiceIdx(){
     
-    if (inService>1){
-        int idx;
-        double mn = numeric_limits<double>::max();
-        for (int i=0; i<inService; i++){
-            if (service_array[i].serviceClock<mn){
-               mn = service_array[i].serviceClock;
-               idx = i;
-            }
-        }
-        return(idx);
-    }else{
-        return(0);
+    double mn = numeric_limits<double>::max();
+    for (int i=0; i<maxOcc; i++){
+        if (service_array[i].active && service_array[i].serviceClock<mn){
+            mn = service_array[i].serviceClock;
+            serIdx = i;
+         }
     }
-    
 }
 
 int RelocSimulation::minTimeSamples(){
-    //cout << "mintimesamples" << endl;
-    if (timeSamplingEnabled){
         int mn = numeric_limits<int>::max();
         for (int i=0; i<openTimes.size(); i++){
-            if (mn>openTimes[i].size()){
+            if (openTimes[i].size()<mn){
                 mn = openTimes[i].size();
             }
         }
         for (int i=0; i<blockedTimes.size(); i++){
-            if (mn>blockedTimes[i].size()){
+            if (blockedTimes[i].size()<mn){
                 mn = blockedTimes[i].size();
             }
         }
         //cout << "done." << endl;
         return(mn);
-    }else{
-        //cout << "done." << endl;
-        return(numeric_limits<int>::max());
-    }
 }
 
 
