@@ -119,7 +119,7 @@ int main(int argc, char** argv) {
     //setup and run simulation
     sim_mdl.setSeed(123); //set the seed
     double burnIn = 365; //burn-in time
-    double minTime = 100000; //minimum simulation time
+    double minTime = 1e6; //minimum simulation time
     vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
     sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
 

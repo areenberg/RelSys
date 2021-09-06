@@ -53,11 +53,12 @@ void RelocSimulation::initializeSystem(){
     calculateArrivalRates();
     
     //pre-allocate memory for services
+    nextArrival.resize(1);
     maxOcc = 0;
     for (int widx=0; widx<nWards; widx++){
         maxOcc += getWardCapacity(widx);
     }
-    service_array = new Customer[maxOcc];
+    service_array.resize(maxOcc);
 }
 
 void RelocSimulation::disableTimeSampling(){
@@ -126,7 +127,7 @@ void RelocSimulation::generateArrival(){
     }        
         
     //create
-    nextArrival = new Customer(nextArrivalTime[min_widx][min_pidx],
+    nextArrival[0] = Customer(nextArrivalTime[min_widx][min_pidx],
             genServiceTime(min_pidx),min_widx,min_pidx);
     updateArrivalTime(min_widx,min_pidx);
     
@@ -257,7 +258,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
             
             nextServiceIdx();
             
-            if (service_array[serIdx].serviceClock<nextArrival->arrivalClock){
+            if (service_array[serIdx].serviceClock<nextArrival[0].arrivalClock){
             
                 clock = service_array[serIdx].serviceClock;
                 targetWard = service_array[serIdx].wardTarget;
@@ -268,19 +269,19 @@ void RelocSimulation::simulate(double bIn, double minTime,
                 
             }else{
 
-                clock = nextArrival->arrivalClock;
+                clock = nextArrival[0].arrivalClock;
                 succeeded = attemptAdmission(arrIdx);
                 if (timeSamplingEnabled && succeeded){
-                    openTimeTracking(nextArrival->wardTarget);
+                    openTimeTracking(nextArrival[0].wardTarget);
                 }
                 generateArrival();
             }
 
         }else{
-            clock = nextArrival->arrivalClock; 
+            clock = nextArrival[0].arrivalClock; 
             succeeded = attemptAdmission(arrIdx);
             if (timeSamplingEnabled && succeeded){
-                openTimeTracking(nextArrival->wardTarget);
+                openTimeTracking(nextArrival[0].wardTarget);
             }
             generateArrival();
 
@@ -632,12 +633,12 @@ bool RelocSimulation::attemptDischarge(){
 
 bool RelocSimulation::attemptAdmission(int &arrIdx){
     bool Ok = false;
-    if (nextArrival->wardTarget==nextArrival->patientType &&
-            capUse[nextArrival->wardTarget]<getWardCapacity(nextArrival->wardTarget)){
+    if (nextArrival[0].wardTarget==nextArrival[0].patientType &&
+            capUse[nextArrival[0].wardTarget]<getWardCapacity(nextArrival[0].wardTarget)){
         Ok = true;
-    }else if(nextArrival->wardTarget!=nextArrival->patientType &&
-            capUse[nextArrival->patientType]==getWardCapacity(nextArrival->patientType) &&
-            capUse[nextArrival->wardTarget]<getWardCapacity(nextArrival->wardTarget)){
+    }else if(nextArrival[0].wardTarget!=nextArrival[0].patientType &&
+            capUse[nextArrival[0].patientType]==getWardCapacity(nextArrival[0].patientType) &&
+            capUse[nextArrival[0].wardTarget]<getWardCapacity(nextArrival[0].wardTarget)){
         Ok = true;
     }
     
@@ -650,8 +651,8 @@ bool RelocSimulation::attemptAdmission(int &arrIdx){
         }
 
         //insert into service array
-        service_array[insIdx] = Customer(nextArrival->arrivalClock,nextArrival->serviceTime,
-                nextArrival->wardTarget,nextArrival->patientType);
+        service_array[insIdx] = Customer(nextArrival[0].arrivalClock,nextArrival[0].serviceTime,
+                nextArrival[0].wardTarget,nextArrival[0].patientType);
         //calculate and insert clock at discharge
         service_array[insIdx].serviceClock = clock + service_array[insIdx].serviceTime;
         
@@ -663,8 +664,8 @@ bool RelocSimulation::attemptAdmission(int &arrIdx){
     }
     
     //track regardless of admission accepted or rejected
-    occupancyDistTracking(nextArrival->wardTarget,
-                    nextArrival->patientType);
+    occupancyDistTracking(nextArrival[0].wardTarget,
+                    nextArrival[0].patientType);
     
     //move to next arrival
     //arrIdx++;

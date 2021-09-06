@@ -128,8 +128,8 @@ private:
     uniform_real_distribution<> dis;
 
     //PATIENT METHODS AND VARIABLES
-    Customer * service_array;
-    Customer * nextArrival;
+    vector<Customer> service_array;
+    vector<Customer> nextArrival;
     
     //WARD INFORMATION METHODS AND VARIABLES
     QueueData * wards_pointer;
