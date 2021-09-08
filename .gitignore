@@ -1,2 +1,5 @@
 /RelSys/dist/
 /RelSys/build/
+/RelSys/.vscode/
+*.exe
+*.xml
