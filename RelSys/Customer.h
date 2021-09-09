@@ -24,6 +24,7 @@ class Customer {
 public:
     double arrivalClock, serviceTime, serviceClock;
     int patientType, wardTarget;
+    bool active;
     //CONSTRUCTORS
     //dummy constructor (not included in cpp-file) 
     Customer() {};
