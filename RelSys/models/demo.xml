@@ -84,5 +84,5 @@
       <PosY>8</PosY>
     </Ward>
   </Wards>
-  <SimulationMode>simulation</SimulationMode>
+  <SimulationMode>markov</SimulationMode>
 </Model>

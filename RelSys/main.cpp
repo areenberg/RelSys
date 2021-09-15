@@ -22,10 +22,41 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-    if(argc < 2)
+    //--------------------------
+    //PARSE ARGUMENTS
+    //--------------------------
+
+    if(strcmp(argv[1], "-h") == 0 || strcmp(argv[1], "-help") == 0)
     {
-        std::cout << "Error: Please specify a path for the model!" << std::endl;
-        return 1;
+        std::cout << " -f\tfile path of the model" << std::endl;
+        std::cout << " -q\tqueue to simulate if using markov chain model. Use -1 to evaluate all queues." << std::endl;
+        return 0;
+    }
+
+    char* filePath = NULL; // path of the model file
+    int widx = -1; //queue index to be evaluated
+
+    for(int i = 1; i < argc - 1; i++)
+    {
+        if(strcmp(argv[i], "-f") == 0)
+        {
+            filePath = argv[i+1];
+            i++;
+        }
+        else if(strcmp(argv[i], "-q") == 0)
+        {
+            widx = atoi(argv[i+1]);
+            i++;
+        }
+        else
+        {
+            std::cout << "Invalid argument: " << argv[i] << std::endl;
+        }
+    }
+
+    if(filePath == NULL)
+    {
+        std::cout << "Missing argument: Please specify file path for the model using the -f flag" << std::endl;
     }
 
     //--------------------------
@@ -33,7 +64,7 @@ int main(int argc, char** argv) {
     //--------------------------
 
     Model model;
-    if(!model.ReadFromFile(argv[1]))
+    if(!model.ReadFromFile(filePath))
     {
         std::cout << "Error: Invalid model file path!" << std::endl;
         return 1;
@@ -95,13 +126,43 @@ int main(int argc, char** argv) {
         int bin = 365;
         int mt = 365;
         mdl.runSimulation(seed,bin,mt,50);
+        
+        if(widx == -1) // simulate all queues
+        {
+            for(int i = 0; i < nQueues; i++)
+            {
+                mdl.runHeuristic(i);
 
-        //choose a queue to evaluate
-        int widx = 0; //queue index to be evaluated
-        mdl.runHeuristic(widx);
+                if(i == 0)
+                {
+                    cout << "--- RESULTS ---" << endl;
+                }
+
+                cout << "--- queue " << i << " ---" << endl;
+
+                cout << "Marginal probability distribution:" << endl;
+                for (int i=0; i<mdl.marginalDist.size(); i++){
+                    cout << mdl.marginalDist[i] << endl;
+                }
+
+                cout << "Probability of rejection:" << endl;
+                cout << mdl.blockingProbability << endl;
+
+                cout << "Expected server occupancy:" << endl;
+                cout << mdl.expectedOccupancy << endl;
+
+                cout << "Expected fraction of servers occupied:" << endl;
+                cout << mdl.expOccFraction << endl;
+            }
+        }
+        else // simulate only one queue
+        {
+            mdl.runHeuristic(widx);
+        }
 
         //get the result
         cout << "--- RESULTS ---" << endl;
+        cout << "--- queue " << widx << " ---" << endl;
 
         cout << "Marginal probability distribution:" << endl;
         for (int i=0; i<mdl.marginalDist.size(); i++){
