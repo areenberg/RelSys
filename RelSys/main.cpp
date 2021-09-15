@@ -1,4 +1,3 @@
-
 /*
  * File:   main.cpp
  * Author: Anders Reenberg Andersen

@@ -21,12 +21,15 @@
  */
 
 #include "Customer.h"
+#include <limits>
 
 Customer::Customer(double arr, double ser, int widx, int pidx):
 arrivalClock(arr),
 serviceTime(ser),
 patientType(pidx),
-wardTarget(widx)
+wardTarget(widx),
+active(true),
+serviceClock(numeric_limits<double>::max())
 {
 }
 
