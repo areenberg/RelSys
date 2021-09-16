@@ -16,8 +16,11 @@
 #include <vector>
 #include <cstring>
 
+#include <Windows.h> // temp
+
 using namespace std;
 
+bool use_cli_visuals = true;
 
 int main(int argc, char** argv) {
 
@@ -46,6 +49,10 @@ int main(int argc, char** argv) {
         {
             widx = atoi(argv[i+1]);
             i++;
+        }
+        else if(strcmp(argv[i], "-hide") == 0)
+        {
+            use_cli_visuals = false;
         }
         else
         {
@@ -177,8 +184,7 @@ int main(int argc, char** argv) {
         cout << "Expected fraction of servers occupied:" << endl;
         cout << mdl.expOccFraction << endl;
     }
-
-    if(strcmp(model.simulationMode, "simulation") == 0)
+    else
     {
         //--------------------------
         //SIMULATION EVALUATION

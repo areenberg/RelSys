@@ -83,6 +83,7 @@ bool Model::ReadFromFile(const char* fileName)
         l_pWard = l_pWard->NextSiblingElement("Ward");
     }
 
+    // Simulation mode
     TiXmlElement* l_pSimulationMode = docHandle.FirstChild("Model").FirstChild("SimulationMode").ToElement();
     simulationMode = l_pSimulationMode->GetText();
 
