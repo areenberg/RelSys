@@ -42,6 +42,9 @@ public:
         vector<int> maxWardSamples=vector<int>(1,-1),int minSamples=50); 
     void selectLogNormalServiceTime(double mult=1.0); //selects the log-normal distribution for service times 
     void disableTimeSampling(); //disables sampling of time-window sampling
+    vector<double> wilsonScoreInterval(double p, int n); //calculates Wilson-score confidence intervals
+    void setAccuracy(double a);
+    
     
     vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combination
     vector<vector<double>> openTimes; //sampled open times for each ward
@@ -103,9 +106,11 @@ private:
     void freqToDensity(); //calculates the occupancy density distribution
     void performanceMeasures(); //derives a number of performance measures    
     
+    double accuracy(); //calculates the accuracy of the density distributions using wilson score intervals
+    
     void printTimeSamples();
     
-    bool timeSamplingEnabled;
+    bool timeSamplingEnabled, checkAccuracy;
     vector<int> nOpenTimeSamples;
     vector<int> nBlockedTimeSamples;
     vector<vector<double>> nextArrivalTime;
@@ -115,9 +120,10 @@ private:
     vector<int> capUse;
     bool serTimeExponential; //if true, then service times are exponential; other log-normal
     double stdMult; //modifies the standard deviation in the log-normal random generator
-
+    double accTol; //density distribution accuracy
+    
     int min_widx, min_pidx;
-    double burnIn, clock; //burn-in time and the simulation clock
+    double simTime, burnIn, clock; //sim. time, burn-in time and the simulation clock
     int simSeed; //seed for the simulation
     int inService; //number of customers in service
     int serIdx,insIdx; //indices for next service and recently inserted
@@ -126,7 +132,8 @@ private:
     //default_random_engine rgen;
     default_random_engine rgen;
     uniform_real_distribution<> dis;
-
+    int mxRnd;
+    
     //PATIENT METHODS AND VARIABLES
     vector<Customer> service_array;
     vector<Customer> nextArrival;
