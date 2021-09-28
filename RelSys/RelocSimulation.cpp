@@ -39,6 +39,8 @@ nWards(nW),
 serTimeExponential(true),
 timeSamplingEnabled(true),
 checkAccuracy(false),
+checkBurnIn(false),
+burnInInit(true),        
 stdMult(1.0),
 accTol(5e-3)        
 {
@@ -63,7 +65,11 @@ void RelocSimulation::initializeSystem(){
     service_array.resize(maxOcc);
     
     //set maximum generated number
-    mxRnd = RAND_MAX+1;
+    if (RAND_MAX==numeric_limits<int>::max()){
+        mxRnd = RAND_MAX;
+    }else{
+        mxRnd = RAND_MAX+1;
+    }
 }
 
 void RelocSimulation::disableTimeSampling(){
@@ -186,7 +192,19 @@ void RelocSimulation::simulate(double bIn, double minTime,
     }
     
     //burn-in time
-    burnIn = bIn;
+    if (bIn>=0){
+        burnIn = bIn;
+    }else{
+        burnIn = numeric_limits<double>::max();
+        bInSize=30;
+        burnInSamples.resize(2);
+        burnInSamples[0].resize(bInSize);
+        burnInSamples[1].resize(bInSize);
+        bInOrder = {0,1};
+        clockDis=0.0;
+        disIdx=0;
+        checkBurnIn = true;
+    }
     //simulation time
     if (minTime>=0){
         simTime = minTime;
@@ -209,7 +227,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     serIdx = 0;
     
     //occupancy of the system
-    vector<int> capUse(nWards,0);
+    //vector<int> capUse(nWards,0);
     
     //tracking
     openTimes.resize(nWards);
@@ -236,6 +254,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     cout << "Running simulation..." << flush;
     while ( (accuracy()>accTol && clock<simTime && wardSamplesToGo()>0) || (timeSamplingEnabled && minTimeSamples()<minSamples) ){
         
+        
         if (inService>0){
             
             nextServiceIdx();
@@ -244,9 +263,12 @@ void RelocSimulation::simulate(double bIn, double minTime,
             
                 clock = service_array[serIdx].serviceClock;
                 targetWard = service_array[serIdx].wardTarget;
-                succeeded = attemptDischarge();
+                attemptDischarge();
                 if (timeSamplingEnabled && succeeded){
                     blockedTimeTracking(targetWard);
+                }
+                if (checkBurnIn){
+                    evaluateBurnIn();
                 }
                 
             }else{
@@ -270,7 +292,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
         }
         
         updateOccupancy();
-
+        
     }
     cout << "done." << endl;
     freqToDensity();
@@ -286,6 +308,41 @@ void RelocSimulation::simulate(double bIn, double minTime,
     auto elapsed = chrono::duration_cast<chrono::milliseconds>(stop - start);
     runtime = elapsed.count();
     cout << "runtime: " << runtime << " ms" << endl;
+}
+
+void RelocSimulation::evaluateBurnIn(){
+    
+    double tDiff = clock-clockDis;
+    clockDis = clock;
+    
+    if (burnInInit && disIdx<bInSize){
+        burnInSamples[0][disIdx]=tDiff;
+        disIdx++;
+    }else if(burnInInit){
+        burnInInit=false;
+        disIdx=0;
+    }else{
+        burnInSamples[bInOrder[1]][disIdx]=tDiff;
+        disIdx++;
+    }
+    
+    //evaluate
+    if (disIdx==bInSize && burnInInit==false){
+        
+        bool larger=wilcoxonRankSum(burnInSamples[bInOrder[0]],burnInSamples[bInOrder[1]]);
+        
+        if (larger){
+            disIdx=0;
+            int xx=bInOrder[0];
+            bInOrder[0]=bInOrder[1];
+            bInOrder[1]=xx;
+        }else{
+            checkBurnIn=false;
+            burnIn=clock;
+            cout << "Simulation burn-in at: " << burnIn << endl;
+        }
+    }
+    
 }
 
 int RelocSimulation::wardSamplesToGo(){
@@ -521,7 +578,7 @@ double RelocSimulation::accuracy(){
     //distributions using Wilson score intervals
     //note: high accuracy is indicated with a small value
     
-    if (checkAccuracy==false){
+    if (clock<burnIn||checkAccuracy==false){
         return(numeric_limits<double>::max());
     }else{
         vector<double> itns; 
@@ -881,6 +938,47 @@ vector<double> RelocSimulation::wilsonScoreInterval(double p, int n){
     intervals[1] = d0+d1;
     
     return(intervals);
+}
+
+bool RelocSimulation::wilcoxonRankSum(vector<double> x, vector<double> y){
+    //conducts the Wilcoxon rank-sum test.
+    //returns true if samples x are stochastically larger
+    //than samples y - i.e. the null hypothesis that the samples are from the
+    //same distribution is rejected.
+    
+//    double mn=0;
+//    for (int i=0; i<x.size(); i++){
+//        mn += x[i];
+//    }
+//    mn /= x.size();
+//    cout << "x mean: " << mn << endl;
+//    mn=0;
+//    for (int i=0; i<y.size(); i++){
+//        mn += y[i];
+//    }
+//    mn /= y.size();
+//    cout << "y mean: " << mn << endl;
+    
+    int u=0;
+    for (int i=0; i<x.size(); i++){
+        for (int j=0; j<y.size(); j++){
+            if (x[i]>y[j]){
+                u++;
+            }
+        }
+    }
+    
+    double m_u = (x.size()*y.size())/2.0;
+    double s_u = sqrt((x.size()*y.size()*(x.size()+y.size()+1.0))/12.0);
+    double z = (u-m_u)/s_u;
+//    cout << "u=" << u << " m_u=" << m_u << " s_u=" << s_u << " z=" << z << endl;
+    double zCrit = 1.036433; //critical z-score value (one-tailed test with alpha=0.15)
+    if (z>zCrit){
+        return(true); //null hypothesis rejected
+    }else{
+        return(false); //null hypothesis accepted (the populations are equal)
+    }
+    
 }
 
 double RelocSimulation::randomUniform(){

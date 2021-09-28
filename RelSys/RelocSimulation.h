@@ -43,6 +43,8 @@ public:
     void selectLogNormalServiceTime(double mult=1.0); //selects the log-normal distribution for service times 
     void disableTimeSampling(); //disables sampling of time-window sampling
     vector<double> wilsonScoreInterval(double p, int n); //calculates Wilson-score confidence intervals
+    bool wilcoxonRankSum(vector<double> x, vector<double> y); //conducts the Wilcoxon rank-sum test
+    
     void setAccuracy(double a);
     
     
@@ -97,6 +99,7 @@ private:
     
     void openTimeTracking(int &targetWard);
     void blockedTimeTracking(int &targetWard);
+    void evaluateBurnIn();
     
     void subsetTimeSamples(int &minSamples); //randomly limits time samples to a sub-set of size minSamples 
     
@@ -110,7 +113,9 @@ private:
     
     void printTimeSamples();
     
-    bool timeSamplingEnabled, checkAccuracy;
+    bool timeSamplingEnabled, checkAccuracy, checkBurnIn, burnInInit;
+    vector<vector<double>> burnInSamples;
+    vector<int> bInOrder;
     vector<int> nOpenTimeSamples;
     vector<int> nBlockedTimeSamples;
     vector<vector<double>> nextArrivalTime;
@@ -121,6 +126,8 @@ private:
     bool serTimeExponential; //if true, then service times are exponential; other log-normal
     double stdMult; //modifies the standard deviation in the log-normal random generator
     double accTol; //density distribution accuracy
+    double clockDis; //clock at most recent discharge;
+    int bInSize, disIdx;
     
     int min_widx, min_pidx;
     double simTime, burnIn, clock; //sim. time, burn-in time and the simulation clock
