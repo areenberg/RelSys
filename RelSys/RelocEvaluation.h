@@ -41,6 +41,7 @@ public:
     void runHeuristic(int main_widx);
     void runSimulation(int seed, int burnIn,
         int minTime, int minSamples=50);
+    void simulateMarginalDist(double sampleBurnIn, int collectSamples); //replace numerical evaluation with a simulation
     
     //VARIABLES
     vector<double> pi; //state distribution
@@ -66,8 +67,9 @@ private:
     double sampleSD(vector<int> &freqDist);
     
     //VARIABLES
-    bool simReady;
-    int nWards, seed;
+    bool simReady,simMargDist;
+    int nWards, seed, collectSamples;
+    double sampleBurnIn;
     RelocSimulation * sim_pointer;
     
     mt19937 rgen; //random generator

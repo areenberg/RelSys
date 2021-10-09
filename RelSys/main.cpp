@@ -28,10 +28,10 @@ int main(int argc, char** argv) {
     int nCustomerTypes = 4;
 
     //arrival rates for each customer type
-    vector<double> arrivalRates = {0.8,2.5,0.8,2.8};
+    vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
 
     //mean service time for each customer type
-    vector<double> serviceTimes = {10,5,20,8};
+    vector<double> serviceTimes = {10,5,10,8};
 
     //fraction of rejected customers that are moved to an alternative queue node
     //this is an nCustomerTypes x nQueues matrix

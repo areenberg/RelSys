@@ -41,7 +41,8 @@ using namespace std::chrono;
 RelocEvaluation::RelocEvaluation(int nW, QueueData * wards):
 wards_pointer(wards),
 nWards(nW),
-simReady(false)        
+simReady(false),
+simMargDist(false)        
 {
     initializeSystem();
 }
@@ -58,6 +59,13 @@ void RelocEvaluation::initializeSystem(){
     sim_pointer = new RelocSimulation[1];
     sim_pointer[0] = RelocSimulation(nWards,wards_pointer);
     
+}
+
+void RelocEvaluation::simulateMarginalDist(double smb, int cSam){
+    //use this method to evaluate the solution with simulation
+    sampleBurnIn = smb; //burn-in time
+    collectSamples = cSam; //number of samples to collect
+    simMargDist=true;
 }
 
 void RelocEvaluation::runSimulation(int sd, int burnIn,
@@ -117,7 +125,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
         double arrivalRate = getWardArrivalRate(main_widx);
         double serviceRate = getWardServiceRate(main_widx);
         int capacity = getWardCapacity(main_widx);
-    
+        
         //upper and lower limits in each queue. must include all queues (main and hyper queues)
         vector<int> upperLimits(nWards,0);
         vector<int> lowerLimits(nWards,0);
@@ -127,25 +135,35 @@ void RelocEvaluation::runHeuristic(int main_widx){
         setLowerLimits(lowerLimits,main_widx);
         
         //create the main (heuristic) queue object
+        cout << "Preparing..." << flush;
         HeuristicQueue hqueue(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
+        cout << "done." << endl;
         
         cout << "Evaluating Ward " << (main_widx+1) << "..." << endl;
         cout << "Number of states = " << hqueue.Ns << endl;
     
         //solve for steady-state distribution
-        initializeStateDistribution(hqueue);
         LinSolver solver;
-        double solverTolerance = 1e-9;
-        solver.sor(pi,hqueue,1.0,solverTolerance);
+        if (simMargDist){ //for evaluating the solution with simulation
+            solver.monteCarlo(hqueue,sampleBurnIn,
+                    collectSamples);
+            marginalDist = hqueue.margDist;
+            
+        }else{ //for evaluating the solution numerically
+            initializeStateDistribution(hqueue);
+            double solverTolerance = 1e-9;
+            solver.sor(pi,hqueue,1.0,solverTolerance);
         
-        vmemory = solver.vmemory; //estimate of maximum memory usage
-        
-        //store the marginal distribution and some other metrics
-        marginalDist = hqueue.marginalDist(pi);
-        expectedOccupancy = hqueue.expectedOccupancy(pi);
-        expOccFraction = hqueue.expectedOccupancyFraction(pi);
+            vmemory = solver.vmemory; //estimate of maximum memory usage
+            
+            //store the marginal distribution and some other metrics
+            hqueue.marginalDist(pi);
+            marginalDist = hqueue.margDist;
+            
+        }
+        expectedOccupancy = hqueue.expectedOccupancy();
+        expOccFraction = hqueue.expectedOccupancyFraction();
         blockingProbability = marginalDist[marginalDist.size()-1];
-        
         
         auto stop = high_resolution_clock::now(); //stop time 
         auto duration = duration_cast<milliseconds>(stop - start); 
@@ -172,7 +190,7 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     //mass in the upper tail of the distribution.
     
     //tail cut-off probability mass
-    double tailden = 1e-3;
+    double tailden = 1e-6;
     
     //vector<vector<double>> dd = sim_pointer[0].denDist[main_widx];
     vector<vector<int>> fd = sim_pointer[0].freqDist[main_widx];

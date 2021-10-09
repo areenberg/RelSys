@@ -75,16 +75,16 @@ void HeuristicQueue::checkInput(){
     
 }
 
-vector<double> HeuristicQueue::marginalDist(vector<double> &pi){
+void HeuristicQueue::marginalDist(vector<double> &pi){
     //derives the marginal distribution from the
     //overall state probability distribution.
+    
+    margDist.resize(margDist.size(),0);
     
     int l = 0,u = 0;
     for (int i=0; i<lowerLim.size(); i++){
         u += upperLim[i]; l += lowerLim[i];
     }
-    
-    vector<double> dist(min(u,cap)-l+1,0);
     
     int occupancy;
     initializeState();
@@ -93,16 +93,13 @@ vector<double> HeuristicQueue::marginalDist(vector<double> &pi){
         for (int j=0; j<lowerLim.size(); j++){
             occupancy += state[j];
         }
-        dist[occupancy-l] += pi[i];
+        margDist[occupancy-l] += pi[i];
         nextCurrentState();
     }
     
-    return(dist);
 }
 
-double HeuristicQueue::expectedOccupancy(vector<double> &pi){
-    
-    vector<double> margDist = marginalDist(pi);
+double HeuristicQueue::expectedOccupancy(){
     
     int l = 0,u = 0;
     for (int i=0; i<lowerLim.size(); i++){
@@ -118,16 +115,12 @@ double HeuristicQueue::expectedOccupancy(vector<double> &pi){
     return(y);
 }
 
-double HeuristicQueue::rejectionProbability(vector<double> &pi){
-    
-    vector<double> margDist = marginalDist(pi);
-    
+double HeuristicQueue::rejectionProbability(){
     return(margDist[margDist.size()-1]);
 }
 
-double HeuristicQueue::expectedOccupancyFraction(vector<double> &pi){
-    
-    return(expectedOccupancy(pi)/cap);
+double HeuristicQueue::expectedOccupancyFraction(){
+    return(expectedOccupancy()/cap);
 }
 
 void HeuristicQueue::buildChain(){
@@ -182,6 +175,14 @@ void HeuristicQueue::calculateSize(){
     for (int i=0; i<Nh; i++){
         Ns *= getHyperSize(i);
     }
+    
+    //calculate size of marginal distribution
+    int l=0,u=0;
+    for (int i=0; i<lowerLim.size(); i++){
+        u += upperLim[i]; l += lowerLim[i];
+    }
+    int dsize=min(u,cap)-l+1;
+    margDist.resize(dsize,0);
     
     //cout << "entire state space has size: " << Ns << " states" << endl;
     
@@ -267,6 +268,47 @@ void HeuristicQueue::nextCurrentState(){
                 i = -1; //exit
             }else if(state[i]>lowerLim[i]){
                 K_use -= state[i]-lowerLim[i]; state[i] = lowerLim[i];
+                i--;
+            }else{
+                i--;
+            }
+        }   
+    }
+    
+}
+
+
+void HeuristicQueue::previousCurrentState(){
+    //go back to the previous current state
+    
+    //advance state index
+    if (sidx>0){ 
+        sidx--;
+    }else{
+        sidx = Ns-1;
+    }
+    
+    //advance state form
+    int i = state.size()-1;
+    while (i>=0){
+        
+        if (i>=lowerLim.size()){ //hyper queues
+            
+            if (state[i]>0){
+                state[i]--;
+                i = -1; //exit
+            }else{
+                state[i] = getHyperSize(i-lowerLim.size())-1;
+                i--;
+            }
+            
+        }else{
+            
+            if (state[i]>lowerLim[i] && K_use>0  <upperLim[i] && K_use<cap){
+                state[i]--; K_use--;
+                i = -1; //exit
+            }else if(state[i]<upperLim[i]){
+                K_use += upperLim[i]-state[i]; state[i] = upperLim[i];
                 i--;
             }else{
                 i--;

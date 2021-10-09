@@ -35,8 +35,8 @@ class HeuristicQueue {
 public:
     
     //variables
-    double arrivalRate, serviceRate;
-    int Ns, cap, Nh, maxNz;
+    double arrivalRate,serviceRate;
+    int Ns,cap,Nh,maxNz;
     
     vector<int> state; //the current state
     int sidx; //index of the current state
@@ -47,6 +47,7 @@ public:
 
     vector<vector<int>> qColumnIndices;
     vector<vector<double>> qValues;
+    vector<double> margDist; //marginal probability distribution
 
     //methods
     void buildChain();
@@ -55,14 +56,15 @@ public:
     
     void initializeState(); //initialize the current state
     void nextCurrentState(); //move to the next state
+    void previousCurrentState(); //move to the previous state
     
     void allOutgoing(); //generate all jumpToIdx relative to the current state      
     void allIngoing(); //generate all jumpFromIdx relative to the current state
     
-    vector<double> marginalDist(vector<double> &pi); //returns the marginal distribution
-    double expectedOccupancy(vector<double> &pi); //returns the expected occupancy of capacity
-    double expectedOccupancyFraction(vector<double> &pi); //returns the expected fraction of capacity utilized
-    double rejectionProbability(vector<double> &pi); //returns the rejection probability using the marginal occupancy distribution
+    void marginalDist(vector<double> &pi); //returns the marginal distribution
+    double expectedOccupancy(); //returns the expected occupancy of capacity
+    double expectedOccupancyFraction(); //returns the expected fraction of capacity utilized
+    double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
     HeuristicQueue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues);

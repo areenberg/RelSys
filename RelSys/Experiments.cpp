@@ -89,6 +89,7 @@ void Experiments::heuristicExperiment(int nRep, int widx, string label){
         relocEva[0].runSimulation(seedList[rep],365,365,50);
     
         //evaluate ward
+        //relocEva[0].simulateMarginalDist(50,10000); //simulate solution instead of solving numerically
         relocEva[0].runHeuristic(widx);
         
         //get runtime

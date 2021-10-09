@@ -766,7 +766,6 @@ int RelocSimulation::minTimeSamples(){
         return(mn);
 }
 
-
 double RelocSimulation::randomExponential(double rate){
     //generate a random exponential double
     return(log(1-randomUniform())/(-rate));
