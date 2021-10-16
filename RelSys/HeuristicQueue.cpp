@@ -29,23 +29,28 @@
 #include <vector>
 #include <algorithm>  
 #include <iostream>
+#include <limits.h>
 
 using namespace std;
 
-HeuristicQueue::HeuristicQueue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues):
+HeuristicQueue::HeuristicQueue(int main_widx,vector<vector<int>> binMap, int c, vector<int> upperLim,
+        vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues, QueueData * wards):
+wards_pointer(wards),
 hbQueues_pointer(hbQueues),
 Nh(nhq),
 cap(c),
 arrivalRate(aRate),
 serviceRate(sRate),
 upperLim(upperLim),
-lowerLim(lowerLim)        
+lowerLim(lowerLim),
+binMap(binMap),
+main_widx(main_widx)        
 {
     checkInput();
+    calculateDischargeRates();
     calculateSize();
     initializeState();
     initializeJumbVectors();
-    
 }
 
 HeuristicQueue::HeuristicQueue(const HeuristicQueue& orig) {
@@ -54,13 +59,87 @@ HeuristicQueue::HeuristicQueue(const HeuristicQueue& orig) {
 HeuristicQueue::~HeuristicQueue() {
 }
 
-void HeuristicQueue::checkInput(){
+void HeuristicQueue::adjustLimits(){
+    //adjust limits according to the
+    //bin map
     
+    vector<int> ul(nBins,0);
+    
+    //adjust the upper limits
+    for (int bidx=0; bidx<nBins; bidx++){
+        for (int pidx=0; pidx<binMap.size(); pidx++){
+            if (binMap[pidx][bidx]==1){
+                ul[bidx] += upperLim[pidx];
+            }
+        }
+        if (ul[bidx]>cap){
+            ul[bidx]=cap;
+        }
+    }
+    
+    upperLim.resize(nBins,0);
+    for (int bidx=0; bidx<nBins; bidx++){
+        upperLim[bidx] = ul[bidx];
+    }
+    
+    //adjust the lower limits
+    int mn;
+    lowerLim.resize(nBins,0);
+    for (int bidx=0; bidx<nBins; bidx++){
+        mn = numeric_limits<int>::max();
+        for (int pidx=0; pidx<binMap.size(); pidx++){
+            if (lowerLim[pidx]<mn){
+                mn = lowerLim[pidx];
+            }
+        }
+        lowerLim[bidx] = mn;
+    }
+}
+
+void HeuristicQueue::newbinDischargeRates(vector<double> newBinDisRates){
+    binDischargeRates.resize(nBins,0);
+    for (int bidx=0; bidx<nBins; bidx++){
+        binDischargeRates[bidx]=newBinDisRates[bidx];
+    }
+}
+
+void HeuristicQueue::calculateDischargeRates(){
+    //calculate the aggregated discharge rates
+    
+    binDischargeRates.resize(nBins,0);
+    double smarr;
+    for (int bidx=0; bidx<nBins; bidx++){
+        smarr=0;
+        for (int pidx=0; pidx<binMap.size(); pidx++){
+            if (binMap[pidx][bidx]==1){
+                smarr += getWardArrivalRate(pidx);  
+            }
+        }
+        for (int pidx=0; pidx<binMap.size(); pidx++){
+            if (binMap[pidx][bidx]==1){
+                binDischargeRates[bidx] += (getWardArrivalRate(pidx)/smarr)*getWardServiceRate(pidx);
+            }            
+        }
+    }
+    
+}
+
+void HeuristicQueue::checkInput(){
+
     if (upperLim.size()!=lowerLim.size()){
         cout << "Error: Limits must be of equal length." << endl;
     }
-    if (upperLim.size()!=(Nh+1) || lowerLim.size()!=(Nh+1)){
-        cout << "Error: Limits must have same length as number of queues (main + hyper)." << endl;
+    
+    nBins = binMap[0].size();
+    
+    if (nBins>(Nh+1)){
+        cout << "Error: There are more state bins than queues in the system." << endl;
+    }
+    
+    adjustLimits();
+    
+    if (upperLim.size()!=nBins || lowerLim.size()!=nBins){
+        cout << "Error: Limits must have same length as number of state bins." << endl;
     }
     int k = 0;
     for (int i=0; i<upperLim.size(); i++){
@@ -170,7 +249,7 @@ void HeuristicQueue::buildTransposedChain(){
 void HeuristicQueue::calculateSize(){
     //calculate and store the size of the state space
     
-    Ns = cmb.capWithLimits(cap,upperLim,lowerLim); //size of the queue itself;
+    Ns = cmb.capWithLimits(cap,upperLim,lowerLim); //size of the main queue itself;
     
     for (int i=0; i<Nh; i++){
         Ns *= getHyperSize(i);
@@ -184,6 +263,21 @@ void HeuristicQueue::calculateSize(){
     int dsize=min(u,cap)-l+1;
     margDist.resize(dsize,0);
     
+    
+    //hyper queue indices
+    hyperWidx_vector.resize(Nh,0);
+    int added = 0;
+    for (int i=0; i<binMap.size(); i++){
+        if (i!=main_widx){
+            hyperWidx_vector[added] = i;
+            added++;
+        }
+    }
+    
+    //vectors used in generating the transition rates
+    fwvec.resize(nBins,0);
+    hblocked.resize(Nh,false);
+    
     //cout << "entire state space has size: " << Ns << " states" << endl;
     
 }
@@ -195,7 +289,7 @@ void HeuristicQueue::initializeState(){
     state.clear(); state.resize((lowerLim.size()+Nh),0);
     K_use = 0;
     for (int i=0; i<lowerLim.size(); i++){
-        state[i] = lowerLim[i]; //elements accounting for the queue itself
+        state[i] = lowerLim[i]; //elements accounting for the main queue itself
         K_use += lowerLim[i];
     }
     for (int i=lowerLim.size(); i<(lowerLim.size()+Nh); i++){
@@ -326,11 +420,9 @@ void HeuristicQueue::allOutgoing(){
     //2. The nodes linked to the hyper queues can only admit when the
     //associated hyper queue is in a blocked state.
     
-    int hq, ihq, jump, prod, delta, l, jj, k;
+    int hq, jump, prod;
     double diag = 0;
-    //vector<int> uLim, lLim;
-    vector<int> fwvec(lowerLim.size(),0);
-    
+    bool hasMain,jmpallow;
     toIdxSize = 0;
     
     //hyper queue jumps
@@ -338,6 +430,7 @@ void HeuristicQueue::allOutgoing(){
     for (int i=(state.size()-1); i>=lowerLim.size(); i--){
         
         if(state[i]<hyperBlockedStates(hq)){ //state is blocked
+            hblocked[hq]=true;
             for (int j=0; j<hyperOpenStates(hq); j++){ //loop over all open states the process can jump to
                 jump = (j+hyperBlockedStates(hq)) - state[i];
                 jump *= prod;
@@ -350,6 +443,7 @@ void HeuristicQueue::allOutgoing(){
             }
             
         }else{ //state is open
+            hblocked[hq]=false;
             for (int j=0; j<hyperBlockedStates(hq); j++){ //loop over all blocked states the process can jump to
                 jump = j + hyperOpenStates(hq) - (getHyperSize(hq)-1-state[i]); 
                 jump *= prod;
@@ -368,80 +462,73 @@ void HeuristicQueue::allOutgoing(){
     
     //queue jumps
     //admission
-    for (int i=(lowerLim.size()-1); i>=0; i--){
-        ihq = i+Nh;
-        hq = ihq - lowerLim.size(); 
-        if (i==0 || state[ihq]<hyperBlockedStates(hq)  ){
-            if (state[i]<upperLim[i] && K_use<cap){
+    for (int bidx=(lowerLim.size()-1); bidx>=0; bidx--){
+        //ihq = i+Nh;
+        //hq = ihq - lowerLim.size();
+        
+        //check if bin is associated with main queue or has blocked hyper queue
+        jmpallow=false;
+        hasMain=false;
+        hq=0;
+        if (binMap[main_widx][bidx]==1){
+            hasMain=true;
+            jmpallow=true;
+        }
+        while (jmpallow==false && hq<hyperWidx_vector.size()){
+            if (binMap[hyperWidx_vector[hq]][bidx]==1 && hblocked[hq]){
+                jmpallow=true;
+            }
+            hq++;
+        }
+        
+        //if (bidx==0 || state[ihq]<hyperBlockedStates(hq)  ){
+        if (jmpallow && state[bidx]<upperLim[bidx] && K_use<cap){
+            //if (state[bidx]<upperLim[bidx] && K_use<cap){
                 //admit one
-                if (i<(lowerLim.size()-1)){
-                    
-                    //old approach (proven buggy)
-//                    delta = cap-K_use; //delta capacity
-//                    l = (lowerLim.size()-1)-i;
-//                    uLim.resize(l,0); lLim.resize(l,0);
-//                    k = 0;
-//                    for (int j=(l-1); j>=0; j--){
-//                        jj = lowerLim.size()-1-k;
-//                        uLim[j] = min( (upperLim[jj]-state[jj]) , delta );
-//                        lLim[j] = lowerLim[jj]-state[jj];
-//                        k++;
-//                    }
-//                    jump = cmb.capWithLimits(delta,uLim,lLim);
-                    
-                    jump = forwardOne(K_use,fwvec,(state[i]+1),i);
-                    
+                if (bidx<(lowerLim.size()-1)){
+                    jump = forwardOne(K_use,fwvec,(state[bidx]+1),bidx);
                 }else{
                     jump = 1;
                 }
                 jump *= prod;
                 jumpToIdx[toIdxSize] = sidx+jump;
                 
-                if (i==0){
-                    jumpToRate[toIdxSize] = arrivalRate;
-                }else{
-                    jumpToRate[toIdxSize] = getHyperArrivalRate(hq);
-                }
+//                if (i==0){
+//                    jumpToRate[toIdxSize] = arrivalRate;
+//                }else{
+//                    jumpToRate[toIdxSize] = getHyperArrivalRate(hq);
+//                }
+                
+                jumpToRate[toIdxSize] = getAdmissionRate(bidx,hblocked,hasMain);
+                
                 diag -= jumpToRate[toIdxSize];
                 
                 toIdxSize++;
-            }
+           // }
         }
         
     }
     //discharge
-    for (int i=(lowerLim.size()-1); i>=0; i--){
-        if (state[i]>lowerLim[i]){
+    for (int bidx=(lowerLim.size()-1); bidx>=0; bidx--){
+        if (state[bidx]>lowerLim[bidx]){
             //discharge one
-            if (i<(lowerLim.size()-1)){
-                
-                //old approach (slightly faster, but appears to be buggy)
-//                delta = cap-K_use+1; //delta capacity
-//                l = (lowerLim.size()-1)-i;
-//                uLim.resize(l,0); lLim.resize(l,0);
-//                k = 0;
-//                for (int j=(l-1); j>=0; j--){
-//                    jj = lowerLim.size()-1-k;
-//                    uLim[j] = min( (upperLim[jj]-state[jj]) , delta );
-//                    lLim[j] = lowerLim[jj]-state[jj];
-//                    k++;
-//                }
-//                jump = cmb.capWithLimits(delta,uLim,lLim);
-                
-                jump = backwardOne(K_use,fwvec,(state[i]-1),i);
-                
+            if (bidx<(lowerLim.size()-1)){
+                jump = backwardOne(K_use,fwvec,(state[bidx]-1),bidx);
             }else{
                 jump = 1;
             }
             jump *= prod;
             jumpToIdx[toIdxSize] = sidx-jump;
             
-            if (i==0){
-                jumpToRate[toIdxSize] = serviceRate*state[i];
-            }else{
-                hq = i-1;
-                jumpToRate[toIdxSize] = getHyperServiceRate(hq)*state[i]; 
-            }
+//            if (bidx==0){
+//                jumpToRate[toIdxSize] = serviceRate*state[bidx];
+//            }else{
+//                hq = bidx-1;
+//                jumpToRate[toIdxSize] = getHyperServiceRate(hq)*state[bidx]; 
+//            }
+            
+            jumpToRate[toIdxSize] = binDischargeRates[bidx]*state[bidx];
+            
             diag -= jumpToRate[toIdxSize];
             
             toIdxSize++;
@@ -462,17 +549,17 @@ void HeuristicQueue::allIngoing(){
     //2. The nodes linked to the hyper queues can only admit when the
     //associated hyper queue is in a blocked state.
     
-    int hq, ihq, jump, prod; //delta, l, jj, k;
-    //vector<int> uLim, lLim;
-    vector<int> fwvec(lowerLim.size(),0);
-    
+    int hq, jump, prod; //delta, l, jj, k;
+    bool hasMain,jmpallow;
     fromIdxSize = 0;
     
     //hyper queue jumps
     hq=Nh-1; prod = 1;
+    hblocked.resize(Nh,false);
     for (int i=(state.size()-1); i>=lowerLim.size(); i--){
         
         if(state[i]<hyperBlockedStates(hq)){ //state is blocked
+            hblocked[hq]=true;
             for (int j=0; j<hyperOpenStates(hq); j++){ //loop over all open states the process <came from>
                 jump = (j+hyperBlockedStates(hq)) - state[i];
                 jump *= prod;
@@ -485,6 +572,7 @@ void HeuristicQueue::allIngoing(){
             }
             
         }else{ //state is open
+            hblocked[hq]=false;
             for (int j=0; j<hyperBlockedStates(hq); j++){ //loop over all blocked states the process <came from>
                 jump = j + hyperOpenStates(hq) - (getHyperSize(hq)-1-state[i]); 
                 jump *= prod; 
@@ -501,75 +589,64 @@ void HeuristicQueue::allIngoing(){
         hq--;
     }
     
-    //queue jumps
+    //queue jumps    
     //came from a discharge
-    for (int i=(lowerLim.size()-1); i>=0; i--){
+    for (int bidx=(lowerLim.size()-1); bidx>=0; bidx--){
          
-        if (state[i]<upperLim[i] && K_use<cap){
+        if (state[bidx]<upperLim[bidx] && K_use<cap){
             //find jump size up to the previous state
-            if (i<(lowerLim.size()-1)){
-                
-                //old approach (proven buggy)
-//                delta = cap-K_use; //delta capacity
-//                
-//                l = (lowerLim.size()-1)-i;
-//                uLim.resize(l,0); lLim.resize(l,0);
-//                k = 0;
-//                for (int j=(l-1); j>=0; j--){
-//                    jj = lowerLim.size()-1-k;
-//                    uLim[j] = min( (upperLim[jj]-state[jj]) , delta );
-//                    lLim[j] = lowerLim[jj]-state[jj];
-//                    cout << "uLim[j]=" << uLim[j] << ", lLim[j]=" << lLim[j] << endl;
-//                    k++;
-//                }
-//                jump = cmb.capWithLimits(delta,uLim,lLim);
-//                cout << "jump=" << jump << endl;
-                
-                jump = forwardOne(K_use,fwvec,(state[i]+1),i);    
-                
+            if (bidx<(lowerLim.size()-1)){
+                jump = forwardOne(K_use,fwvec,(state[bidx]+1),bidx);                
             }else{
                 jump = 1;
             }
-            
             
             jump *= prod;
             jumpFromIdx[fromIdxSize] = sidx+jump;
 //            cout << "from discharge: " << jumpFromIdx[fromIdxSize] << endl;
 //            cout << "sidx=" << sidx << ", jump=" << jump << endl;
             
-            if (i==0){
-                jumpFromRate[fromIdxSize] = serviceRate*(state[i]+1);
-            }else{
-                hq = i-1;
-                jumpFromRate[fromIdxSize] = getHyperServiceRate(hq)*(state[i]+1);
-            }
+//            if (bidx==0){
+//                jumpFromRate[fromIdxSize] = serviceRate*(state[bidx]+1);
+//            }else{
+//                hq = bidx-1;
+//                jumpFromRate[fromIdxSize] = getHyperServiceRate(hq)*(state[bidx]+1);
+//            }
+            
+            jumpFromRate[fromIdxSize] = binDischargeRates[bidx]*(state[bidx]+1);
                 
             fromIdxSize++;
         }
         
     }
+    
+    
+    
     //came from an admission
-    for (int i=(lowerLim.size()-1); i>=0; i--){
-        ihq = i+Nh;
-        hq = ihq - lowerLim.size();
-        if (state[i]>lowerLim[i] && (i==0 || state[ihq]<hyperBlockedStates(hq)) ){
+    for (int bidx=(lowerLim.size()-1); bidx>=0; bidx--){
+//        ihq = bidx+Nh;
+//        hq = ihq - lowerLim.size();
+        
+        //check if bin is associated with main queue or has blocked hyper queue
+        jmpallow=false;
+        hasMain=false;
+        hq=0;
+        if (binMap[main_widx][bidx]==1){
+            hasMain=true;
+            jmpallow=true;
+        }
+        while (jmpallow==false && hq<hyperWidx_vector.size()){
+            if (binMap[hyperWidx_vector[hq]][bidx]==1 && hblocked[hq]){
+                jmpallow=true;
+            }
+            hq++;
+        }
+        
+        if (jmpallow && state[bidx]>lowerLim[bidx]){
+//        if (state[bidx]>lowerLim[bidx] && (bidx==0 || state[ihq]<hyperBlockedStates(hq)) ){
             //find jump size down to the previous state
-            if (i<(lowerLim.size()-1)){
-                
-                //old approach (slightly faster, but appears to be buggy)
-//                delta = cap-K_use+1; //delta capacity
-//                l = (lowerLim.size()-1)-i;
-//                uLim.resize(l,0); lLim.resize(l,0);
-//                k = 0;
-//                for (int j=(l-1); j>=0; j--){
-//                    jj = lowerLim.size()-1-k;
-//                    uLim[j] = min( (upperLim[jj]-state[jj]) , delta );
-//                    lLim[j] = lowerLim[jj]-state[jj];
-//                    k++;
-//                }
-//                jump = cmb.capWithLimits(delta,uLim,lLim);
-                jump = backwardOne(K_use,fwvec,(state[i]-1),i);
-                
+            if (bidx<(lowerLim.size()-1)){
+                jump = backwardOne(K_use,fwvec,(state[bidx]-1),bidx);
             }else{
                 jump = 1;
             }
@@ -577,12 +654,14 @@ void HeuristicQueue::allIngoing(){
             jumpFromIdx[fromIdxSize] = sidx-jump;
             //cout << "from admission: " << jumpFromIdx[fromIdxSize] << endl;
             
-            if (i==0){
-                jumpFromRate[fromIdxSize] = arrivalRate;
-            }else{
-                hq = i-1;
-                jumpFromRate[fromIdxSize] = getHyperArrivalRate(hq); 
-            }
+//            if (bidx==0){
+//                jumpFromRate[fromIdxSize] = arrivalRate;
+//            }else{
+//                hq = bidx-1;
+//                jumpFromRate[fromIdxSize] = getHyperArrivalRate(hq); 
+//            }
+            
+            jumpFromRate[fromIdxSize] = getAdmissionRate(bidx,hblocked,hasMain);
             
             fromIdxSize++;
         }
@@ -595,23 +674,100 @@ void HeuristicQueue::allIngoing(){
     
 }
 
+double HeuristicQueue::getAdmissionRate(int &bidx, vector<bool> &hblocked, bool &hasMain){
+    //returns the rate with which admissions
+    //occur in the specified bin index (bidx).
+    
+    double rate;
+    if (hasMain){
+        rate=arrivalRate;
+    }else{
+        rate=0;
+    }
+    
+    for (int hq=0; hq<Nh; hq++){
+        if (binMap[hyperWidx_vector[hq]][bidx]==1 && hblocked[hq]){
+            rate+=getHyperArrivalRate(hq);
+        }
+    }
+    
+    return(rate);
+}
+
 double HeuristicQueue::calculateDiagonal(){
     //calculates the value of the diagonal related
     //to the current state.
     
-    int hq, ihq;
-    double diag = 0;
+    double diag=0;
+    
+//    int hq, ihq;
+    
+//    //hyper queue jumps
+//    hq=Nh-1;
+//    for (int i=(state.size()-1); i>=lowerLim.size(); i--){
+//        
+//        if(state[i]<hyperBlockedStates(hq)){ //state is blocked
+//            for (int j=0; j<hyperOpenStates(hq); j++){ //loop over all open states the process can jump to
+//                diag -= getHyperBlockedRate(hq,state[i])*getHyperOpenDist(hq,j); 
+//            }
+//            
+//        }else{ //state is open
+//            for (int j=0; j<hyperBlockedStates(hq); j++){ //loop over all blocked states the process can jump to
+//                diag -= getHyperOpenRate(hq, (state[i]-hyperBlockedStates(hq)) )*getHyperBlockedDist(hq,j);
+//            }
+//        }
+//        
+//        hq--;
+//    }
+//    
+//    //queue jumps
+//    //admission
+//    for (int i=(lowerLim.size()-1); i>=0; i--){
+//        ihq = i+Nh;
+//        hq = ihq - lowerLim.size(); 
+//        if (i==0 || state[ihq]<hyperBlockedStates(hq)  ){
+//            if (state[i]<upperLim[i] && K_use<cap){
+//                
+//                if (i==0){
+//                    diag -= arrivalRate;
+//                }else{
+//                    diag -= getHyperArrivalRate(hq);
+//                }
+//                
+//            }
+//        }
+//        
+//    }
+//    //discharge
+//    for (int i=(lowerLim.size()-1); i>=0; i--){
+//        if (state[i]>lowerLim[i]){
+//            
+//            if (i==0){
+//                diag -= serviceRate*state[i];
+//            }else{
+//                hq = i-1;
+//                diag -= getHyperServiceRate(hq)*state[i]; 
+//            }
+//            
+//        }
+//    }
+    
+    
+    int hq;
+    bool hasMain,jmpallow;
     
     //hyper queue jumps
     hq=Nh-1;
     for (int i=(state.size()-1); i>=lowerLim.size(); i--){
         
         if(state[i]<hyperBlockedStates(hq)){ //state is blocked
+            hblocked[hq]=true;
             for (int j=0; j<hyperOpenStates(hq); j++){ //loop over all open states the process can jump to
                 diag -= getHyperBlockedRate(hq,state[i])*getHyperOpenDist(hq,j); 
             }
             
         }else{ //state is open
+            hblocked[hq]=false;
             for (int j=0; j<hyperBlockedStates(hq); j++){ //loop over all blocked states the process can jump to
                 diag -= getHyperOpenRate(hq, (state[i]-hyperBlockedStates(hq)) )*getHyperBlockedDist(hq,j);
             }
@@ -622,33 +778,33 @@ double HeuristicQueue::calculateDiagonal(){
     
     //queue jumps
     //admission
-    for (int i=(lowerLim.size()-1); i>=0; i--){
-        ihq = i+Nh;
-        hq = ihq - lowerLim.size(); 
-        if (i==0 || state[ihq]<hyperBlockedStates(hq)  ){
-            if (state[i]<upperLim[i] && K_use<cap){
-                
-                if (i==0){
-                    diag -= arrivalRate;
-                }else{
-                    diag -= getHyperArrivalRate(hq);
-                }
-                
+    for (int bidx=(lowerLim.size()-1); bidx>=0; bidx--){
+        
+        //check if bin is associated with main queue or has blocked hyper queue
+        jmpallow=false;
+        hasMain=false;
+        hq=0;
+        if (binMap[main_widx][bidx]==1){
+            hasMain=true;
+            jmpallow=true;
+        }
+        while (jmpallow==false && hq<hyperWidx_vector.size()){
+            if (binMap[hyperWidx_vector[hq]][bidx]==1 && hblocked[hq]){
+                jmpallow=true;
             }
+            hq++;
+        }
+        
+        if (jmpallow && state[bidx]<upperLim[bidx] && K_use<cap){
+                diag -= getAdmissionRate(bidx,hblocked,hasMain);
         }
         
     }
     //discharge
-    for (int i=(lowerLim.size()-1); i>=0; i--){
-        if (state[i]>lowerLim[i]){
-            
-            if (i==0){
-                diag -= serviceRate*state[i];
-            }else{
-                hq = i-1;
-                diag -= getHyperServiceRate(hq)*state[i]; 
-            }
-            
+    for (int bidx=(lowerLim.size()-1); bidx>=0; bidx--){
+        if (state[bidx]>lowerLim[bidx]){
+            //discharge one
+            diag -= binDischargeRates[bidx]*state[bidx];
         }
     }
     
@@ -791,4 +947,14 @@ double HeuristicQueue::getHyperArrivalRate(int hq){
 double HeuristicQueue::getHyperServiceRate(int hq){
     
     return((hbQueues_pointer + hq)->serviceRate);
+}
+
+double HeuristicQueue::getWardArrivalRate(int ward){
+    
+    return((wards_pointer + ward)->arrivalRate);
+}
+
+double HeuristicQueue::getWardServiceRate(int ward){
+    
+    return((wards_pointer + ward)->serviceRate);
 }

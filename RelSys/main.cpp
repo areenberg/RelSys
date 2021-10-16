@@ -90,6 +90,11 @@ int main(int argc, char** argv) {
 
     //choose a queue to evaluate
     int widx = 0; //queue index to be evaluated
+//    vector<vector<int>> binMap = {{1,0,0},
+//                                  {0,1,0},
+//                                  {1,0,0},
+//                                  {0,0,1}};
+//    mdl.setBinMap(binMap);
     mdl.runHeuristic(widx);
 
     //get the result
@@ -119,7 +124,7 @@ int main(int argc, char** argv) {
     //setup and run simulation
     sim_mdl.setSeed(123); //set the seed
     double burnIn = 365; //burn-in time
-    double minTime = 1e6; //minimum simulation time
+    double minTime = 5e4; //minimum simulation time
     vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
     sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
 

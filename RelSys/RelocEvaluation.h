@@ -42,6 +42,8 @@ public:
     void runSimulation(int seed, int burnIn,
         int minTime, int minSamples=50);
     void simulateMarginalDist(double sampleBurnIn, int collectSamples); //replace numerical evaluation with a simulation
+    void setBinMap(vector<vector<int>> bMap);
+    void setBinDischargeRates(vector<double> disRates);
     
     //VARIABLES
     vector<double> pi; //state distribution
@@ -67,7 +69,9 @@ private:
     double sampleSD(vector<int> &freqDist);
     
     //VARIABLES
-    bool simReady,simMargDist;
+    vector<vector<int>> binMap;
+    vector<double> newDisRates;
+    bool simReady,simMargDist, changeDisRates;
     int nWards, seed, collectSamples;
     double sampleBurnIn;
     RelocSimulation * sim_pointer;
