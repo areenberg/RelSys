@@ -53,6 +53,7 @@ public:
     void buildChain();
     void buildTransposedChain();
     void printStateSpace();
+    void newbinDischargeRates(vector<double> newBinDisRates);
     
     void initializeState(); //initialize the current state
     void nextCurrentState(); //move to the next state
@@ -67,7 +68,8 @@ public:
     double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
-    HeuristicQueue(int c, vector<int> upperLim, vector<int> lowerLim, double aRate, double sRate, int nhq, HyperQueue* hbQueues);
+    HeuristicQueue(int main_widx, vector<vector<int>> binMap, int c, vector<int> upperLim, vector<int> lowerLim,
+    double aRate, double sRate, int nhq, HyperQueue* hbQueues, QueueData * wards);
     HeuristicQueue(const HeuristicQueue& orig);
     virtual ~HeuristicQueue();
 
@@ -75,15 +77,30 @@ private:
 
     //parameters and pointers
     HyperQueue * hbQueues_pointer;
+    QueueData * wards_pointer;
     
     vector<int> upperLim; //capacity limits
     vector<int> lowerLim;
+    vector<vector<int>> binMap; //patient types x bin map
+    vector<double> binDischargeRates;
+    vector<int> newHypIdx;
+    vector<int> newWardIdx;
+    int nBins;
+    int main_widx; //index of the main ward
+    vector<int> hyperWidx_vector;
+    vector<int> fwvec;
+    vector<bool> hblocked;
     
     Combinatorial cmb; //used for calculating jumps
     
     int K_use;
 
     //methods
+    double getAdmissionRate(int &bidx, vector<bool> &hblocked, bool &hasMain);
+    void calculateDischargeRates();
+    vector<int> redundantWards(); //find the wards that are redundant to the main ward
+    void optimizeRelocNetwork();
+    void adjustLimits();
     void calculateSize(); //calculate and store size of the state space
     void initializeJumbVectors(); //allocate memory for jumpToIdx and jumpFromIdx
     void maximumNonZero(); //derives an upper bound for the number of non-zero elements in the transition rate matrix;
@@ -102,6 +119,9 @@ private:
     int getHyperSize(int hq);
     double getHyperArrivalRate(int hq);
     double getHyperServiceRate(int hq);
+    double getWardArrivalRate(int widx);
+    double getWardServiceRate(int widx);
+    vector<double> getWardRelocationProbabilities(int widx);
     
 };
 

@@ -42,7 +42,8 @@ RelocEvaluation::RelocEvaluation(int nW, QueueData * wards):
 wards_pointer(wards),
 nWards(nW),
 simReady(false),
-simMargDist(false)        
+simMargDist(false),
+changeDisRates(false)        
 {
     initializeSystem();
 }
@@ -59,6 +60,79 @@ void RelocEvaluation::initializeSystem(){
     sim_pointer = new RelocSimulation[1];
     sim_pointer[0] = RelocSimulation(nWards,wards_pointer);
     
+    //set default binMap
+    setDefaultBinMap();
+    
+}
+
+void RelocEvaluation::setDefaultBinMap(){
+    //automatically merge patient types
+    //with equal service rates
+    
+    vector<bool> unusedColumn(nWards,true);
+    int idx,j;
+    bool check;
+    
+    binMap.resize(nWards);
+    for (int i=0; i<nWards; i++){
+        idx=i;
+        check=true;
+        binMap[i].resize(nWards,0);
+        j=0;
+        while (check && j<nWards){
+            if (check && i!=j && getWardServiceRate(i)==getWardServiceRate(j) && j<i){
+                idx=j;
+                check=false;
+            }
+            j++;
+        }
+        
+        binMap[i][idx]=1;
+        unusedColumn[idx]=false;
+    }
+    
+    int inUse=0;
+    for (int i=0; i<nWards; i++){
+        if (unusedColumn[i]==false){
+            inUse++;
+        }
+    }
+    
+    int k;
+    for (int i=0; i<nWards; i++){
+        binMap[i].resize(inUse,0);
+        k=0;
+        for (int j=0; j<nWards; j++){
+            if (unusedColumn[j]==false){
+                binMap[i][k]=binMap[i][j];
+                k++;
+            }
+            
+        }
+    }
+
+}
+
+
+void RelocEvaluation::setBinMap(vector<vector<int>> bMap){
+    //overwrite the default binMap
+    
+    binMap.resize(bMap.size());
+    for (int widx=0; widx<bMap.size(); widx++){
+        binMap[widx].resize(bMap[widx].size(),0);
+        for (int bidx=0; bidx<bMap[widx].size(); bidx++){
+            binMap[widx][bidx]=bMap[widx][bidx];
+        }
+    }
+    
+}
+
+void RelocEvaluation::setBinDischargeRates(vector<double> disRates){
+    changeDisRates=true;
+    newDisRates.resize(disRates.size(),0);
+    for (int i=0; i<disRates.size(); i++){
+        newDisRates[i]=disRates[i];
+    }
 }
 
 void RelocEvaluation::simulateMarginalDist(double smb, int cSam){
@@ -135,9 +209,16 @@ void RelocEvaluation::runHeuristic(int main_widx){
         setLowerLimits(lowerLimits,main_widx);
         
         //create the main (heuristic) queue object
-        cout << "Preparing..." << flush;
-        HeuristicQueue hqueue(capacity,upperLimits,lowerLimits,arrivalRate,serviceRate,nhq,hq_array);
-        cout << "done." << endl;
+        //cout << "Preparing..." << flush;
+     
+        HeuristicQueue hqueue(main_widx,binMap,capacity,upperLimits,lowerLimits,
+                arrivalRate,serviceRate,nhq,hq_array,wards_pointer);
+        if (changeDisRates){
+            //change the bin discharge rates
+            hqueue.newbinDischargeRates(newDisRates);
+        }
+        
+        //cout << "done." << endl;
         
         cout << "Evaluating Ward " << (main_widx+1) << "..." << endl;
         cout << "Number of states = " << hqueue.Ns << endl;

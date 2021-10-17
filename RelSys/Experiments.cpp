@@ -90,6 +90,18 @@ void Experiments::heuristicExperiment(int nRep, int widx, string label){
     
         //evaluate ward
         //relocEva[0].simulateMarginalDist(50,10000); //simulate solution instead of solving numerically
+//        vector<vector<int>> binMap = {{1,0,0,0,0}, //A
+//                                      {0,1,0,0,0}, //B
+//                                      {0,1,0,0,0}, //C
+//                                      //{0,0,1,0,0}, //D
+//                                      {0,1,0,0,0}, //E
+//                                      {0,1,0,0,0}, //F
+//                                      {0,1,0,0,0}, //G
+//                                      {0,0,0,1,0}, //H
+//                                      {0,0,0,1,0}, //I
+//                                      {0,0,0,0,1}}; //J
+//                                      //{0,0,1,0,0}};//K
+//        relocEva[0].setBinMap(binMap);
         relocEva[0].runHeuristic(widx);
         
         //get runtime
