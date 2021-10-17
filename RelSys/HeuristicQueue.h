@@ -83,6 +83,8 @@ private:
     vector<int> lowerLim;
     vector<vector<int>> binMap; //patient types x bin map
     vector<double> binDischargeRates;
+    vector<int> newHypIdx;
+    vector<int> newWardIdx;
     int nBins;
     int main_widx; //index of the main ward
     vector<int> hyperWidx_vector;
@@ -96,6 +98,8 @@ private:
     //methods
     double getAdmissionRate(int &bidx, vector<bool> &hblocked, bool &hasMain);
     void calculateDischargeRates();
+    vector<int> redundantWards(); //find the wards that are redundant to the main ward
+    void optimizeRelocNetwork();
     void adjustLimits();
     void calculateSize(); //calculate and store size of the state space
     void initializeJumbVectors(); //allocate memory for jumpToIdx and jumpFromIdx
@@ -117,6 +121,7 @@ private:
     double getHyperServiceRate(int hq);
     double getWardArrivalRate(int widx);
     double getWardServiceRate(int widx);
+    vector<double> getWardRelocationProbabilities(int widx);
     
 };
 

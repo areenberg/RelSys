@@ -59,6 +59,7 @@ private:
 
     //METHODS
     void initializeSystem();
+    void setDefaultBinMap();
     void initializeStateDistribution(HeuristicQueue &hqueue);
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);

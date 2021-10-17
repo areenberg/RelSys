@@ -46,6 +46,7 @@ lowerLim(lowerLim),
 binMap(binMap),
 main_widx(main_widx)        
 {
+    optimizeRelocNetwork();
     checkInput();
     calculateDischargeRates();
     calculateSize();
@@ -59,6 +60,164 @@ HeuristicQueue::HeuristicQueue(const HeuristicQueue& orig) {
 HeuristicQueue::~HeuristicQueue() {
 }
 
+void HeuristicQueue::optimizeRelocNetwork(){
+    
+    
+    vector<int> redidx = redundantWards();
+    int n,k,kk;
+    int nWards = binMap.size();
+    if (redidx.size()==1&&redidx[0]==-1){
+        n = nWards;
+    }else{
+        n = nWards-redidx.size();        
+    }
+    
+    vector<bool> rem(nWards,false);
+    
+    if (n<nWards){
+        
+        for (int i=0; i<redidx.size(); i++){
+            rem[redidx[i]]=true;
+        }
+        
+        //change binMap
+        vector<vector<int>> bm(n);
+        k=0;
+        for (int i=0; i<binMap.size(); i++){
+            if (rem[i]==false){
+                bm[k].resize(binMap[i].size(),0);
+                for (int j=0; j<binMap[i].size(); j++){
+                    bm[k][j]=binMap[i][j];
+                }
+                k++;
+            }
+        }
+        
+        vector<bool> unused(bm[0].size(),true);
+        for (int j=0; j<unused.size(); j++){
+            for (int i=0; i<bm.size(); i++){
+                if (bm[i][j]==1){
+                    unused[j]=false;
+                }
+            }
+        }
+        int cols=0;
+        for (int i=0; i<unused.size(); i++){
+            if (unused[i]==false){
+                cols++;
+            }
+        }
+        
+        binMap.resize(bm.size());
+        for (int i=0; i<bm.size(); i++){
+            binMap[i].resize(cols,0);
+            kk=0;
+            for (int j=0; j<bm[i].size(); j++){
+                if (unused[j]==false){
+                    binMap[i][kk]=bm[i][j];
+                    kk++;
+                }
+            }
+        }
+    }
+    
+    //create index mapping for wards and hyper queues
+    //the maps point to the unadjusted wards and hyper queues
+    
+    if (n<nWards){
+        
+        //hyper queue mapping
+        vector<int> hWidx(Nh,0);
+        kk=0;
+        for (int i=0; i<nWards; i++){
+            if (i!=main_widx){
+                hWidx[kk]=i;
+                kk++;
+            }
+        }
+        Nh -= redidx.size();
+        
+        newHypIdx.resize(Nh);
+        
+        kk=0;
+        for (int i=0; i<hWidx.size(); i++){
+            if (rem[hWidx[i]]==false){
+                newHypIdx[kk]=i;
+                kk++;
+            }
+        }
+        
+        //ward index mapping
+        newWardIdx.resize(n);
+        kk=0; int offs=0;
+        for (int i=0; i<nWards; i++){
+            if (rem[i]==false){
+                newWardIdx[kk]=i;
+                kk++;
+            }else if (i<main_widx){
+                offs++;
+            }
+        }
+        main_widx-=offs;
+        
+    }else{
+        
+        //ward index mapping
+        newWardIdx.resize(n);
+        for (int i=0; i<n; i++){
+            newWardIdx[i]=i;
+        }
+        //hyper queue mapping
+        newHypIdx.resize(Nh);
+        for (int i=0; i<Nh; i++){
+            newHypIdx[i]=i;
+        }
+        
+    }
+    
+//    cout << "main_widx=" << main_widx << endl;
+//    
+//    cout << "newWardIdx: "; 
+//    for (int i=0; i<n; i++){
+//        cout << newWardIdx[i] << " ";
+//    }
+//    cout << endl;
+//    cout << "newHypIdx: ";
+//    for (int i=0; i<Nh; i++){
+//        cout << newHypIdx[i] << " ";
+//    }
+//    cout << endl;
+    
+}
+
+vector<int> HeuristicQueue::redundantWards(){
+    //indices of the redundant wards
+    
+    vector<int> redidx;
+    int k,n,nWards = binMap.size();
+    
+    n=0;
+    for (int pidx=0; pidx<nWards; pidx++){
+        if (pidx!=main_widx && getWardRelocationProbabilities(pidx)[main_widx]==0 ){
+            n++;
+        }
+    }
+    if (n>0){
+        redidx.resize(min(n,(nWards-2)),0);
+        k=0;
+        for (int pidx=0; pidx<nWards; pidx++){
+            if (k<(nWards-2) && pidx!=main_widx && getWardRelocationProbabilities(pidx)[main_widx]==0 ){
+                redidx[k]=pidx;
+                k++;
+            }
+        }
+    }else{
+        redidx.resize(1,-1);
+    }
+    
+    return(redidx);
+}
+
 void HeuristicQueue::adjustLimits(){
     //adjust limits according to the
     //bin map
@@ -69,7 +228,7 @@ void HeuristicQueue::adjustLimits(){
     for (int bidx=0; bidx<nBins; bidx++){
         for (int pidx=0; pidx<binMap.size(); pidx++){
             if (binMap[pidx][bidx]==1){
-                ul[bidx] += upperLim[pidx];
+                ul[bidx] += upperLim[newWardIdx[pidx]];
             }
         }
         if (ul[bidx]>cap){
@@ -89,7 +248,7 @@ void HeuristicQueue::adjustLimits(){
         mn = numeric_limits<int>::max();
         for (int pidx=0; pidx<binMap.size(); pidx++){
             if (lowerLim[pidx]<mn){
-                mn = lowerLim[pidx];
+                mn = lowerLim[newWardIdx[pidx]];
             }
         }
         lowerLim[bidx] = mn;
@@ -906,55 +1065,60 @@ int HeuristicQueue::backwardOne(int Ku, vector<int> &j, int targetval, int targe
 
 int HeuristicQueue::hyperOpenStates(int hq){
     
-    return((hbQueues_pointer + hq)->openRates.size());
+    return((hbQueues_pointer + newHypIdx[hq])->openRates.size());
 }
 
 int HeuristicQueue::hyperBlockedStates(int hq){
     
-    return((hbQueues_pointer + hq)->blockedRates.size());
+    return((hbQueues_pointer + newHypIdx[hq])->blockedRates.size());
 }
 
 double HeuristicQueue::getHyperOpenRate(int hq, int idx){
     
-    return((hbQueues_pointer + hq)->openRates[idx]);
+    return((hbQueues_pointer + newHypIdx[hq])->openRates[idx]);
 }
 
 double HeuristicQueue::getHyperOpenDist(int hq, int idx){
     
-    return((hbQueues_pointer + hq)->openDist[idx]);
+    return((hbQueues_pointer + newHypIdx[hq])->openDist[idx]);
 }
 
 double HeuristicQueue::getHyperBlockedRate(int hq, int idx){
     
-    return((hbQueues_pointer + hq)->blockedRates[idx]);
+    return((hbQueues_pointer + newHypIdx[hq])->blockedRates[idx]);
 }
 
 double HeuristicQueue::getHyperBlockedDist(int hq, int idx){
     
-    return((hbQueues_pointer + hq)->blockedDist[idx]);
+    return((hbQueues_pointer + newHypIdx[hq])->blockedDist[idx]);
 }
 
 int HeuristicQueue::getHyperSize(int hq){
     
-    return((hbQueues_pointer + hq)->numberOfStates);
+    return((hbQueues_pointer + newHypIdx[hq])->numberOfStates);
 }
 
 double HeuristicQueue::getHyperArrivalRate(int hq){
     
-    return((hbQueues_pointer + hq)->arrivalRate);
+    return((hbQueues_pointer + newHypIdx[hq])->arrivalRate);
 }
 
 double HeuristicQueue::getHyperServiceRate(int hq){
     
-    return((hbQueues_pointer + hq)->serviceRate);
+    return((hbQueues_pointer + newHypIdx[hq])->serviceRate);
 }
 
-double HeuristicQueue::getWardArrivalRate(int ward){
+double HeuristicQueue::getWardArrivalRate(int widx){
     
-    return((wards_pointer + ward)->arrivalRate);
+    return((wards_pointer + newWardIdx[widx])->arrivalRate);
 }
 
-double HeuristicQueue::getWardServiceRate(int ward){
+double HeuristicQueue::getWardServiceRate(int widx){
     
-    return((wards_pointer + ward)->serviceRate);
+    return((wards_pointer + newWardIdx[widx])->serviceRate);
+}
+
+vector<double> HeuristicQueue::getWardRelocationProbabilities(int widx){
+    
+    return((wards_pointer + widx)->relocationProbabilities);
 }
