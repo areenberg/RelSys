@@ -36,7 +36,7 @@ public:
     
     //variables
     double arrivalRate,serviceRate;
-    int Ns,cap,Nh,maxNz;
+    int Ns,cap,Nh,maxNz,nBins;
     
     vector<int> state; //the current state
     int sidx; //index of the current state
@@ -85,7 +85,6 @@ private:
     vector<double> binDischargeRates;
     vector<int> newHypIdx;
     vector<int> newWardIdx;
-    int nBins;
     int main_widx; //index of the main ward
     vector<int> hyperWidx_vector;
     vector<int> fwvec;

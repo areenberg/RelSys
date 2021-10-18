@@ -60,7 +60,7 @@ private:
     //METHODS
     void initializeSystem();
     void setDefaultBinMap();
-    void initializeStateDistribution(HeuristicQueue &hqueue);
+    void initializeStateDistribution(HeuristicQueue &hqueue, bool erlangInit=false);
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
@@ -68,6 +68,8 @@ private:
     double Gfunction(double q, double x);
     double sampleMean(vector<int> &freqDist);
     double sampleSD(vector<int> &freqDist);
+    double erlangLoss(int &k, double &lambda, double &mu, int &servers);
+    long double factorial(int &x);
     
     //VARIABLES
     vector<vector<int>> binMap;

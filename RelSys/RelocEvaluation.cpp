@@ -110,6 +110,7 @@ void RelocEvaluation::setDefaultBinMap(){
             
         }
     }
+    //cout << "State reduced with " << (nWards-binMap[0].size()) << " bins." << endl;
 
 }
 
@@ -390,24 +391,64 @@ double RelocEvaluation::Gfunction(double q, double x){
     
 }
 
-void RelocEvaluation::initializeStateDistribution(HeuristicQueue &hqueue){
+void RelocEvaluation::initializeStateDistribution(HeuristicQueue &hqueue, bool erlangInit){
     //initial state distribution
-    
-    //random number generation
-    mt19937 rgen(seed);
-    uniform_real_distribution<> dis(1,hqueue.Ns);
-    
     pi.resize(hqueue.Ns,0);
     
     double sm=0;
-    for (int i=0; i<hqueue.Ns; i++){
-        pi[i] = dis(rgen);
-        sm += pi[i]; 
-    }
+    if (erlangInit){
+        //initialize using the Erlang loss model
+        hqueue.initializeState();
+        int K;
+        for (int i=0; i<hqueue.Ns; i++){
+            K=0;
+            for (int j=0; j<hqueue.nBins; j++){
+                K+=hqueue.state[j];
+            }
+            pi[i]=erlangLoss(K,hqueue.arrivalRate,hqueue.serviceRate,hqueue.cap);
+            sm+=pi[i];
+            hqueue.nextCurrentState();
+        }
+    }else{
+        //initialize using random numbers
+        mt19937 rgen(seed);
+        uniform_real_distribution<> dis(1,hqueue.Ns);
+    
+        for (int i=0; i<hqueue.Ns; i++){
+            pi[i] = dis(rgen);
+            sm += pi[i]; 
+        }
+    }     
+    
+    //normalize    
     for (int i=0; i<hqueue.Ns; i++){
         pi[i] /= sm;
     }
     
+}
+
+double RelocEvaluation::erlangLoss(int &k, double &lambda, double &mu, int &servers){
+    //calculates the probability of k occupied servers
+    //using the Erlang loss model
+    
+    double r=lambda/mu;
+    
+    double fr1 = pow(r,(double)k)/factorial(k);
+    double fr2=0;
+    for (int i=0; i<=servers; i++){
+        fr2+=pow(r,(double)i)/factorial(i);
+    }
+    return(fr1/fr2);
+}
+
+long double RelocEvaluation::factorial(int &x){
+    long double fact = 1;
+    if (x>0){
+        for (int i=1; i<=x; i++){
+            fact *= i;
+        }
+    }
+    return(fact);
 }
 
 int RelocEvaluation::getWardID(int ward){
