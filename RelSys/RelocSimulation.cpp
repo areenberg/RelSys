@@ -306,8 +306,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     
     auto stop = chrono::system_clock::now();
     auto elapsed = chrono::duration_cast<chrono::milliseconds>(stop - start);
-    runtime = elapsed.count();
-    cout << "runtime: " << runtime << " ms" << endl;
+    cout << "Runtime of simulation: " << elapsed.count() << " milliseconds\n" << endl;
 }
 
 void RelocSimulation::evaluateBurnIn(){
@@ -339,7 +338,7 @@ void RelocSimulation::evaluateBurnIn(){
         }else{
             checkBurnIn=false;
             burnIn=clock;
-            cout << "Simulation burn-in at: " << burnIn << endl;
+            cout << " simulation burn-in at: " << burnIn << " (continuing simulation) ... " << flush;
         }
     }
     

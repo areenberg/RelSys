@@ -36,7 +36,7 @@ public:
     
     //variables
     double arrivalRate,serviceRate;
-    int Ns,cap,Nh,maxNz;
+    int Ns,cap,Nh,maxNz,nBins;
     
     vector<int> state; //the current state
     int sidx; //index of the current state
@@ -60,7 +60,7 @@ public:
     void previousCurrentState(); //move to the previous state
     
     void allOutgoing(); //generate all jumpToIdx relative to the current state      
-    void allIngoing(); //generate all jumpFromIdx relative to the current state
+//    void allIngoing(); //generate all jumpFromIdx relative to the current state (currently buggy)
     
     void marginalDist(vector<double> &pi); //returns the marginal distribution
     double expectedOccupancy(); //returns the expected occupancy of capacity
@@ -85,8 +85,8 @@ private:
     vector<double> binDischargeRates;
     vector<int> newHypIdx;
     vector<int> newWardIdx;
-    int nBins;
     int main_widx; //index of the main ward
+    int maximumSize;
     vector<int> hyperWidx_vector;
     vector<int> fwvec;
     vector<bool> hblocked;
