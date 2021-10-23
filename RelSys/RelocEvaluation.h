@@ -44,6 +44,8 @@ public:
     void simulateMarginalDist(double sampleBurnIn, int collectSamples); //replace numerical evaluation with a simulation
     void setBinMap(vector<vector<int>> bMap);
     void setBinDischargeRates(vector<double> disRates);
+    void setOpenHyperStates(int n);
+    void setBlockedHyperStates(int n);
     
     //VARIABLES
     vector<double> pi; //state distribution
@@ -60,6 +62,7 @@ private:
     //METHODS
     void initializeSystem();
     void setDefaultBinMap();
+    void setDefaultHyperQueueStates();
     void initializeStateDistribution(HeuristicQueue &hqueue, bool erlangInit=false);
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
@@ -74,6 +77,8 @@ private:
     //VARIABLES
     vector<vector<int>> binMap;
     vector<double> newDisRates;
+    vector<int> hyperOpenStates; //number of open states for each hyper queue
+    vector<int> hyperBlockedStates; //number of blocked states for each hyper queue
     bool simReady,simMargDist, changeDisRates;
     int nWards, seed, collectSamples;
     double sampleBurnIn;

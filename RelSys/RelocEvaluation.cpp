@@ -55,14 +55,35 @@ RelocEvaluation::~RelocEvaluation() {
 }
 
 void RelocEvaluation::initializeSystem(){
+
+    //set states in hyper queues
+    setDefaultHyperQueueStates();
     
     //simulation variables
-    sim_pointer = new RelocSimulation[1];
-    sim_pointer[0] = RelocSimulation(nWards,wards_pointer);
+    sim_pointer = new RelocSimulation(nWards,wards_pointer);
     
     //set default binMap
     setDefaultBinMap();
     
+}
+
+void RelocEvaluation::setDefaultHyperQueueStates(){
+    hyperOpenStates.resize((nWards-1),2); //2 open states
+    hyperBlockedStates.resize((nWards-1),1); //1 blocked state
+}
+
+void RelocEvaluation::setOpenHyperStates(int n){
+    //modifies all open hyper queues
+    for (int i=0; i<hyperOpenStates.size(); i++){
+        hyperOpenStates[i] = n;
+    }
+}
+
+void RelocEvaluation::setBlockedHyperStates(int n){
+    //modifies all blocked hyper queues
+    for (int i=0; i<hyperBlockedStates.size(); i++){
+        hyperBlockedStates[i] = n;
+    }    
 }
 
 void RelocEvaluation::setDefaultBinMap(){
@@ -148,16 +169,16 @@ void RelocEvaluation::runSimulation(int sd, int burnIn,
     
     seed = sd;
     
-    sim_pointer[0].setSeed(seed);
+    sim_pointer->setSeed(seed);
     
-    auto start = high_resolution_clock::now();
+    //auto start = high_resolution_clock::now();
     
     vector<int> dummyVec(1,-1);
-    sim_pointer[0].simulate(burnIn,minTime,dummyVec,minSamples);
+    sim_pointer->simulate(burnIn,minTime,dummyVec,minSamples);
     
-    auto stop = high_resolution_clock::now(); //stop time 
-    auto duration = duration_cast<milliseconds>(stop - start); 
-    cout << "Runtime of simulation: " << duration.count() << " milliseconds\n" << endl;
+    //auto stop = high_resolution_clock::now(); //stop time 
+    //auto duration = duration_cast<milliseconds>(stop - start); 
+    //cout << "Runtime of simulation: " << duration.count() << " milliseconds\n" << endl;
     
     simReady = true;
 }
@@ -170,8 +191,6 @@ void RelocEvaluation::runHeuristic(int main_widx){
         //create and add surrogate queues to the system
         double arr;
         int nhq = nWards-1; //number of hyper queues
-        int statesBlocked = 1;
-        int statesOpen = 2;
     
         //hyper queue indices
         vector<int> hyperWidx_vector(nhq,0);
@@ -189,7 +208,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
         for (int i=0; i<nhq; i++){
             arr =  getWardArrivalRate(hyperWidx_vector[i])*getWardRelocationProbabilities(hyperWidx_vector[i])[main_widx];
             
-            hq_array[i] = HyperQueue(hyperWidx_vector[i],statesBlocked,statesOpen,
+            hq_array[i] = HyperQueue(hyperWidx_vector[i],hyperBlockedStates[i],hyperOpenStates[i],//statesBlocked,statesOpen,
                 arr,getWardServiceRate(hyperWidx_vector[i]),sim_pointer);
             cout << "Fit " << (i+1) << endl;
             hq_array[i].fitAll(seed);
@@ -274,8 +293,8 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     //tail cut-off probability mass
     double tailden = 1e-6;
     
-    //vector<vector<double>> dd = sim_pointer[0].denDist[main_widx];
-    vector<vector<int>> fd = sim_pointer[0].freqDist[main_widx];
+    //vector<vector<double>> dd = sim_pointer.denDist[main_widx];
+    vector<vector<int>> fd = sim_pointer->freqDist[main_widx];
     
 //    cout << "Freq. distribution:" << endl;
 //    for (int i=0; i<fd.size(); i++){
@@ -287,7 +306,7 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     
     double mn,k,p;
     
-    cout << "Upper truncation cap. limits" << endl;
+    cout << "Upper truncation cap. limits:" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
         
         //truncation using Chebyshev's inequality
@@ -312,7 +331,7 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
 void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
     //lower truncation limits are not adjusted (for now).
     
-    cout << "Lower truncation cap. limits" << endl;
+    cout << "Lower truncation cap. limits:" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
         cout << lowerLimits[pidx] << " " << flush;
     }

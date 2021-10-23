@@ -43,7 +43,7 @@ arrivalRate(aRate),
 serviceRate(sRate),
 //simulation        
 sim_pointer(sm)
-{    
+{
 }
 
 HyperQueue::HyperQueue(const HyperQueue& orig) {
@@ -98,14 +98,14 @@ void HyperQueue::fitBlockedPH(int seed){
     ph_blocked.run(EMiterations,seed);
     
     //get the result
-    //cout << "Exit-rates:" << endl;
+//    cout << "Rates:" << endl;
     for (int i=0; i<blockedRates.size(); i++){
-        //cout << ph_blocked.exit_rate_vector[i] << endl;
+//        cout << ph_blocked.exit_rate_vector[i] << endl;
         blockedRates[i] = ph_blocked.exit_rate_vector[i];
     }
-    //cout << "Distribution, pi:" << endl;
+//    cout << "Distribution:" << endl;
     for (int i=0; i<blockedDist.size(); i++){
-        //cout << ph_blocked.init_dist[i] << endl;
+//        cout << ph_blocked.init_dist[i] << endl;
         blockedDist[i] = ph_blocked.init_dist[i];
     }
     
@@ -115,9 +115,9 @@ void HyperQueue::fitAll(int seed){
     //fits all PH parameters
     
     //cout << "WARD " << wardIndex << endl;
-    cout << "Open Parameters" << endl;
+    cout << "Open Parameters (phases=" << openRates.size() << ")" << endl;
     fitOpenPH(seed);
-    cout << "Blocked Parameters" << endl; 
+    cout << "Blocked Parameters (phases=" << blockedRates.size() << ")" << endl; 
     fitBlockedPH(seed);
     
 }

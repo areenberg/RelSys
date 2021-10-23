@@ -1840,7 +1840,7 @@ void PhaseFitter::setHyberExponential(int p=2){
     //set output PH distribution to hyber exponential.
     //p = Number of phases in output PH distribution.
     phases = p; 
-    PHDistribution = 2;
+    PHDistribution = 2; //type of PH distribution
 }
 
 void PhaseFitter::setSumOfExponentials(int p=2){

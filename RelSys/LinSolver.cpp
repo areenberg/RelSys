@@ -64,6 +64,7 @@ void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, do
     
     cout << "Building transition matrix..." << endl;
     cout << "Step 1:" << endl;
+    //q.buildChain(); // <<<--- remember to delete
     q.buildTransposedChain(); //generate and store the entire transposed transition matrix
     
     cout << "Step 2:" << endl;
@@ -105,59 +106,64 @@ void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, do
     
 }
 
-void LinSolver::sorOnDemand(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps){
-    
-    cout << "Engaging SOR (on demand)." << endl;
-    
-    double sm, x_new, diff, tol;
-    int maxIter = 1e4, iter = 0;
-    
-    do {
-        tol = 0.0;
-        q.initializeState();
-        for (int i=0; i<q.Ns; i++){
-            //cout << "state " << i << endl;
-            q.allIngoing();
-            //scale
-            double scaler = 1.0/q.jumpFromRate[q.fromIdxSize-1];
-            for (int j=0; j<q.fromIdxSize; j++){
-                q.jumpFromRate[j] *= scaler; 
-            }
-            
-            sm = 0;
-            for (int j=0; j<q.fromIdxSize; j++){
-                sm += q.jumpFromRate[j] * pi[q.jumpFromIdx[j]];
-            }
-            
-            x_new = pi[i] - relaxation*sm;
-            
-            diff = abs(x_new-pi[i])/pi[i];
-                
-            if (diff>tol){
-                tol = diff;
-            }
-            pi[i] = x_new;
-            q.nextCurrentState();
-        }
-        
-        normalize(pi);
-        
-        iter++;
-        cout << tol << endl;
-    }while (tol>eps && iter<maxIter);
-    cout << "SOR stats: " << iter << " iterations, tolerance " << tol << endl;
-    
-}
+//void LinSolver::sorOnDemand(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps){
+//    
+//    cout << "Engaging SOR (on demand)." << endl;
+//    
+//    double sm, x_new, diff, tol;
+//    int maxIter = 1e4, iter = 0;
+//    
+//    do {
+//        tol = 0.0;
+//        q.initializeState();
+//        for (int i=0; i<q.Ns; i++){
+//            //cout << "state " << i << endl;
+//            q.allIngoing();
+//            //scale
+//            double scaler = 1.0/q.jumpFromRate[q.fromIdxSize-1];
+//            for (int j=0; j<q.fromIdxSize; j++){
+//                q.jumpFromRate[j] *= scaler; 
+//            }
+//            
+//            sm = 0;
+//            for (int j=0; j<q.fromIdxSize; j++){
+//                sm += q.jumpFromRate[j] * pi[q.jumpFromIdx[j]];
+//            }
+//            
+//            x_new = pi[i] - relaxation*sm;
+//            
+//            diff = abs(x_new-pi[i])/pi[i];
+//                
+//            if (diff>tol){
+//                tol = diff;
+//            }
+//            pi[i] = x_new;
+//            q.nextCurrentState();
+//        }
+//        
+//        normalize(pi);
+//        
+//        iter++;
+//        cout << tol << endl;
+//    }while (tol>eps && iter<maxIter);
+//    cout << "SOR stats: " << iter << " iterations, tolerance " << tol << endl;
+//    
+//}
 
 
 void LinSolver::scale(vector<vector<double>> &values){
     //scales the transposed and stored transition matrix so all diagonal elements equal 1
     
     double scaler;
+    int scalerIdx;
     
     StatusBar sbar(values.size(),30);
     for (int i=0; i<values.size(); i++){
-        scaler = 1.0/values[i][values[i].size()-1];
+        scalerIdx=0;
+        while(values[i][scalerIdx]>=0){
+            scalerIdx++;
+        }
+        scaler = 1.0/values[i][scalerIdx];
         for (int j=0; j<values[i].size(); j++){
             values[i][j] *= scaler;
         }
@@ -343,57 +349,6 @@ void LinSolver::monteCarlo(HeuristicQueue &q,
     
     
 }
-
-
-
-//void LinSolver::sorExactSystem(vector<double> &pi, EntireSystem &sys, double relaxation, double eps){
-//    //SOR algorithm for the exact system
-//    
-//    cout << "Engaging SOR for exact system." << endl;
-//    
-//    double sm, x_new, diff, tol;
-//    int maxIter = 1e4, iter = 0;
-//    
-//    cout << "Building transition matrix..." << endl;
-//    cout << "Step 1:" << endl;
-//    sys.buildTransposedChain(); //generate and store the entire transposed transition matrix
-//    
-//    cout << "Step 2:" << endl;
-//    scale(sys.qValues); //scale the transposed transition matrix
-//    
-//    cout << "Solving state distribution..." << endl;
-//    StatusBar sbar(1e-4-eps,30);
-//    do {
-//        tol = 0.0;
-//        for (int i=0; i<sys.nS; i++){
-//            sm = 0;
-//            for (int j=0; j<sys.qColumnIndices[i].size(); j++){
-//                sm += sys.qValues[i][j] * pi[sys.qColumnIndices[i][j]];
-//            }
-//            
-//            x_new = pi[i] - relaxation*sm;
-//            diff = abs(x_new-pi[i])/pi[i];
-//            if (diff>tol){
-//                tol = diff;
-//            }
-//            pi[i] = x_new;
-//        }
-//        
-//        normalize(pi);
-//        
-//        iter++;
-//        if (iter%10==0){
-//            //cout << tol << endl;
-//            double bval = 1e-4-tol;
-//            sbar.updateBar(bval);
-//        }
-//        
-//    }while (tol>eps && iter<maxIter);
-//    sbar.endBar();
-//    cout << "SOR stats: " << iter << " iterations, tolerance " << tol << endl;
-//    
-//}
-
 
 double LinSolver::memUsage(){
     //memory usage in kilobytes at runtime for Linux operating systems

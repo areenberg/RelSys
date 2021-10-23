@@ -60,7 +60,7 @@ public:
     void previousCurrentState(); //move to the previous state
     
     void allOutgoing(); //generate all jumpToIdx relative to the current state      
-    void allIngoing(); //generate all jumpFromIdx relative to the current state
+//    void allIngoing(); //generate all jumpFromIdx relative to the current state (currently buggy)
     
     void marginalDist(vector<double> &pi); //returns the marginal distribution
     double expectedOccupancy(); //returns the expected occupancy of capacity
@@ -86,6 +86,7 @@ private:
     vector<int> newHypIdx;
     vector<int> newWardIdx;
     int main_widx; //index of the main ward
+    int maximumSize;
     vector<int> hyperWidx_vector;
     vector<int> fwvec;
     vector<bool> hblocked;

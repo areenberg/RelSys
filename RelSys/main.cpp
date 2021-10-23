@@ -90,6 +90,12 @@ int main(int argc, char** argv) {
     
     //choose a queue to evaluate
     int widx = 0; //queue index to be evaluated
+    
+    //choose number of states in PH distributions (optional)
+    mdl.setOpenHyperStates(2);
+    mdl.setBlockedHyperStates(1);
+    
+    //run the model
     mdl.runHeuristic(widx);
 
     //get the result
