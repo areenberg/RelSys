@@ -104,10 +104,10 @@ Now, specify the customer type parameters. In this example we consider a system 
     int nCustomerTypes = 4;
 
     //arrival rates for each customer type
-    vector<double> arrivalRates = {1.2,1.8,0.5,2.5};
+    vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
 
     //mean service time for each customer type
-    vector<double> serviceTimes = {10,50,25,5};
+    vector<double> serviceTimes = {10,5,10,8};
 
     //fraction of rejected customers that are moved to an alternative queue node
     //this is an nCustomerTypes x nQueues matrix
@@ -138,7 +138,7 @@ Note that the relocation probabilities (`relProbs`) do not have to sum to one. I
     int nQueues = 4;
 
     //capacity of each queue
-    vector<int> capacity = {15,18,12,16};
+    vector<int> capacity = {15,20,10,30};
 
     //calculate system input parameters from customer types to queues
     SystemParameters sysParam(nQueues,nCustomerTypes,custs_array);

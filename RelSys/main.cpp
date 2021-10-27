@@ -227,6 +227,7 @@ int main(int argc, char** argv) {
 
         cout << "Expected fraction of servers occupied:" << endl;
         cout << sim_mdl.expOccFraction[sim_widx] << endl;
+
     }
 
     return 0;

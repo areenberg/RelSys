@@ -38,7 +38,11 @@ wards_pointer(wards),
 nWards(nW),
 serTimeExponential(true),
 timeSamplingEnabled(true),
-stdMult(1.0)        
+checkAccuracy(false),
+checkBurnIn(false),
+burnInInit(true),        
+stdMult(1.0),
+accTol(5e-3)        
 {
     initializeSystem();
 }
@@ -59,10 +63,24 @@ void RelocSimulation::initializeSystem(){
         maxOcc += getWardCapacity(widx);
     }
     service_array.resize(maxOcc);
+    
+    //set maximum generated number
+    if (RAND_MAX==numeric_limits<int>::max()){
+        mxRnd = RAND_MAX;
+    }else{
+        mxRnd = RAND_MAX+1;
+    }
 }
 
 void RelocSimulation::disableTimeSampling(){
     timeSamplingEnabled = false;
+}
+
+void RelocSimulation::setAccuracy(double a){
+    //change the accuracy of the simulation.
+    //only applicable when the simulation time is
+    //set to -1
+    accTol=a;
 }
 
 void RelocSimulation::calculateArrivalRates(){
@@ -124,7 +142,7 @@ void RelocSimulation::generateArrival(){
                min_widx = widx; min_pidx = pidx;
             }
         }
-    }        
+    }
         
     //create
     nextArrival[0] = Customer(nextArrivalTime[min_widx][min_pidx],
@@ -133,43 +151,6 @@ void RelocSimulation::generateArrival(){
     
 }
 
-//void RelocSimulation::generateArrivalList(double currentClock){
-//    //generate a long list of future arrivals with arrival times offset
-//    //by currentClock
-//    
-//    initializeArrivalTimes(currentClock);
-//    
-//    //append patients to the list
-//    double arrClock, serTime, mn;
-//    int min_widx, min_pidx;
-//    //vector<int> genWidx(nWards,0);
-//    //vector<int> genPidx(nWards,0);
-//    
-//    for (int i=0; i<patientArraySize; i++){
-//        
-//        mn = numeric_limits<double>::max();
-//        
-//        //find minimum arrival time        
-//        for (int widx=0; widx<nWards; widx++){
-//            for (int pidx=0; pidx<nWards; pidx++){
-//                if (nextArrivalTime[widx][pidx]<mn){
-//                    mn = nextArrivalTime[widx][pidx];
-//                    min_widx = widx; min_pidx = pidx;
-//                }
-//            }
-//        }        
-//        
-//        
-//        //append patient
-//        arrClock = nextArrivalTime[min_widx][min_pidx];
-//        serTime = genServiceTime(min_pidx);
-//        arrival_array[i] = Customer(arrClock,serTime,min_widx,min_pidx);
-//        
-//        //update ward-patient
-//        updateArrivalTime(min_widx,min_pidx);
-//    }
-//    
-//}
 
 void RelocSimulation::simulate(double bIn, double minTime,
         vector<int> maxWardSamples, int minSamples){
@@ -211,7 +192,26 @@ void RelocSimulation::simulate(double bIn, double minTime,
     }
     
     //burn-in time
-    burnIn = bIn;
+    if (bIn>=0){
+        burnIn = bIn;
+    }else{
+        burnIn = numeric_limits<double>::max();
+        bInSize=30;
+        burnInSamples.resize(2);
+        burnInSamples[0].resize(bInSize);
+        burnInSamples[1].resize(bInSize);
+        bInOrder = {0,1};
+        clockDis=0.0;
+        disIdx=0;
+        checkBurnIn = true;
+    }
+    //simulation time
+    if (minTime>=0){
+        simTime = minTime;
+    }else{
+        simTime=numeric_limits<double>::max();
+        checkAccuracy=true;
+    }
     
     //simulation clock
     clock = 0;
@@ -227,7 +227,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     serIdx = 0;
     
     //occupancy of the system
-    vector<int> capUse(nWards,0);
+    //vector<int> capUse(nWards,0);
     
     //tracking
     openTimes.resize(nWards);
@@ -252,7 +252,8 @@ void RelocSimulation::simulate(double bIn, double minTime,
     //-------------------
     auto start = chrono::system_clock::now();
     cout << "Running simulation..." << flush;
-    while ( (clock<minTime && wardSamplesToGo()>0) || (timeSamplingEnabled && minTimeSamples()<minSamples) ){
+    while ( (accuracy()>accTol && clock<simTime && wardSamplesToGo()>0) || (timeSamplingEnabled && minTimeSamples()<minSamples) ){
+        
         
         if (inService>0){
             
@@ -262,9 +263,12 @@ void RelocSimulation::simulate(double bIn, double minTime,
             
                 clock = service_array[serIdx].serviceClock;
                 targetWard = service_array[serIdx].wardTarget;
-                succeeded = attemptDischarge();
+                attemptDischarge();
                 if (timeSamplingEnabled && succeeded){
                     blockedTimeTracking(targetWard);
+                }
+                if (checkBurnIn){
+                    evaluateBurnIn();
                 }
                 
             }else{
@@ -289,12 +293,6 @@ void RelocSimulation::simulate(double bIn, double minTime,
         
         updateOccupancy();
         
-        //generate a new batch of patient arrivals
-        //if (arrIdx==(patientArraySize-1)){
-            //generateArrivalList(clock);
-            //arrIdx = 0;
-        //}
-        
     }
     cout << "done." << endl;
     freqToDensity();
@@ -308,8 +306,42 @@ void RelocSimulation::simulate(double bIn, double minTime,
     
     auto stop = chrono::system_clock::now();
     auto elapsed = chrono::duration_cast<chrono::milliseconds>(stop - start);
-    runtime = elapsed.count();
-    cout << "runtime: " << runtime << " ms" << endl;
+    cout << "Runtime of simulation: " << elapsed.count() << " milliseconds\n" << endl;
+}
+
+void RelocSimulation::evaluateBurnIn(){
+    
+    double tDiff = clock-clockDis;
+    clockDis = clock;
+    
+    if (burnInInit && disIdx<bInSize){
+        burnInSamples[0][disIdx]=tDiff;
+        disIdx++;
+    }else if(burnInInit){
+        burnInInit=false;
+        disIdx=0;
+    }else{
+        burnInSamples[bInOrder[1]][disIdx]=tDiff;
+        disIdx++;
+    }
+    
+    //evaluate
+    if (disIdx==bInSize && burnInInit==false){
+        
+        bool larger=wilcoxonRankSum(burnInSamples[bInOrder[0]],burnInSamples[bInOrder[1]]);
+        
+        if (larger){
+            disIdx=0;
+            int xx=bInOrder[0];
+            bInOrder[0]=bInOrder[1];
+            bInOrder[1]=xx;
+        }else{
+            checkBurnIn=false;
+            burnIn=clock;
+            cout << " simulation burn-in at: " << burnIn << " (continuing simulation) ... " << flush;
+        }
+    }
+    
 }
 
 int RelocSimulation::wardSamplesToGo(){
@@ -318,6 +350,9 @@ int RelocSimulation::wardSamplesToGo(){
     //collected yet.
     int df, mx=0;
     for (int widx=0; widx<nWards; widx++){
+        if (maxWrdSam[widx]==numeric_limits<int>::max()){
+            return(numeric_limits<int>::max());
+        }
         df = maxWrdSam[widx]-nWardFreq[widx];
         if (df>mx){
             mx=df;
@@ -537,6 +572,36 @@ void RelocSimulation::occupancyDistTracking(int &targetWard, int &patientType){
     }
 }
 
+double RelocSimulation::accuracy(){
+    //calculates the accuracy of the density
+    //distributions using Wilson score intervals
+    //note: high accuracy is indicated with a small value
+    
+    if (clock<burnIn||checkAccuracy==false){
+        return(numeric_limits<double>::max());
+    }else{
+        vector<double> itns; 
+        double diff,f,mx=-1;
+        for (int widx=0; widx<nWards; widx++){
+            
+            if (nWardFreq[widx]==0){
+                return(numeric_limits<double>::max());
+            }
+                
+            for (int j=0; j<wardFreqDist[widx].size(); j++){
+                
+                f = (double)wardFreqDist[widx][j]/(double)nWardFreq[widx];
+                itns=wilsonScoreInterval(f,nWardFreq[widx]);
+                diff = itns[1]-itns[0];
+                if (diff>mx){
+                    mx=diff;
+                } 
+            }
+        }
+        return(mx);
+    }
+}
+
 void RelocSimulation::freqToDensity(){
     
     vector<vector<int>> sm(nWards);
@@ -700,7 +765,6 @@ int RelocSimulation::minTimeSamples(){
         return(mn);
 }
 
-
 double RelocSimulation::randomExponential(double rate){
     //generate a random exponential double
     return(log(1-randomUniform())/(-rate));
@@ -855,9 +919,69 @@ double RelocSimulation::r8polyValueHorner(int m, double c[], double x){
   return value;
 }
 
+vector<double> RelocSimulation::wilsonScoreInterval(double p, int n){
+    //calculates binomial proportion confidence intervals
+    //using the Wilson score interval method.
+    
+    double z = 1.959964;
+    vector<double> intervals(2,0);
+    
+    double d0 = (1.0/(1.0+pow(z,2.0)/(double)n))*(p+(pow(z,2.0)/(2.0*(double)n)));
+    double d1 = (z/(1.0+pow(z,2.0)/(double)n))*
+    sqrt((p*(1-p))/n + (pow(z,4.0)/(4.0*pow((double)n,2.0))));
+    
+    //lower limit
+    intervals[0] = d0-d1;
+    //upper limit
+    intervals[1] = d0+d1;
+    
+    return(intervals);
+}
+
+bool RelocSimulation::wilcoxonRankSum(vector<double> x, vector<double> y){
+    //conducts the Wilcoxon rank-sum test.
+    //returns true if samples x are stochastically larger
+    //than samples y - i.e. the null hypothesis that the samples are from the
+    //same distribution is rejected.
+    
+//    double mn=0;
+//    for (int i=0; i<x.size(); i++){
+//        mn += x[i];
+//    }
+//    mn /= x.size();
+//    cout << "x mean: " << mn << endl;
+//    mn=0;
+//    for (int i=0; i<y.size(); i++){
+//        mn += y[i];
+//    }
+//    mn /= y.size();
+//    cout << "y mean: " << mn << endl;
+    
+    int u=0;
+    for (int i=0; i<x.size(); i++){
+        for (int j=0; j<y.size(); j++){
+            if (x[i]>y[j]){
+                u++;
+            }
+        }
+    }
+    
+    double m_u = (x.size()*y.size())/2.0;
+    double s_u = sqrt((x.size()*y.size()*(x.size()+y.size()+1.0))/12.0);
+    double z = (u-m_u)/s_u;
+//    cout << "u=" << u << " m_u=" << m_u << " s_u=" << s_u << " z=" << z << endl;
+    double zCrit = 1.036433; //critical z-score value (one-tailed test with alpha=0.15)
+    if (z>zCrit){
+        return(true); //null hypothesis rejected
+    }else{
+        return(false); //null hypothesis accepted (the populations are equal)
+    }
+    
+}
+
 double RelocSimulation::randomUniform(){
     //generate a random uniform number in the range [0,1)
-    return(rand()/((double) RAND_MAX));
+    return((double)rand()/((double)mxRnd));
 }
 
 int RelocSimulation::getWardID(int ward){

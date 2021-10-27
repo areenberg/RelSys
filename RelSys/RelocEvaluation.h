@@ -41,6 +41,11 @@ public:
     void runHeuristic(int main_widx);
     void runSimulation(int seed, int burnIn,
         int minTime, int minSamples=50);
+    void simulateMarginalDist(double sampleBurnIn, int collectSamples); //replace numerical evaluation with a simulation
+    void setBinMap(vector<vector<int>> bMap);
+    void setBinDischargeRates(vector<double> disRates);
+    void setOpenHyperStates(int n);
+    void setBlockedHyperStates(int n);
     
     //VARIABLES
     vector<double> pi; //state distribution
@@ -56,7 +61,9 @@ private:
 
     //METHODS
     void initializeSystem();
-    void initializeStateDistribution(HeuristicQueue &hqueue);
+    void setDefaultBinMap();
+    void setDefaultHyperQueueStates();
+    void initializeStateDistribution(HeuristicQueue &hqueue, bool erlangInit=false);
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
@@ -64,10 +71,17 @@ private:
     double Gfunction(double q, double x);
     double sampleMean(vector<int> &freqDist);
     double sampleSD(vector<int> &freqDist);
+    double erlangLoss(int &k, double &lambda, double &mu, int &servers);
+    long double factorial(int &x);
     
     //VARIABLES
-    bool simReady;
-    int nWards, seed;
+    vector<vector<int>> binMap;
+    vector<double> newDisRates;
+    vector<int> hyperOpenStates; //number of open states for each hyper queue
+    vector<int> hyperBlockedStates; //number of blocked states for each hyper queue
+    bool simReady,simMargDist, changeDisRates;
+    int nWards, seed, collectSamples;
+    double sampleBurnIn;
     RelocSimulation * sim_pointer;
     
     mt19937 rgen; //random generator
