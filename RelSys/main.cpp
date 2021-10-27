@@ -37,6 +37,7 @@ int main(int argc, char** argv) {
 
     char* filePath = NULL; // path of the model file
     int widx = -1; //queue index to be evaluated
+    bool forceWardIndex = false;
 
     for(int i = 1; i < argc - 1; i++)
     {
@@ -48,6 +49,7 @@ int main(int argc, char** argv) {
         else if(strcmp(argv[i], "-q") == 0)
         {
             widx = atoi(argv[i+1]);
+            forceWardIndex = true;
             i++;
         }
         else if(strcmp(argv[i], "-hide") == 0)
@@ -80,6 +82,11 @@ int main(int argc, char** argv) {
     {
         std::cout << "Error: Invalid simulation mode!" << std::endl;
         return 1;
+    }
+
+    if(!forceWardIndex)
+    {
+        widx = model.wardIndex;
     }
 
     //--------------------------
@@ -128,10 +135,11 @@ int main(int argc, char** argv) {
         RelocEvaluation mdl(nQueues,wd_array);
 
         //first simulate open/blocked time-windows
-        int seed = 123;
-        int bin = 365;
-        int mt = 365;
-        mdl.runSimulation(seed,bin,mt,50);
+        int seed = model.seed;
+        int bin = model.burnInTime;
+        int mt = model.minTime;
+        int ms = model.minSamples;
+        mdl.runSimulation(seed,bin,mt,ms);
         
         if(widx == -1) // simulate all queues
         {
@@ -194,11 +202,14 @@ int main(int argc, char** argv) {
         RelocSimulation sim_mdl(nQueues,wd_array);
 
         //setup and run simulation
-        sim_mdl.setSeed(123); //set the seed
-        double burnIn = 365; //burn-in time
-        double minTime = 100000; //minimum simulation time
+        sim_mdl.setSeed(model.seed); //set the seed
+        double burnIn = model.burnInTime; //burn-in time
+        double minTime = model.minTime; //minimum simulation time
         vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
-        sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
+        if(!model.enableTimeSampling)
+        {
+            sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
+        }
 
         sim_mdl.simulate(burnIn,minTime,maxWardSamples); //now run the simulation
 

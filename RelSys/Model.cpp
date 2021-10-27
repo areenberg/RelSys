@@ -84,8 +84,26 @@ bool Model::ReadFromFile(const char* fileName)
     }
 
     // Simulation mode
-    TiXmlElement* l_pSimulationMode = docHandle.FirstChild("Model").FirstChild("SimulationMode").ToElement();
-    simulationMode = l_pSimulationMode->GetText();
+    simulationMode = docHandle.FirstChild("simulatorProperties").FirstChild("mode").ToElement()->GetText();
+
+    if(strcmp(simulationMode, "markov") == 0)
+    {
+        seed =               (int)docHandle.FirstChild("simulatorProperties").FirstChild("ApproximationSeed").ToElement()->GetText();
+        burnInTime =         (int)docHandle.FirstChild("simulatorProperties").FirstChild("ApproximationBurnInTime").ToElement()->GetText();
+        minTime =            (int)docHandle.FirstChild("simulatorProperties").FirstChild("ApproximationMinSimulationTime").ToElement()->GetText();
+        minSamples =         (int)docHandle.FirstChild("simulatorProperties").FirstChild("ApproximationMinSamples").ToElement()->GetText();
+        wardIndex =          (int)docHandle.FirstChild("simulatorProperties").FirstChild("ApproximationEnableTimeSampling").ToElement()->GetText();
+        enableTimeSampling = -1;
+    }
+    else
+    {
+        seed =               (int)docHandle.FirstChild("simulatorProperties").FirstChild("SimulationSeed").ToElement()->GetText();
+        burnInTime =         (int)docHandle.FirstChild("simulatorProperties").FirstChild("SimulationBurnInTime").ToElement()->GetText();
+        minTime =            (int)docHandle.FirstChild("simulatorProperties").FirstChild("SimulationMinSimulationTime").ToElement()->GetText();
+        minSamples =         (int)docHandle.FirstChild("simulatorProperties").FirstChild("SimulationMinSamples").ToElement()->GetText();
+        wardIndex =          true;
+        enableTimeSampling = (int)docHandle.FirstChild("simulatorProperties").FirstChild("SimulationWardIndex").ToElement()->GetText();
+    }
 
     return true;
 }

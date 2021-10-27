@@ -21,5 +21,12 @@ struct Model
     std::vector<Ward> wards;
     const char* simulationMode;
 
+    int seed;
+    int burnInTime;
+    int minTime;
+    int minSamples;
+    int wardIndex;
+    bool enableTimeSampling;
+
     bool ReadFromFile(const char* fileName);
 };

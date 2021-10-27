@@ -1,88 +1,18 @@
 <?xml version="1.0"?>
 <Model xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-  <PatientTypes>
-    <PatientType>
-      <RelocationProbabilities>
-        <Probability>0</Probability>
-        <Probability>0.4</Probability>
-        <Probability>0.1</Probability>
-        <Probability>0.5</Probability>
-      </RelocationProbabilities>
-      <Name>Patient 1</Name>
-      <LengthOfStay>10</LengthOfStay>
-      <ArrivalRate>0.8</ArrivalRate>
-      <PreferredWard>0</PreferredWard>
-      <PosX>1</PosX>
-      <PosY>2</PosY>
-    </PatientType>
-    <PatientType>
-      <RelocationProbabilities>
-        <Probability>0.3</Probability>
-        <Probability>0</Probability>
-        <Probability>0.5</Probability>
-        <Probability>0</Probability>
-      </RelocationProbabilities>
-      <Name>Patient 2</Name>
-      <LengthOfStay>5</LengthOfStay>
-      <ArrivalRate>2.5</ArrivalRate>
-      <PreferredWard>1</PreferredWard>
-      <PosX>1</PosX>
-      <PosY>4</PosY>
-    </PatientType>
-    <PatientType>
-      <RelocationProbabilities>
-        <Probability>0</Probability>
-        <Probability>0.5</Probability>
-        <Probability>0</Probability>
-        <Probability>0.5</Probability>
-      </RelocationProbabilities>
-      <Name>Patient 3</Name>
-      <LengthOfStay>20</LengthOfStay>
-      <ArrivalRate>0.8</ArrivalRate>
-      <PreferredWard>2</PreferredWard>
-      <PosX>1</PosX>
-      <PosY>6</PosY>
-    </PatientType>
-    <PatientType>
-      <RelocationProbabilities>
-        <Probability>0.2</Probability>
-        <Probability>0.3</Probability>
-        <Probability>0.5</Probability>
-        <Probability>0</Probability>
-      </RelocationProbabilities>
-      <Name>Patient 4</Name>
-      <LengthOfStay>8</LengthOfStay>
-      <ArrivalRate>2.7999999523162842</ArrivalRate>
-      <PreferredWard>3</PreferredWard>
-      <PosX>1</PosX>
-      <PosY>8</PosY>
-    </PatientType>
-  </PatientTypes>
-  <Wards>
-    <Ward>
-      <Name>Ward 1</Name>
-      <Capacity>15</Capacity>
-      <PosX>3</PosX>
-      <PosY>2</PosY>
-    </Ward>
-    <Ward>
-      <Name>Ward 2</Name>
-      <Capacity>20</Capacity>
-      <PosX>3</PosX>
-      <PosY>4</PosY>
-    </Ward>
-    <Ward>
-      <Name>Ward 3</Name>
-      <Capacity>10</Capacity>
-      <PosX>3</PosX>
-      <PosY>6</PosY>
-    </Ward>
-    <Ward>
-      <Name>Ward 4</Name>
-      <Capacity>30</Capacity>
-      <PosX>3</PosX>
-      <PosY>8</PosY>
-    </Ward>
-  </Wards>
-  <SimulationMode>simulation</SimulationMode>
+  <PatientTypes />
+  <Wards />
+  <simulatorProperties>
+    <mode>simulation</mode>
+    <SimulationSeed>123</SimulationSeed>
+    <SimulationBurnInTime>365</SimulationBurnInTime>
+    <SimulationMinSimulationTime>365</SimulationMinSimulationTime>
+    <SimulationMinSamples>50</SimulationMinSamples>
+    <SimulationWardIndex>-1</SimulationWardIndex>
+    <ApproximationSeed>123</ApproximationSeed>
+    <ApproximationBurnInTime>365</ApproximationBurnInTime>
+    <ApproximationMinSimulationTime>50000</ApproximationMinSimulationTime>
+    <ApproximationMinSamples>50</ApproximationMinSamples>
+    <ApproximationEnableTimeSampling>false</ApproximationEnableTimeSampling>
+  </simulatorProperties>
 </Model>
