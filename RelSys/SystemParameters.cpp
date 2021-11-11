@@ -22,6 +22,9 @@
  */
 
 #include "SystemParameters.h"
+#include <iostream>
+
+using namespace std;
 
 SystemParameters::SystemParameters(int nW, int nCusts, CustomerData * custs):
 custs_pointer(custs),
@@ -47,6 +50,10 @@ double SystemParameters::queueArrivalRate(int widx){
         }
     }
     
+    if (arr==0){
+        arr = 1e-16;
+    }
+    
     return(arr);
 }
 
@@ -54,14 +61,22 @@ double SystemParameters::queueServiceRate(int widx){
     //resulting service rate to the queue with index widx
     
     double totalArr = queueArrivalRate(widx);
-    double m=0.0;
-    for (int i=0; i<nCustTypes; i++){
-        if (custs_pointer[i].queue==widx){
-            m += custs_pointer[i].los*(custs_pointer[i].arrivalRate/totalArr);
+    
+    if (totalArr==0){
+        return(1e16);
+    }else{
+        double m=0.0;
+        for (int i=0; i<nCustTypes; i++){
+            if (custs_pointer[i].queue==widx){
+                m += custs_pointer[i].los*(custs_pointer[i].arrivalRate/totalArr);
+            }
         }
+        double ser = 1.0/m; //convert to rate (discharges per time unit)
+        
+        //cout << "Ward " << (widx+1) << " service rate: " << ser << endl;
+    
+        return(ser);
     }
-    double ser = 1.0/m; //convert to rate (discharges per time unit) 
-    return(ser);
 }
 
 vector<double> SystemParameters::queueRelProbability(int widx){

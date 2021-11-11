@@ -173,8 +173,8 @@ void RelocEvaluation::runSimulation(int sd, int burnIn,
     
     //auto start = high_resolution_clock::now();
     
-    vector<int> dummyVec(1,-1);
-    sim_pointer->simulate(burnIn,minTime,dummyVec,minSamples);
+    vector<int> maxWardSamples(nWards,100000);
+    sim_pointer->simulate(burnIn,minTime,maxWardSamples,minSamples);
     
     //auto stop = high_resolution_clock::now(); //stop time 
     //auto duration = duration_cast<milliseconds>(stop - start); 
@@ -183,9 +183,62 @@ void RelocEvaluation::runSimulation(int sd, int burnIn,
     simReady = true;
 }
 
+bool RelocEvaluation::isSingleWard(int widx){
+    
+    if (nWards==1||noRelocations(widx)){
+        return(true);
+    }else{
+        return(false);
+    }
+    
+}
+
+
+bool RelocEvaluation::noRelocations(int widx){
+    
+    bool noReloc=true;
+    for (int j=0; j<nWards; j++){
+        if (widx!=j && getWardRelocationProbabilities(j)[widx]>0.0 && getWardArrivalRate(j)>1e-16){
+            noReloc=false;
+        }
+    }
+    return(noReloc);
+}
+
+
+void RelocEvaluation::evalSingleWard(int widx){
+    marginalDist.resize((getWardCapacity(widx)+1),0);
+    if (getWardArrivalRate(widx)<=1e-16){
+        marginalDist[0] = 1.0;
+        expectedOccupancy = 0.0;
+        expOccFraction = 0.0;
+        blockingProbability = 0.0;
+    }else{
+        //use the erlang loss model
+        double lambda = getWardArrivalRate(widx);
+        double mu = getWardServiceRate(widx);
+        int servers = getWardCapacity(widx);
+        for (int k=0; k<marginalDist.size(); k++){
+            marginalDist[k] = erlangLoss(k,lambda,mu,servers);
+        }
+        
+        expectedOccupancy = 0.0;
+        for (int k=0; k<marginalDist.size(); k++){
+            expectedOccupancy += marginalDist[k]*k;
+        }
+        expOccFraction = servers/expectedOccupancy;
+        blockingProbability = marginalDist[marginalDist.size()-1];
+    }
+}
+
+
 void RelocEvaluation::runHeuristic(int main_widx){
     
-    if (simReady){
+    if (isSingleWard(main_widx)){
+    
+        evalSingleWard(main_widx);
+        
+    }else if (simReady){
         auto start = high_resolution_clock::now(); //start time 
         
         //create and add surrogate queues to the system
@@ -245,16 +298,16 @@ void RelocEvaluation::runHeuristic(int main_widx){
     
         //solve for steady-state distribution
         LinSolver solver;
-        if (simMargDist){ //for evaluating the solution with simulation
+        if (simMargDist){ //for evaluating the solution with simulation (note: fairly slow and untested)
             solver.monteCarlo(hqueue,sampleBurnIn,
                     collectSamples);
             marginalDist = hqueue.margDist;
             
         }else{ //for evaluating the solution numerically
-            initializeStateDistribution(hqueue);
+            initializeStateDistribution(hqueue);    
             double solverTolerance = 1e-9;
             solver.sor(pi,hqueue,1.0,solverTolerance);
-        
+            
             vmemory = solver.vmemory; //estimate of maximum memory usage
             
             //store the marginal distribution and some other metrics
