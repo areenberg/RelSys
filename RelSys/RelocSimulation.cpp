@@ -327,7 +327,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
         
         updateOccupancy();
         interElapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - start).count();
-        checkTimeOut();
+        checkTerminate();
     }
     cout << "done." << endl;
     freqToDensity();
@@ -379,18 +379,15 @@ void RelocSimulation::evaluateBurnIn(){
     
 }
 
-void RelocSimulation::checkTimeOut(){
-    //evaluates if the simulation should be timed out
+void RelocSimulation::checkTerminate(){
+    //decides if the simulation should be terminated
     
     if (interElapsed>1 && (timeSamplingEnabled||checkAccuracy)){ //check after 1 second
-        //check if some wards are subject to very low or high loads
-        
-        //cout << "Evaluating time out..." << endl;
         
         for (int widx=0; widx<nWards; widx++){
-            if (timeSamplingEnabled && (openTimes[widx].empty()||openTimes[widx].size()<2) &&
-                    (wardLoadLowerBounds[widx]<0.1 || wardLoadLowerBounds[widx]>10.0) ){
-                //cout << "Ward " << (widx+1) << " load was not approved." << endl;
+            if (timeSamplingEnabled && openTimes[widx].empty() &&
+                    wardLoadLowerBounds[widx]<0.1){
+                cout << "Ward " << (widx+1) << " load caused simulation to terminate early." << flush;
                 timeOut=true;
             }else if(checkAccuracy && interElapsed>200 && nWardFreq[widx]<100){
                 skipAccuracy.push_back(widx);
@@ -398,7 +395,6 @@ void RelocSimulation::checkTimeOut(){
         }
         
     }
-    
     
 }
 

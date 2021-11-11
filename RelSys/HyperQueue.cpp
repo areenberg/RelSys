@@ -86,11 +86,7 @@ void HyperQueue::fitOpenPH(int seed){
         }
     
     }else{
-        if (sim_pointer->wardLoadLowerBounds[wardIndex]<1.0){
-            lowLoadOpenPH();
-        }else{
-            highLoadOpenPH();
-        }
+        lowLoadOpenPH();
     }
     
 }
@@ -122,11 +118,7 @@ void HyperQueue::fitBlockedPH(int seed){
         }
     
     }else{
-        if (sim_pointer->wardLoadLowerBounds[wardIndex]<1.0){
-            lowLoadBlockedPH();
-        }else{
-            highLoadBlockedPH();
-        }
+        lowLoadBlockedPH();
     }
     
     
@@ -169,33 +161,4 @@ void HyperQueue::lowLoadBlockedPH(){
         blockedDist[i] = 1.0/(double)blockedDist.size();
     }
     
-}
-        
-void HyperQueue::highLoadOpenPH(){
-    //uses a heuristic approach to estimating
-    //the PH parameters - used when the load of
-    //a ward is very high
-    
-    for (int i=0; i<openRates.size(); i++){
-        openRates[i] = 1e16;
-    }
-    for (int i=0; i<openDist.size(); i++){
-        openDist[i] = 1.0/(double)openDist.size();
-    }
-    
-}
-        
-void HyperQueue::highLoadBlockedPH(){
-    //uses a heuristic approach to estimating
-    //the PH parameters - used when the load of
-    //a ward is very high
-    
-    for (int i=0; i<blockedRates.size(); i++){
-        blockedRates[i] = 1e-16;
-    }
-    for (int i=0; i<blockedDist.size(); i++){
-        blockedDist[i] = 1.0/(double)blockedDist.size();
-    }
-    
-}
-        
+}        

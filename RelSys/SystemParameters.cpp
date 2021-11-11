@@ -62,7 +62,7 @@ double SystemParameters::queueServiceRate(int widx){
     
     double totalArr = queueArrivalRate(widx);
     
-    if (totalArr==0){
+    if (totalArr<=1e-16){
         return(1e16);
     }else{
         double m=0.0;
