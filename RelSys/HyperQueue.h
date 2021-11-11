@@ -68,9 +68,6 @@ private:
   
     void lowLoadOpenPH();
     void lowLoadBlockedPH();
-    void highLoadOpenPH();
-    void highLoadBlockedPH();
-
     
 };
 

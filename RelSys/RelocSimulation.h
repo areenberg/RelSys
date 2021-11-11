@@ -104,7 +104,7 @@ private:
     void blockedTimeTracking(int &targetWard);
     void evaluateBurnIn();
     void evalWardLoads(); //estimates load bounds for each ward
-    void checkTimeOut();
+    void checkTerminate();
     bool skipWardAccuracy(int &widx);
     
     void subsetTimeSamples(int &minSamples); //randomly limits time samples to a sub-set of size minSamples 
