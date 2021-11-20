@@ -29,6 +29,7 @@
 #include <iostream>
 #include <vector>
 #include <random>
+#include <chrono>
 
 using namespace std;
 
@@ -61,6 +62,8 @@ public:
     vector<int> nWardFreq; //number of samples in the marginal distributions
     vector<vector<vector<int>>> freqDist; //frequency distribution
     vector<vector<vector<double>>> denDist; //density distribution
+    vector<double> wardLoadUpperBounds;
+    vector<double> wardLoadLowerBounds;
     
     //WARD INFORMATION METHODS AND VARIABLES
     int nWards; //number of wards in the system
@@ -83,7 +86,7 @@ private:
     void generateArrival();
     void updateArrivalTime(int widx, int pidx); //update the nextArrivalTime matrix
     void initializeArrivalTimes(double currentClock); //initialize the entire nextArrivalTime matrix
-
+    
     double randomUniform(); //generate a random uniform double in the interval (0,1)
     double randomExponential(double rate); //generate a random exponentially distributed double
     double randomLogNormal(double mean, double std);
@@ -100,6 +103,9 @@ private:
     void openTimeTracking(int &targetWard);
     void blockedTimeTracking(int &targetWard);
     void evaluateBurnIn();
+    void evalWardLoads(); //estimates load bounds for each ward
+    void checkTerminate();
+    bool skipWardAccuracy(int &widx);
     
     void subsetTimeSamples(int &minSamples); //randomly limits time samples to a sub-set of size minSamples 
     
@@ -113,7 +119,9 @@ private:
     
     void printTimeSamples();
     
+    long interElapsed; //intermediate elapsed time
     bool timeSamplingEnabled, checkAccuracy, checkBurnIn, burnInInit;
+    vector<int> skipAccuracy; //specifies the wards to ignore when checking accuracy
     vector<vector<double>> burnInSamples;
     vector<int> bInOrder;
     vector<int> nOpenTimeSamples;
@@ -123,6 +131,7 @@ private:
     vector<int> maxWrdSam;
     vector<vector<int>> wardOccupancy;
     vector<int> capUse;
+    bool timeOut; //indicates if the simulation has timed out
     bool serTimeExponential; //if true, then service times are exponential; other log-normal
     double stdMult; //modifies the standard deviation in the log-normal random generator
     double accTol; //density distribution accuracy

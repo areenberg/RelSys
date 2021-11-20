@@ -67,6 +67,10 @@ private:
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
+    bool isSingleWard(int widx);
+    bool noRelocations(int widx);
+    void evalSingleWard(int widx);
+    
     double chebyshevBound(double &x, vector<int> &freqDist);
     double Gfunction(double q, double x);
     double sampleMean(vector<int> &freqDist);

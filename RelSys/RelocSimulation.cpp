@@ -70,6 +70,10 @@ void RelocSimulation::initializeSystem(){
     }else{
         mxRnd = RAND_MAX+1;
     }
+    
+    //evaluate the (per bed) ward loads
+    evalWardLoads();
+    
 }
 
 void RelocSimulation::disableTimeSampling(){
@@ -107,6 +111,28 @@ void RelocSimulation::setSeed(int seed){
     //mt19937 rgen(simSeed);
     //default_random_engine rgen{static_cast<long unsigned int>(seed)};
 }
+
+void RelocSimulation::evalWardLoads(){
+    //evaluates bounds on the (per bed) ward loads
+    
+    double a;
+    wardLoadUpperBounds.resize(nWards,0);
+    wardLoadLowerBounds.resize(nWards,0);
+    
+    for (int widx=0; widx<nWards; widx++){
+        wardLoadLowerBounds[widx]=(getWardArrivalRate(widx)/(getWardServiceRate(widx)*getWardCapacity(widx)));
+        a=getWardArrivalRate(widx);
+        for (int j=0; j<nWards; j++){
+            if (widx!=j){
+                a+=getWardArrivalRate(j)*getWardRelocationProbabilities(j)[widx];
+            }
+        }
+        wardLoadUpperBounds[widx]=(a/(getWardServiceRate(widx)*getWardCapacity(widx)));
+        cout << "Ward " << (widx+1) << " load: [" << wardLoadLowerBounds[widx] << ";" << wardLoadUpperBounds[widx] << "]" << endl;
+    }
+    
+}
+
 
 void RelocSimulation::initializeArrivalTimes(double currentClock){
     //allocate memory and fill in the entire nextArrivalTime matrix
@@ -172,6 +198,9 @@ void RelocSimulation::simulate(double bIn, double minTime,
     //--------------------
     //Initialize
     //--------------------
+    
+    //for evaluating time-out
+    timeOut=false;
     
     capUse.resize(nWards,0);
     wardOccupancy.resize(nWards);
@@ -246,13 +275,18 @@ void RelocSimulation::simulate(double bIn, double minTime,
             maxWrdSam[i] = maxWardSamples[i];
         }
     }
+    //minSamples cannot be less than 2
+    if (timeSamplingEnabled && minSamples<2){
+        minSamples = 2;
+    }
     
     //-------------------
     //Simulate
     //-------------------
+    
     auto start = chrono::system_clock::now();
     cout << "Running simulation..." << flush;
-    while ( (accuracy()>accTol && clock<simTime && wardSamplesToGo()>0) || (timeSamplingEnabled && minTimeSamples()<minSamples) ){
+    while (timeOut==false && ((accuracy()>accTol && clock<simTime && wardSamplesToGo()>0) || (timeSamplingEnabled && minTimeSamples()<minSamples)) ){
         
         
         if (inService>0){
@@ -292,7 +326,8 @@ void RelocSimulation::simulate(double bIn, double minTime,
         }
         
         updateOccupancy();
-        
+        interElapsed = chrono::duration_cast<chrono::seconds>(chrono::system_clock::now() - start).count();
+        checkTerminate();
     }
     cout << "done." << endl;
     freqToDensity();
@@ -340,6 +375,25 @@ void RelocSimulation::evaluateBurnIn(){
             burnIn=clock;
             cout << " simulation burn-in at: " << burnIn << " (continuing simulation) ... " << flush;
         }
+    }
+    
+}
+
+void RelocSimulation::checkTerminate(){
+    //decides if the simulation should be terminated
+    
+    if (interElapsed>1 && (timeSamplingEnabled||checkAccuracy)){ //check after 1 second
+        
+        for (int widx=0; widx<nWards; widx++){
+            if (timeSamplingEnabled && openTimes[widx].empty() &&
+                    wardLoadLowerBounds[widx]<0.1){
+                cout << "Ward " << (widx+1) << " load caused simulation to terminate early." << flush;
+                timeOut=true;
+            }else if(checkAccuracy && interElapsed>200 && nWardFreq[widx]<100){
+                skipAccuracy.push_back(widx);
+            }
+        }
+        
     }
     
 }
@@ -584,22 +638,46 @@ double RelocSimulation::accuracy(){
         double diff,f,mx=-1;
         for (int widx=0; widx<nWards; widx++){
             
-            if (nWardFreq[widx]==0){
-                return(numeric_limits<double>::max());
-            }
+            if (!skipWardAccuracy(widx)){
+            
+                if (nWardFreq[widx]==0){
+                    return(numeric_limits<double>::max());
+                }
                 
-            for (int j=0; j<wardFreqDist[widx].size(); j++){
+                for (int j=0; j<wardFreqDist[widx].size(); j++){
                 
-                f = (double)wardFreqDist[widx][j]/(double)nWardFreq[widx];
-                itns=wilsonScoreInterval(f,nWardFreq[widx]);
-                diff = itns[1]-itns[0];
-                if (diff>mx){
-                    mx=diff;
-                } 
+                    f = (double)wardFreqDist[widx][j]/(double)nWardFreq[widx];
+                    itns=wilsonScoreInterval(f,nWardFreq[widx]);
+                    diff = itns[1]-itns[0];
+                    if (diff>mx){
+                        mx=diff;
+                    } 
+                }
+            
             }
+            
         }
         return(mx);
     }
+}
+
+bool RelocSimulation::skipWardAccuracy(int &widx){
+    
+    if (skipAccuracy.empty()){
+        return(false);
+    }else{
+    
+        int i=0;
+        while(i<skipAccuracy.size() && widx!=skipAccuracy[i]){
+            i++;
+        }
+        if (i==skipAccuracy.size()){
+            return(false);
+        }else{
+            return(true);
+        }
+    }
+    
 }
 
 void RelocSimulation::freqToDensity(){

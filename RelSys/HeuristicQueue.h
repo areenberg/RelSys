@@ -79,9 +79,9 @@ private:
     HyperQueue * hbQueues_pointer;
     QueueData * wards_pointer;
     
+    vector<vector<int>> binMap; //patient types x bin map
     vector<int> upperLim; //capacity limits
     vector<int> lowerLim;
-    vector<vector<int>> binMap; //patient types x bin map
     vector<double> binDischargeRates;
     vector<int> newHypIdx;
     vector<int> newWardIdx;

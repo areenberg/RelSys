@@ -51,7 +51,7 @@ public:
     void fitOpenPH(int seed);
     void fitBlockedPH(int seed);
     void fitAll(int seed);
-    
+  
     //dummy constructor (not included in cpp-file) 
     HyperQueue() {};
     //parameterized constructor
@@ -65,6 +65,9 @@ private:
 
     RelocSimulation *sim_pointer;
     int wardIndex;
+  
+    void lowLoadOpenPH();
+    void lowLoadBlockedPH();
     
 };
 
