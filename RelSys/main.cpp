@@ -70,6 +70,7 @@ int main(int argc, char** argv) {
     //--------------------------
     //IMPORTING THE MODEL
     //--------------------------
+    cout << "#Importing the model" << endl;
 
     Model model;
     if(!model.ReadFromFile(filePath))
@@ -77,6 +78,8 @@ int main(int argc, char** argv) {
         std::cout << "Error: Invalid model file path!" << std::endl;
         return 1;
     }
+
+    cout << "#Model imported successfully" << endl;
 
     if(strcmp(model.simulationMode, "markov") != 0 && strcmp(model.simulationMode, "simulation") != 0)
     {
@@ -139,7 +142,15 @@ int main(int argc, char** argv) {
         int bin = model.burnInTime;
         int mt = model.minTime;
         int ms = model.minSamples;
+        int ohs = model.openHyperStates;
+        int bhs = model.blockedHyperStates;
+
+        cout << "#Starting in approximation mode" << endl;
         mdl.runSimulation(seed,bin,mt,ms);
+
+        //choose number of states in PH distributions (optional)
+        mdl.setOpenHyperStates(ohs);
+        mdl.setBlockedHyperStates(bhs);
         
         if(widx == -1) // simulate all queues
         {
@@ -172,25 +183,25 @@ int main(int argc, char** argv) {
         else // simulate only one queue
         {
             mdl.runHeuristic(widx);
+
+            //get the result
+            cout << "--- RESULTS ---" << endl;
+            cout << "--- queue " << widx << " ---" << endl;
+
+            cout << "Marginal probability distribution:" << endl;
+            for (int i=0; i<mdl.marginalDist.size(); i++){
+                cout << mdl.marginalDist[i] << endl;
+            }
+
+            cout << "Probability of rejection:" << endl;
+            cout << mdl.blockingProbability << endl;
+
+            cout << "Expected server occupancy:" << endl;
+            cout << mdl.expectedOccupancy << endl;
+
+            cout << "Expected fraction of servers occupied:" << endl;
+            cout << mdl.expOccFraction << endl;
         }
-
-        //get the result
-        cout << "--- RESULTS ---" << endl;
-        cout << "--- queue " << widx << " ---" << endl;
-
-        cout << "Marginal probability distribution:" << endl;
-        for (int i=0; i<mdl.marginalDist.size(); i++){
-            cout << mdl.marginalDist[i] << endl;
-        }
-
-        cout << "Probability of rejection:" << endl;
-        cout << mdl.blockingProbability << endl;
-
-        cout << "Expected server occupancy:" << endl;
-        cout << mdl.expectedOccupancy << endl;
-
-        cout << "Expected fraction of servers occupied:" << endl;
-        cout << mdl.expOccFraction << endl;
     }
     else
     {
@@ -206,11 +217,9 @@ int main(int argc, char** argv) {
         double burnIn = model.burnInTime; //burn-in time
         double minTime = model.minTime; //minimum simulation time
         vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
-        if(!model.enableTimeSampling)
-        {
-            sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
-        }
+        sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
 
+        cout << "#Starting in approximation mode" << endl;
         sim_mdl.simulate(burnIn,minTime,maxWardSamples); //now run the simulation
 
         //In contrary to the heuristic evaluation, the entire system is evaluated at the

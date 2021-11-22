@@ -2,3 +2,4 @@
 /RelSys/build/
 /RelSys/.vscode/
 *.exe
+*.bat

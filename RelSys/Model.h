@@ -26,7 +26,8 @@ struct Model
     int minTime;
     int minSamples;
     int wardIndex;
-    bool enableTimeSampling;
+    int openHyperStates;
+    int blockedHyperStates;
 
     bool ReadFromFile(const char* fileName);
 };
