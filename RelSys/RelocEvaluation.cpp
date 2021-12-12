@@ -346,16 +346,7 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     //tail cut-off probability mass
     double tailden = 1e-6;
     
-    //vector<vector<double>> dd = sim_pointer.denDist[main_widx];
     vector<vector<int>> fd = sim_pointer->freqDist[main_widx];
-    
-//    cout << "Freq. distribution:" << endl;
-//    for (int i=0; i<fd.size(); i++){
-//        for (int j=0; j<fd[i].size(); j++){
-//            cout << fd[i][j] << " " << flush;
-//        }
-//        cout << endl;
-//    }
     
     double mn,k,p;
     
