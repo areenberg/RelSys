@@ -43,7 +43,7 @@ public:
         vector<int> maxWardSamples=vector<int>(1,-1),int minSamples=50); 
     void selectLogNormalServiceTime(double mult=1.0); //selects the log-normal distribution for service times 
     void disableTimeSampling(); //disables sampling of time-window sampling
-    vector<double> wilsonScoreInterval(double p, int n); //calculates Wilson-score confidence intervals
+    void wilsonScoreInterval(double &wilsonSpan, int &j, int &n); //calculates Wilson-score confidence interval span
     bool wilcoxonRankSum(vector<double> x, vector<double> y); //conducts the Wilcoxon rank-sum test
     
     void setAccuracy(double a);
@@ -61,7 +61,6 @@ public:
     vector<double> expOccFraction; //expected fraction of servers occupied
     vector<int> nWardFreq; //number of samples in the marginal distributions
     vector<vector<vector<int>>> freqDist; //frequency distribution
-    vector<vector<vector<double>>> denDist; //density distribution
     vector<double> wardLoadUpperBounds;
     vector<double> wardLoadLowerBounds;
     
@@ -95,9 +94,8 @@ private:
     int wardSamplesToGo();
     int minTimeSamples();
     void nextServiceIdx();
-    bool attemptAdmission(int &arrIdx);
+    void attemptAdmission(bool &succeeded);
     bool attemptDischarge();
-    void updateOccupancy();
     double genServiceTime(int idx); //generate a random service time for the patient
     
     void openTimeTracking(int &targetWard);
@@ -112,7 +110,6 @@ private:
     void occupancyDistTracking(int &targetWard, int &patientType);
     
     void initFreqDenDist(); //initialize the frequency/density ward-patient distributions
-    void freqToDensity(); //calculates the occupancy density distribution
     void performanceMeasures(); //derives a number of performance measures    
     
     double accuracy(); //calculates the accuracy of the density distributions using wilson score intervals
@@ -131,11 +128,13 @@ private:
     vector<int> maxWrdSam;
     vector<vector<int>> wardOccupancy;
     vector<int> capUse;
+    vector<double> wilsonIntervals;
     bool timeOut; //indicates if the simulation has timed out
     bool serTimeExponential; //if true, then service times are exponential; other log-normal
     double stdMult; //modifies the standard deviation in the log-normal random generator
     double accTol; //density distribution accuracy
     double clockDis; //clock at most recent discharge;
+    double wilsonSpan, wilsonMax;
     int bInSize, disIdx;
     
     int min_widx, min_pidx;
@@ -152,7 +151,9 @@ private:
     
     //PATIENT METHODS AND VARIABLES
     vector<Customer> service_array;
-    vector<Customer> nextArrival;
+    //vector<Customer> nextArrival;
+    Customer * nextArrival;
+    
     
     //WARD INFORMATION METHODS AND VARIABLES
     QueueData * wards_pointer;
