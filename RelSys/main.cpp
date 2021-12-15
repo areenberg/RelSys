@@ -106,6 +106,11 @@ int main(int argc, char** argv) {
                                       model.patientTypes[i].arrivalRate,
                                       model.patientTypes[i].meanLengthOfStay,
                                       model.patientTypes[i].relocationProbabilities);
+        cout << "customer[" << i << "] pw: " << model.patientTypes[i].preferredWard << ", ar: " << model.patientTypes[i].arrivalRate << ", ls: " << model.patientTypes[i].meanLengthOfStay << ", rp: {";
+        for(int j = 0; j < model.patientTypes[i].relocationProbabilities.size(); j++){
+            cout << model.patientTypes[i].relocationProbabilities[j] << ", ";
+        }
+        cout << "}" << endl;
     }
 
     //--------------------------
@@ -145,6 +150,13 @@ int main(int argc, char** argv) {
         int ohs = model.openHyperStates;
         int bhs = model.blockedHyperStates;
 
+        cout << "#seed: " << model.seed << endl;
+        cout << "#burn-in: " << model.burnInTime << endl;
+        cout << "#min time" << model.minTime << endl;
+        cout << "#min samples" << model.minSamples << endl;
+        cout << "#open blocks" << model.openHyperStates << endl;
+        cout << "#blocked blocks" << model.blockedHyperStates << endl;
+
         cout << "#Starting in approximation mode" << endl;
         mdl.runSimulation(seed,bin,mt,ms);
 
@@ -154,18 +166,14 @@ int main(int argc, char** argv) {
         
         if(widx == -1) // simulate all queues
         {
+            cout << "--- RESULTS ---" << endl;
             for(int i = 0; i < nQueues; i++)
             {
                 mdl.runHeuristic(i);
 
-                if(i == 0)
-                {
-                    cout << "--- RESULTS ---" << endl;
-                }
-
                 cout << "--- queue " << i << " ---" << endl;
 
-                cout << "Marginal probability distribution:" << endl;
+                cout << "Marginal density distribution:" << endl;
                 for (int i=0; i<mdl.marginalDist.size(); i++){
                     cout << mdl.marginalDist[i] << endl;
                 }
@@ -188,7 +196,7 @@ int main(int argc, char** argv) {
             cout << "--- RESULTS ---" << endl;
             cout << "--- queue " << widx << " ---" << endl;
 
-            cout << "Marginal probability distribution:" << endl;
+            cout << "Marginal density distribution:" << endl;
             for (int i=0; i<mdl.marginalDist.size(); i++){
                 cout << mdl.marginalDist[i] << endl;
             }
@@ -219,36 +227,42 @@ int main(int argc, char** argv) {
         vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
         sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
 
-        cout << "#Starting in approximation mode" << endl;
-        sim_mdl.simulate(burnIn,minTime,maxWardSamples); //now run the simulation
+        cout << "#seed: " << model.seed << endl;
+        cout << "#burn-in: " << model.burnInTime << endl;
+        cout << "#min time" << model.minTime << endl;
 
-        //In contrary to the heuristic evaluation, the entire system is evaluated at the
-        //same time. However, for the sake of this demonstration we choose only to print
-        //the results from a single queue.
-        int sim_widx = 0;
+        cout << "#Starting in simulation mode" << endl;
+        sim_mdl.simulate(burnIn,minTime,maxWardSamples); //now run the simulation
 
         //get the result
         cout << "--- RESULTS ---" << endl;
 
-        cout << "Marginal frequency distribution:" << endl;
-        for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
-            cout << sim_mdl.wardFreqDist[sim_widx][i] << endl;
+        for (int sim_widx = 0; sim_widx < nQueues; sim_widx++){
+            cout << "--- queue " << sim_widx << " ---" << endl;
+            
+            cout << "Marginal frequency distribution:" << endl;
+            for(int j = 0; j < sim_mdl.wardFreqDist[sim_widx].size(); j++){
+                cout << sim_mdl.wardFreqDist[sim_widx][j] << endl;
+            }
+        
+
+            cout << "Marginal density distribution:" << endl;
+            for(int j = 0; j < sim_mdl.wardDenDist[sim_widx].size(); j++){
+                cout << sim_mdl.wardDenDist[sim_widx][j] << endl; //corresponds to marginalDist in the heuristic evaluation
+            }
+        
+
+            cout << "Probability of rejection:" << endl;
+            cout << sim_mdl.blockingProbability[sim_widx] << endl;
+
+            cout << "Expected server occupancy:" << endl;
+            cout << sim_mdl.expectedOccupancy[sim_widx] << endl;
+
+            cout << "Expected fraction of servers occupied:" << endl;
+            cout << sim_mdl.expOccFraction[sim_widx] << endl;
         }
-        cout << "Marginal density distribution:" << endl;
-        for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
-            cout << sim_mdl.wardDenDist[sim_widx][i] << endl; //corresponds to marginalDist in the heuristic evaluation
-        }
-
-        cout << "Probability of rejection:" << endl;
-        cout << sim_mdl.blockingProbability[sim_widx] << endl;
-
-        cout << "Expected server occupancy:" << endl;
-        cout << sim_mdl.expectedOccupancy[sim_widx] << endl;
-
-        cout << "Expected fraction of servers occupied:" << endl;
-        cout << sim_mdl.expOccFraction[sim_widx] << endl;
-
     }
 
+    cout << "--- END ---";
     return 0;
 }

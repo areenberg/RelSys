@@ -84,37 +84,37 @@ bool Model::ReadFromFile(const char* fileName)
         l_pWard = l_pWard->NextSiblingElement("Ward");
     }
 
-    std::cout << "#Importing simulation properties" << std::endl;
-    std::cout << "#Importing simulation mode" << std::endl;
+    //std::cout << "#Importing simulation properties" << std::endl;
+    //std::cout << "#Importing simulation mode" << std::endl;
     // Simulation mode
     simulationMode = docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("mode").ToElement()->GetText();
 
     std::cout << "#Mode is set to: " << simulationMode << std::endl;
     if(strcmp(simulationMode, "markov") == 0)
     {
-        std::cout << "#Importing ApproximationSeed" << std::endl;
-        seed =               (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationSeed").ToElement()->GetText();
-        std::cout << "#Importing ApproximationBurnInTime" << std::endl;
-        burnInTime =         (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationBurnInTime").ToElement()->GetText();
-        std::cout << "#Importing ApproximationMinSimulationTime" << std::endl;
-        minTime =            (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationMinSimulationTime").ToElement()->GetText();
-        std::cout << "#Importing ApproximationMinSamples" << std::endl;
-        minSamples =         (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationMinSamples").ToElement()->GetText();
-        std::cout << "#Importing ApproximationWardIndex" << std::endl;
-        wardIndex =          (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationWardIndex").ToElement()->GetText();
-        std::cout << "#Importing ApproximationOpenHyperStates" << std::endl;
-        openHyperStates =    (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationOpenHyperStates").ToElement()->GetText();
-        std::cout << "#Importing ApproximationBlockedHyperStates" << std::endl;
-        blockedHyperStates = (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationBlockedHyperStates").ToElement()->GetText();
+        //std::cout << "#Importing ApproximationSeed" << std::endl;
+        seed =               atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationSeed").ToElement()->GetText());
+        //std::cout << "#Importing ApproximationBurnInTime" << std::endl;
+        burnInTime =         atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationBurnInTime").ToElement()->GetText());
+        //std::cout << "#Importing ApproximationMinSimulationTime" << std::endl;
+        minTime =            atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationMinSimulationTime").ToElement()->GetText());
+        //std::cout << "#Importing ApproximationMinSamples" << std::endl;
+        minSamples =         atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationMinSamples").ToElement()->GetText());
+        //std::cout << "#Importing ApproximationWardIndex" << std::endl;
+        wardIndex =          atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationWardIndex").ToElement()->GetText());
+        //std::cout << "#Importing ApproximationOpenHyperStates" << std::endl;
+        openHyperStates =    atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationOpenHyperStates").ToElement()->GetText());
+        //std::cout << "#Importing ApproximationBlockedHyperStates" << std::endl;
+        blockedHyperStates = atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("ApproximationBlockedHyperStates").ToElement()->GetText());
     }
     else
     {
-        std::cout << "#Importing SimulationSeed" << std::endl;
-        seed =               (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("SimulationSeed").ToElement()->GetText();
-        std::cout << "#Importing SimulationBurnInTime" << std::endl;
-        burnInTime =         (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("SimulationBurnInTime").ToElement()->GetText();
-        std::cout << "#Importing SimulationMinSimulationTime" << std::endl;
-        minTime =            (int)docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("SimulationMinSimulationTime").ToElement()->GetText();
+        //std::cout << "#Importing SimulationSeed" << std::endl;
+        seed =               atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("SimulationSeed").ToElement()->GetText());
+        //std::cout << "#Importing SimulationBurnInTime" << std::endl;
+        burnInTime =         atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("SimulationBurnInTime").ToElement()->GetText());
+        //std::cout << "#Importing SimulationMinSimulationTime" << std::endl;
+        minTime =            atoi(docHandle.FirstChild("Model").FirstChild("simulatorProperties").FirstChild("SimulationMinSimulationTime").ToElement()->GetText());
     }
 
     return true;
