@@ -226,7 +226,7 @@ void RelocEvaluation::evalSingleWard(int widx){
         for (int k=0; k<marginalDist.size(); k++){
             expectedOccupancy += marginalDist[k]*k;
         }
-        expOccFraction = servers/expectedOccupancy;
+        expOccFraction = expectedOccupancy/(double)servers;
         blockingProbability = marginalDist[marginalDist.size()-1];
     }
 }
@@ -316,7 +316,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
             
         }
         expectedOccupancy = hqueue.expectedOccupancy();
-        expOccFraction = hqueue.expectedOccupancyFraction();
+        expOccFraction = expectedOccupancy/(double)capacity;
         blockingProbability = marginalDist[marginalDist.size()-1];
         
         auto stop = high_resolution_clock::now(); //stop time 

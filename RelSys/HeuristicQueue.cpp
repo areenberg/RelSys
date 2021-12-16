@@ -390,10 +390,6 @@ double HeuristicQueue::rejectionProbability(){
     return(margDist[margDist.size()-1]);
 }
 
-double HeuristicQueue::expectedOccupancyFraction(){
-    return(expectedOccupancy()/cap);
-}
-
 void HeuristicQueue::printStateSpace(){
    initializeState();
     for (int i=0; i<Ns; i++){
