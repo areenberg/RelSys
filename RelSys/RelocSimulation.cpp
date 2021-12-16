@@ -56,8 +56,8 @@ RelocSimulation::~RelocSimulation() {
 void RelocSimulation::initializeSystem(){
     calculateArrivalRates();
     
-    //pre-allocate memory for services
-    //nextArrival.resize(1);
+    //pre-allocate memory for services and arrivals
+    nextArrival = new Customer(0.0,0.0,0,0);
     maxOcc = 0;
     for (int widx=0; widx<nWards; widx++){
         maxOcc += getWardCapacity(widx);
@@ -170,12 +170,15 @@ void RelocSimulation::generateArrival(){
         }
     }
         
-    //create
-    nextArrival = new Customer(nextArrivalTime[min_widx][min_pidx],
-            genServiceTime(min_pidx),min_widx,min_pidx);
+    //create new patient arrival
+    nextArrival->arrivalClock = nextArrivalTime[min_widx][min_pidx];
+    nextArrival->serviceTime = genServiceTime(min_pidx);
+    nextArrival->patientType = min_pidx;
+    nextArrival->wardTarget = min_widx;
+    nextArrival->active = true;
+    nextArrival->serviceClock = numeric_limits<double>::max();
+    
     updateArrivalTime(min_widx,min_pidx);
-    
-    
     
 }
 
