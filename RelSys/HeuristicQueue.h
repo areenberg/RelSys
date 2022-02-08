@@ -64,7 +64,6 @@ public:
     
     void marginalDist(vector<double> &pi); //returns the marginal distribution
     double expectedOccupancy(); //returns the expected occupancy of capacity
-    double expectedOccupancyFraction(); //returns the expected fraction of capacity utilized
     double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
