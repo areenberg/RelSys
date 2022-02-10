@@ -278,7 +278,9 @@ Recall that in contrary to the heuristic approach, the simulation evaluates the 
 
 # How to cite
 
-Coming soon.
+[![DOI](https://zenodo.org/badge/293829002.svg)](https://zenodo.org/badge/latestdoi/293829002)
+
+
 
 # License
 
