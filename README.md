@@ -348,7 +348,6 @@ Leeters, Christoph, and Anders Reenberg Andersen. 2023. "Queueing systems with r
 
 [![DOI](https://zenodo.org/badge/293829002.svg)](https://zenodo.org/badge/latestdoi/293829002)
 
-Anders Reenberg Andersen. (2022). areenberg/RelSys: RelSys - first release (v1.0). Zenodo. https://doi.org/10.5281/zenodo.6037435
 
 # License
 
