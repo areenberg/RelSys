@@ -3,7 +3,6 @@
 /RelSys/.dep.inc
 /RelSys/dist/
 /RelSys/build/
-/RelSys/.vscode/
-.vscode/
-*.exe
-*.bat
+/RelSys/nbproject/
+/RelSys/Makefile
+/RelSys/.dep.inc
