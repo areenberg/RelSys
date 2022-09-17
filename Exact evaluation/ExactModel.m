@@ -2,6 +2,8 @@
 %EVALUATES THE STATE DISTRIBUTION FOR THE
 %EXACT SYSTEM USING THE POWER METHOD.
 
+%ONLY WORKS FOR SMALL SYSTEMS
+
 %AUTHOR: ANDERS REENBERG ANDERSEN
 
 %------------------------
@@ -20,30 +22,28 @@ parWorkers = 4;
 %label
 lab_test = "SomeLabel";
 
-%rho
-rutil = 0.80;
 
 %number of wards
 nWards = 3;
 %capacity
 capacity = [3,3,3];
 %service rates
-serRate_all = 0.1;
-mu = [serRate_all,serRate_all,serRate_all];
+mu = [0.1,0.2,0.3];
 %arrival rates
-arrRate_all = rutil*(serRate_all*capacity(1));
-lambda = [arrRate_all,arrRate_all,arrRate_all];
+lambda = [5,3,2];
 
 
 %routing matrix
-R = [0.0 0.5 0.5;
-     0.5 0.0 0.5;
-     0.5 0.5 0.0];
+R = [0.0 0.05 0.95;
+     0.50 0.0 0.50;
+     0.30 0.70 0.0];
  
 %state space size
 n = getStateSpaceSize(capacity,nWards);
+disp(strcat("State space size: ",num2str(n)))
 %generate state space (for small models)
 S = getStateSpace(capacity,nWards);
+disp("State space generated.")
 %transition rate matrix (for small models)
 Q = zeros(n,n); 
 
@@ -58,7 +58,8 @@ parfor (i = 1:n,parWorkers)
             Q(i,j) = getTransitionRate(i,j,mu,lambda,capacity,S,R,nWards);
         end
     end
-end    
+end
+disp("Transition rate matrix generated.")
 
 %calculate diagonal elements
 qdiag = -sum(Q,2);
@@ -84,6 +85,7 @@ pi_new = pi./sm;
 m = 100;
 tol = 1e-9;
 eps = 1;
+disp("Solving...")
 while eps>tol
     pi_old = pi_new;
     
@@ -100,6 +102,7 @@ while eps>tol
     disp(eps)
 end
 pi = pi_new;
+disp("Solution found.")
 
 %marginal distributions
 %for widx = 1:nWards
@@ -109,9 +112,10 @@ pi = pi_new;
 
 dist1 = marginalDist(pi,1,nWards,capacity,S,n);
 dist2 = marginalDist(pi,2,nWards,capacity,S,n);
-%dist3 = marginalDist(pi,3,nWards,capacity,S,n);
+dist3 = marginalDist(pi,3,nWards,capacity,S,n);
 
-csvwrite(strcat(lab_test,"_Dist.csv"),[dist1 dist2])
+csvwrite(strcat(lab_test,"_Dist.csv"),[dist1 dist2 dist3])
+disp("Marginal distributions saved.")
 
 %------------------------
 %   FUNCTIONS
