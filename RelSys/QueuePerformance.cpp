@@ -25,6 +25,7 @@
 
 #include <vector>
 #include <math.h>
+#include <fstream>
 
 using namespace std;
 
@@ -139,7 +140,29 @@ vector<vector<double>> QueuePerformance::getWardDenDist(int widx){
     return(denDist);
 }
     
-
+void QueuePerformance::saveResults(string fileName, int widx){
+    
+    ofstream resFile(fileName);
+    
+    vector<vector<double>> dd = getWardDenDist(widx);
+    
+    //create the header
+    resFile << "time_point,";
+    for (int i=0; i<(wd_array+widx)->capacity; i++){
+        resFile << i << ",";
+    }
+    resFile << (wd_array+widx)->capacity << endl;
+    
+    for (int tidx=0; tidx<dd.size(); tidx++){
+        resFile << timePoints[tidx] << ",";
+        for (int i=0; i<(dd[tidx].size()-1); i++){
+            resFile << dd[tidx][i] << ",";
+        }
+        resFile << dd[tidx][(dd[tidx].size()-1)] << endl;
+    }    
+    resFile.close();
+    
+}
 
 
 

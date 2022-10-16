@@ -27,6 +27,7 @@
 #include "QueueData.h"
 
 #include <vector>
+#include <string>
 
 using namespace std;
 
@@ -50,6 +51,8 @@ public:
     
     //return the results as relative frequencies
     vector<vector<double>> getWardDenDist(int widx);
+    void saveResults(string fileName, int widx);
+    
     
     //dummy constructor (not included in cpp-file) 
     QueuePerformance() {};
