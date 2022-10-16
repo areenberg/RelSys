@@ -45,6 +45,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/LinSolver.o \
 	${OBJECTDIR}/PhaseFitter.o \
 	${OBJECTDIR}/QueueData.o \
+	${OBJECTDIR}/QueuePerformance.o \
 	${OBJECTDIR}/RelocEvaluation.o \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
@@ -125,6 +126,11 @@ ${OBJECTDIR}/QueueData.o: QueueData.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/QueueData.o QueueData.cpp
+
+${OBJECTDIR}/QueuePerformance.o: QueuePerformance.cpp
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} "$@.d"
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/QueuePerformance.o QueuePerformance.cpp
 
 ${OBJECTDIR}/RelocEvaluation.o: RelocEvaluation.cpp
 	${MKDIR} -p ${OBJECTDIR}

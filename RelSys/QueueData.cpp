@@ -31,6 +31,8 @@ serviceRate(serRate),
 capacity(cap),
 relocationProbabilities(relProbs)
 {   
+    //a value if -1 in the first index indicates that time-dependency is disabled
+    timeDep.resize(1,-1.0);
 }
 
 QueueData::QueueData(const QueueData& orig) {
@@ -51,5 +53,15 @@ void QueueData::calculateWardStateSpace(int wardsTotal){
     }
     
     wardStateSpaceSize = cmb.capWithLimits(capacity,uL,lL);
+    
+}
+
+
+void QueueData::addTimeDependency(vector<double> tDep){
+    
+    timeDep.resize(tDep.size());
+    for (int i=0; i<timeDep.size(); i++){
+        timeDep[i] = tDep[i];
+    }
     
 }

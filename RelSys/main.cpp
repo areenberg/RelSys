@@ -11,12 +11,12 @@
 #include "RelocSimulation.h"
 #include "RelocEvaluation.h"
 #include "SystemParameters.h"
+#include "QueuePerformance.h"
 
 #include <iostream>
 #include <vector>
 
 using namespace std;
-
 
 int main(int argc, char** argv) {
 
@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
 
     //arrival rates for each customer type
     vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
-
+    
     //mean service time for each customer type
     vector<double> serviceTimes = {10,5,10,8};
 
@@ -64,7 +64,16 @@ int main(int argc, char** argv) {
 
     //calculate system input parameters from customer types to queues
     SystemParameters sysParam(nQueues,nCustomerTypes,custs_array);
-
+    
+    //time-dependent arrival rate as a fraction of the maximal arrival rate for the queue
+    //note: only applicable to the simulation module
+    //<<UNCOMMENT BELOW TO APPLY TIME-DEPENDENCY>>
+//    vector<vector<double>> timeDep = {{0.5,0.8,0.9,0.01,0.5,1.0,1.0},
+//                                      {0.6,0.7,1.0,0.9,0.7,0.5,0.4},
+//                                      {0.1,0.1,0.2,0.3,0.6,1.0,0.8},
+//                                      {0.5,1.0,1.0,1.0,0.5,0.3,0.1}};
+    
+    
     //now create the queue objects
     QueueData * wd_array = new QueueData[nQueues];
     for (int i=0; i<nQueues; i++){
@@ -73,6 +82,7 @@ int main(int argc, char** argv) {
                                 sysParam.queueServiceRate(i),
                                 capacity[i],
                                 sysParam.queueRelProbability(i));
+//        wd_array[i].addTimeDependency(timeDep[i]); //<<-- UNCOMMENT TO APPLY TIME-DEPENDENCY
     }
 
     //--------------------------
@@ -84,8 +94,8 @@ int main(int argc, char** argv) {
 
     //first simulate open/blocked time-windows
     int seed = 123;
-    int bin = -1;
-    int mt = 1;
+    int bin = -1; //set to -1 for auto
+    int mt = 1; //set to 1 for auto
     mdl.runSimulation(seed,bin,mt,50);
     
     //choose a queue to evaluate
@@ -124,11 +134,16 @@ int main(int argc, char** argv) {
 
     //setup and run simulation
     sim_mdl.setSeed(123); //set the seed
-    double burnIn = -1; //burn-in time
-    double minTime = -1; //minimum simulation time
+    double burnIn = -1; //burn-in time (set to -1 for auto)
+    double minTime = -1; //minimum simulation time (set to -1 for auto)
     vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
     sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
-
+    
+    //<<UNCOMMENT BELOW TO APPLY TIME-DEPENDENCY>>
+//    vector<double> timePoints = {0.5,1.5,2.5,3.5,4.5,5.5,6.5}; //choose time points to track
+//    QueuePerformance * qPer = new QueuePerformance(nQueues,wd_array,timePoints); //use this object to get the results
+//    sim_mdl.enableTimeDependency(qPer); //enable time-dependency in simulation module
+    
     sim_mdl.simulate(burnIn,minTime,maxWardSamples); //now run the simulation
 
     //In contrary to the heuristic evaluation, the entire system is evaluated at the
@@ -157,5 +172,16 @@ int main(int argc, char** argv) {
     cout << "Expected fraction of servers occupied:" << endl;
     cout << sim_mdl.expOccFraction[sim_widx] << endl;
 
+    //<<UNCOMMENT BELOW TO GET RESULTS FOR TIME-DEPENDENT SYSTEM>>
+//    cout << "Time dep. occupancy:" << endl;
+//    vector<vector<double>> dd = qPer->getWardDenDist(sim_widx);
+//    for (int tidx=0; tidx<dd.size(); tidx++){
+//        cout << timePoints[tidx] << ": ";
+//        for (int i=0; i<dd[tidx].size(); i++){
+//            cout << dd[tidx][i] << " ";
+//        }
+//        cout << endl;
+//    }
+    
     return 0;
 }

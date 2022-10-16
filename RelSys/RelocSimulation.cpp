@@ -40,7 +40,8 @@ serTimeExponential(true),
 timeSamplingEnabled(true),
 checkAccuracy(false),
 checkBurnIn(false),
-burnInInit(true),        
+burnInInit(true),
+timeDepEnabled(false),        
 stdMult(1.0),
 accTol(5e-3)        
 {
@@ -74,6 +75,12 @@ void RelocSimulation::initializeSystem(){
     //evaluate the (per bed) ward loads
     evalWardLoads();
     
+}
+
+void RelocSimulation::enableTimeDependency(QueuePerformance * qP){
+    qPer=qP; //the queue occupancy distributions
+    timeDepEnabled = true; //enable time-dependency
+    cycleLen = wards_pointer->timeDep.size(); //get length of one cycle
 }
 
 void RelocSimulation::disableTimeSampling(){
@@ -153,8 +160,34 @@ void RelocSimulation::initializeArrivalTimes(double currentClock){
 void RelocSimulation::updateArrivalTime(int widx, int pidx){
     //derives the next arrival time for a single ward-patient pair
     
+    if (timeDepEnabled){
+        updateArrivalTime_TimeDep(widx,pidx);
+    }else{
+        updateArrivalTime_Stationary(widx,pidx);
+    }
+    
+}
+
+void RelocSimulation::updateArrivalTime_TimeDep(int widx, int pidx){
+    
+    double delta=0.0;
+    do{
+        delta += randomExponential(arrivalRateMatrix[widx][pidx]);
+    }while(randomUniform()>getWardTimeDep(widx,timeIndex(clock+delta)));
+    
+    nextArrivalTime[widx][pidx] += delta;
+}
+
+void RelocSimulation::updateArrivalTime_Stationary(int widx, int pidx){
+    
     nextArrivalTime[widx][pidx] += randomExponential(arrivalRateMatrix[widx][pidx]);
     
+}
+
+int RelocSimulation::timeIndex(double cl){
+    //return the time index corresponding to the
+    //clock in cl
+    return(floor(cl-floor(cl/cycleLen)*cycleLen));
 }
 
 void RelocSimulation::generateArrival(){
@@ -713,6 +746,16 @@ bool RelocSimulation::attemptDischarge(){
     capUse[service_array[serIdx].wardTarget]--;
     wardOccupancy[service_array[serIdx].wardTarget][service_array[serIdx].patientType]--;
     
+    //track occupancy if time dep. enabled
+    if (timeDepEnabled){
+        if (clock>burnIn){
+            qPer->discharge(clock,service_array[serIdx].wardTarget,true);
+        }else{
+            qPer->discharge(clock,service_array[serIdx].wardTarget,false);
+        }
+            
+    }
+    
     return(true);
 }
 
@@ -747,6 +790,17 @@ void RelocSimulation::attemptAdmission(bool &succeeded){
                 
         //adjust number of patients currently in service
         inService++;
+        
+        //track occupancy if time dep. enabled
+        if (timeDepEnabled){
+            if (clock>burnIn){
+                qPer->arrival(clock,service_array[insIdx].wardTarget,true);
+            }else{
+                qPer->arrival(clock,service_array[insIdx].wardTarget,false);
+            }
+            
+        }
+        
         succeeded = true;
     }else{
         succeeded = false;
@@ -1025,4 +1079,9 @@ int RelocSimulation::getWardStateSpaceSize(int ward){
 int RelocSimulation::getWardCapacity(int ward){
     
     return((wards_pointer + ward)->capacity);
+}
+
+double RelocSimulation::getWardTimeDep(int ward, int timeIndex){
+    
+    return((wards_pointer + ward)->timeDep[timeIndex]);
 }
