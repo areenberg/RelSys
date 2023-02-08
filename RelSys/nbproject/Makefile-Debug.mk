@@ -21,8 +21,8 @@ FC=gfortran
 AS=as
 
 # Macros
-CND_PLATFORM=GNU-Linux
-CND_DLIB_EXT=so
+CND_PLATFORM=MinGW-Windows
+CND_DLIB_EXT=dll
 CND_CONF=Debug
 CND_DISTDIR=dist
 CND_BUILDDIR=build
@@ -50,7 +50,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
 	${OBJECTDIR}/SystemParameters.o \
-	${OBJECTDIR}/eval_time_dep_main.o
+	${OBJECTDIR}/main.o
 
 
 # C Compiler Flags
@@ -71,9 +71,9 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/relsys ${OBJECTFILES} ${LDLIBSOPTIONS}
 
@@ -152,10 +152,10 @@ ${OBJECTDIR}/SystemParameters.o: SystemParameters.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SystemParameters.o SystemParameters.cpp
 
-${OBJECTDIR}/eval_time_dep_main.o: eval_time_dep_main.cpp
+${OBJECTDIR}/main.o: main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/eval_time_dep_main.o eval_time_dep_main.cpp
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
 
 # Subprojects
 .build-subprojects:

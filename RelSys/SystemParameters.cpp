@@ -53,7 +53,7 @@ double SystemParameters::queueArrivalRate(int widx){
     if (arr==0){
         arr = 1e-16;
     }
-    
+        
     return(arr);
 }
 
@@ -76,7 +76,7 @@ double SystemParameters::queueServiceRate(int widx){
         //cout << "Ward " << (widx+1) << " service rate: " << ser << endl;
     
         return(ser);
-    }
+    }    
 }
 
 vector<double> SystemParameters::queueRelProbability(int widx){

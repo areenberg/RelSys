@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
                                 capacity[i],
                                 sysParam.queueRelProbability(i));
 //        wd_array[i].addTimeDependency(timeDep[i]); //<<-- UNCOMMENT TO APPLY TIME-DEPENDENCY
+//        wd_array[i].equalServiceRate(); //<<-- UNCOMMENT TO EQUALIZE SERVICE RATES
     }
 
     //--------------------------

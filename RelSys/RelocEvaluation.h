@@ -38,7 +38,9 @@ class RelocEvaluation {
 public:
     
     //METHODS
-    void runHeuristic(int main_widx);
+    void runHeuristic(int main_widx); //validate and evaluate the solution to the model
+    void validateModel(int main_widx); //validate the model
+    void evaluateModel(); //evaluate the solution (requires a validated model)
     void runSimulation(int seed, int burnIn,
         int minTime, int minSamples=50);
     void simulateMarginalDist(double sampleBurnIn, int collectSamples); //replace numerical evaluation with a simulation
@@ -52,6 +54,7 @@ public:
     vector<double> marginalDist; //marginal distribution of the main queue
     double blockingProbability, expectedOccupancy, expOccFraction;
     double vmemory; //virtual memory consumption during runtime in kilobytes
+    int stateSpaceSize;
     
     RelocEvaluation() {}; //dummy constructor 
     RelocEvaluation(int nW, QueueData * wards);
@@ -63,7 +66,7 @@ private:
     void initializeSystem();
     void setDefaultBinMap();
     void setDefaultHyperQueueStates();
-    void initializeStateDistribution(HeuristicQueue &hqueue, bool erlangInit=false);
+    void initializeStateDistribution(HeuristicQueue * hqueue, bool erlangInit=false);
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
     void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
@@ -78,15 +81,26 @@ private:
     double erlangLoss(int &k, double &lambda, double &mu, int &servers);
     long double factorial(int &x);
     
+    int getWardID(int ward);
+    double getWardArrivalRate(int ward);
+    double getWardServiceRate(int ward);
+    int getWardCapacity(int ward);
+    vector<double> getWardRelocationProbabilities(int ward);
+    int getWardStateSpaceSize(int ward);
+    //void calculateWardStateSpaceSize(int ward, int numberOfWards);
+    
     //VARIABLES
     vector<vector<int>> binMap;
     vector<double> newDisRates;
     vector<int> hyperOpenStates; //number of open states for each hyper queue
     vector<int> hyperBlockedStates; //number of blocked states for each hyper queue
-    bool simReady,simMargDist, changeDisRates;
-    int nWards, seed, collectSamples;
+    vector<int> upperLimits, lowerLimits, hyperWidx_vector;
+    bool simReady,validateReady,simMargDist, changeDisRates;
+    int nWards, seed, collectSamples, mfocus;
     double sampleBurnIn;
     RelocSimulation * sim_pointer;
+    HyperQueue * hq_array;
+    HeuristicQueue * hqueue;
     
     mt19937 rgen; //random generator
     uniform_real_distribution<> dis;
@@ -95,15 +109,7 @@ private:
     //WARD INFORMATION METHODS AND VARIABLES
     QueueData * wards_pointer;
     
-    //methods
-    int getWardID(int ward);
-    double getWardArrivalRate(int ward);
-    double getWardServiceRate(int ward);
-    int getWardCapacity(int ward);
-    vector<double> getWardRelocationProbabilities(int ward);
-    int getWardStateSpaceSize(int ward);
-    void calculateWardStateSpaceSize(int ward, int numberOfWards);
-
+    
     
 };
 

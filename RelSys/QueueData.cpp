@@ -31,7 +31,7 @@ serviceRate(serRate),
 capacity(cap),
 relocationProbabilities(relProbs)
 {   
-    //a value if -1 in the first index indicates that time-dependency is disabled
+    //a value of -1 in the first index indicates that time-dependency is disabled
     timeDep.resize(1,-1.0);
 }
 
@@ -40,6 +40,17 @@ QueueData::QueueData(const QueueData& orig) {
 
 QueueData::~QueueData() {
 }
+
+
+void QueueData::equalServiceRate(){
+    
+    //use this method to set the service rate to a value of 1
+    //and scale the arrival rate keeping the load on the system
+    arrivalRate/=serviceRate;
+    serviceRate=1.0;
+    
+}
+
 
 
 void QueueData::calculateWardStateSpace(int wardsTotal){

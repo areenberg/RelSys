@@ -48,6 +48,10 @@ public:
     
     void addTimeDependency(vector<double> tDep);
     
+    //use this method to set the service rate to a value of 1
+    //and scale the arrival rate keeping the load on the system
+    void equalServiceRate();
+    
     //calculate local state space size
     void calculateWardStateSpace(int wardsTotal);
     

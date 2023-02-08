@@ -67,6 +67,7 @@ public:
     double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
+    HeuristicQueue() {}; //dummy constructor (not included in cpp-file)
     HeuristicQueue(int main_widx, vector<vector<int>> binMap, int c, vector<int> upperLim, vector<int> lowerLim,
     double aRate, double sRate, int nhq, HyperQueue* hbQueues, QueueData * wards);
     HeuristicQueue(const HeuristicQueue& orig);

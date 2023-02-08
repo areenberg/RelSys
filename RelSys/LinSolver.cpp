@@ -55,7 +55,7 @@ LinSolver::~LinSolver() {
 }
 
 
-void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps){
+void LinSolver::sor(vector<double> &pi, HeuristicQueue * q, double relaxation, double eps){
     
     cout << "Engaging SOR." << endl;
     
@@ -64,11 +64,10 @@ void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, do
     
     cout << "Building transition matrix..." << endl;
     cout << "Step 1:" << endl;
-    //q.buildChain(); // <<<--- remember to delete
-    q.buildTransposedChain(); //generate and store the entire transposed transition matrix
+    q->buildTransposedChain(); //generate and store the entire transposed transition matrix
     
     cout << "Step 2:" << endl;
-    scale(q.qValues); //scale the transposed transition matrix
+    scale(q->qValues); //scale the transposed transition matrix
     
     //get memory consumption at runtime (for Linux operating systems)
     vmemory = memUsage();
@@ -77,10 +76,10 @@ void LinSolver::sor(vector<double> &pi, HeuristicQueue &q, double relaxation, do
     StatusBar sbar(1e-4-eps,30);
     do {
         tol = 0.0;
-        for (int i=0; i<q.Ns; i++){
+        for (int i=0; i<q->Ns; i++){
             sm = 0;
-            for (int j=0; j<q.qColumnIndices[i].size(); j++){
-                sm += q.qValues[i][j] * pi[q.qColumnIndices[i][j]];
+            for (int j=0; j<q->qColumnIndices[i].size(); j++){
+                sm += q->qValues[i][j] * pi[q->qColumnIndices[i][j]];
             }
             
             x_new = pi[i] - relaxation*sm;
@@ -189,24 +188,24 @@ void LinSolver::normalize(vector<double> &pi){
     
 }
 
-void LinSolver::powerMethod(vector<double> &pi, HeuristicQueue &q, double eps){
+void LinSolver::powerMethod(vector<double> &pi, HeuristicQueue * q, double eps){
     
     cout << "Engaging power method." << endl;
     
     double x_new, diff, tol;
     int maxIter = 1e4, iter = 0;
     
-    q.buildTransposedChain(); //generate and store the entire transposed transition matrix
+    q->buildTransposedChain(); //generate and store the entire transposed transition matrix
     
-    embeddedChain(q.qValues); //translate into the embedded chain
+    embeddedChain(q->qValues); //translate into the embedded chain
     
     do {
         tol = 0.0;
-        for (int i=0; i<q.Ns; i++){
+        for (int i=0; i<q->Ns; i++){
             
             x_new = 0;
-            for (int j=0; j<q.qColumnIndices[i].size(); j++){
-                x_new += q.qValues[i][j] * pi[q.qColumnIndices[i][j]];
+            for (int j=0; j<q->qColumnIndices[i].size(); j++){
+                x_new += q->qValues[i][j] * pi[q->qColumnIndices[i][j]];
             }
             
             //for convergence validation
@@ -249,106 +248,106 @@ void LinSolver::embeddedChain(vector<vector<double>> &values){
     
 }
 
-void LinSolver::monteCarlo(HeuristicQueue &q, 
-        double burnIn, int collectSamples){
-    //the marginal distribution is found using a simulation of the process
-    
-    double mn,sml,smlArr;
-    int toState,sm,K;
-    vector<int> s;
-    
-    int samples=0;
-    double clock=0.0;
-    int currentState=0;
-    q.initializeState();
-    s.resize(q.state.size(),0);
-    int csize = q.state.size()-q.Nh; 
-    q.margDist.resize(q.margDist.size(),0);
-    
-    cout << "Sampling process..." << endl;
-    StatusBar sbar(collectSamples,30);
-    while (samples<collectSamples){
-        //derive jump rates from the current state
-        
-        q.allOutgoing();
-        
-        //sample the next state
-        mn=numeric_limits<double>::max();
-        toState=-1;
-        for (int j=0; j<q.toIdxSize; j++){
-            if (q.jumpToRate[j]>0.0){
-                sml=randomExponential(q.jumpToRate[j]);
-                if (sml<mn){
-                    mn=sml;
-                    toState=q.jumpToIdx[j];
-                }
-            }
-        }
-        K=0;
-        for (int i=0; i<csize; i++){
-            K+=q.state[i];
-        }
-        if (K==q.cap){
-            smlArr=randomExponential(q.arrivalRate);
-        }
-        
-        //move to the next state
-        for (int i=0; i<q.state.size(); i++){
-            s[i]=q.state[i];
-        }
-        if (toState>currentState){
-            for (int i=0; i<(toState-currentState); i++){
-                q.nextCurrentState();
-            }
-        }else if (toState<currentState){
-            //fast version
-//            for (int i=0; i<(currentState-toState); i++){
-//                q.previousCurrentState();
+//void LinSolver::monteCarlo(HeuristicQueue &q, 
+//        double burnIn, int collectSamples){
+//    //the marginal distribution is found using a simulation of the process
+//    
+//    double mn,sml,smlArr;
+//    int toState,sm,K;
+//    vector<int> s;
+//    
+//    int samples=0;
+//    double clock=0.0;
+//    int currentState=0;
+//    q.initializeState();
+//    s.resize(q.state.size(),0);
+//    int csize = q.state.size()-q.Nh; 
+//    q.margDist.resize(q.margDist.size(),0);
+//    
+//    cout << "Sampling process..." << endl;
+//    StatusBar sbar(collectSamples,30);
+//    while (samples<collectSamples){
+//        //derive jump rates from the current state
+//        
+//        q.allOutgoing();
+//        
+//        //sample the next state
+//        mn=numeric_limits<double>::max();
+//        toState=-1;
+//        for (int j=0; j<q.toIdxSize; j++){
+//            if (q.jumpToRate[j]>0.0){
+//                sml=randomExponential(q.jumpToRate[j]);
+//                if (sml<mn){
+//                    mn=sml;
+//                    toState=q.jumpToIdx[j];
+//                }
 //            }
-            
-            //version that works (but slow)
-            q.initializeState();
-            if (toState>0){
-                for (int i=0; i<toState; i++){
-                    q.nextCurrentState();
-                }
-            }    
-        }
-        currentState=toState;
-        
-        clock+=mn; //advance the clock
-        
-        //track occupancy
-        if (clock>burnIn){
-            sm=0;
-            for (int i=0; i<csize; i++){
-                sm += (q.state[i]-s[i]);
-            }
-            if (sm==1 || (K==q.cap && smlArr<mn)){
-                samples++;
-                q.margDist[K]++;
-            }
-        }
-        
-        if (samples%1000==0){  
-            sbar.updateBar(samples);
-        }    
-        
-    }
-    sbar.endBar();
-    cout << "done." << endl;
-    
-    //calculate relative frequencies
-    sm=0;
-    for (int i=0; i<q.margDist.size(); i++){
-        sm+=q.margDist[i];
-    }
-    for (int i=0; i<q.margDist.size(); i++){
-        q.margDist[i]/=(double)sm;
-    }
-    
-    
-}
+//        }
+//        K=0;
+//        for (int i=0; i<csize; i++){
+//            K+=q.state[i];
+//        }
+//        if (K==q.cap){
+//            smlArr=randomExponential(q.arrivalRate);
+//        }
+//        
+//        //move to the next state
+//        for (int i=0; i<q.state.size(); i++){
+//            s[i]=q.state[i];
+//        }
+//        if (toState>currentState){
+//            for (int i=0; i<(toState-currentState); i++){
+//                q.nextCurrentState();
+//            }
+//        }else if (toState<currentState){
+//            //fast version
+////            for (int i=0; i<(currentState-toState); i++){
+////                q.previousCurrentState();
+////            }
+//            
+//            //version that works (but slow)
+//            q.initializeState();
+//            if (toState>0){
+//                for (int i=0; i<toState; i++){
+//                    q.nextCurrentState();
+//                }
+//            }    
+//        }
+//        currentState=toState;
+//        
+//        clock+=mn; //advance the clock
+//        
+//        //track occupancy
+//        if (clock>burnIn){
+//            sm=0;
+//            for (int i=0; i<csize; i++){
+//                sm += (q.state[i]-s[i]);
+//            }
+//            if (sm==1 || (K==q.cap && smlArr<mn)){
+//                samples++;
+//                q.margDist[K]++;
+//            }
+//        }
+//        
+//        if (samples%1000==0){  
+//            sbar.updateBar(samples);
+//        }    
+//        
+//    }
+//    sbar.endBar();
+//    cout << "done." << endl;
+//    
+//    //calculate relative frequencies
+//    sm=0;
+//    for (int i=0; i<q.margDist.size(); i++){
+//        sm+=q.margDist[i];
+//    }
+//    for (int i=0; i<q.margDist.size(); i++){
+//        q.margDist[i]/=(double)sm;
+//    }
+//    
+//    
+//}
 
 double LinSolver::memUsage(){
     //memory usage in kilobytes at runtime for Linux operating systems
