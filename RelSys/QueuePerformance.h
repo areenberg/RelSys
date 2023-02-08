@@ -49,8 +49,12 @@ public:
     void arrival(double &newClock, int &widx, bool track=true);
     void discharge(double &newClock, int &widx, bool track=true);
     
-    //return the results as relative frequencies
-    vector<vector<double>> getWardDenDist(int widx);
+    //get the results
+    vector<vector<double>> getWardDenDist(int widx); //return the results as relative frequencies
+    vector<vector<double>> getMeanOccupancy(int widx); //return the mean occupancy including 95% conf. intervals
+    double expectedOccupancy(vector<double> dist);
+    double stanDevOccupancy(double mean, vector<double> dist);
+    int countSamples(int widx, int tidx);
     void saveResults(string fileName, int widx);
     
     

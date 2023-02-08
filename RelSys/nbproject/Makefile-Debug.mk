@@ -50,7 +50,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/RelocSimulation.o \
 	${OBJECTDIR}/StatusBar.o \
 	${OBJECTDIR}/SystemParameters.o \
-	${OBJECTDIR}/main.o
+	${OBJECTDIR}/eval_time_dep_main.o
 
 
 # C Compiler Flags
@@ -152,10 +152,10 @@ ${OBJECTDIR}/SystemParameters.o: SystemParameters.cpp
 	${RM} "$@.d"
 	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/SystemParameters.o SystemParameters.cpp
 
-${OBJECTDIR}/main.o: main.cpp
+${OBJECTDIR}/eval_time_dep_main.o: eval_time_dep_main.cpp
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} "$@.d"
-	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/main.o main.cpp
+	$(COMPILE.cc) -g -MMD -MP -MF "$@.d" -o ${OBJECTDIR}/eval_time_dep_main.o eval_time_dep_main.cpp
 
 # Subprojects
 .build-subprojects:

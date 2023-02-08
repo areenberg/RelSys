@@ -139,7 +139,57 @@ vector<vector<double>> QueuePerformance::getWardDenDist(int widx){
     
     return(denDist);
 }
+
+vector<vector<double>> QueuePerformance::getMeanOccupancy(int widx){
     
+    vector<vector<double>> dd = getWardDenDist(widx);
+    double stanDev; int n;
+    
+    vector<vector<double>> res(timePoints.size());
+    for (int tidx=0; tidx<timePoints.size(); tidx++){
+        res[tidx].resize(3,0); //lower conf., mean, upper conf.
+        res[tidx][1] = expectedOccupancy(dd[tidx]);
+        stanDev=stanDevOccupancy(res[tidx][1],dd[tidx]);
+        n=countSamples(widx,tidx);
+        res[tidx][0] = res[tidx][1] - (1.959964 * stanDev/sqrt((double)n));
+        res[tidx][2] = res[tidx][1] + (1.959964 * stanDev/sqrt((double)n));
+    }
+    
+    return(res);
+}
+
+int QueuePerformance::countSamples(int widx, int tidx){
+    
+    int sm=0.0;
+    for (int j=0; j<occupancyFreq[widx][tidx].size(); j++){
+        sm+=occupancyFreq[widx][tidx][j];
+    }
+    
+    return(sm);
+}
+
+
+double QueuePerformance::expectedOccupancy(vector<double> dist){
+    
+    double y=0.0;
+    for (int i=0; i<dist.size(); i++){
+        y += i*dist[i];
+    }
+    
+    return(y);
+}
+    
+double QueuePerformance::stanDevOccupancy(double mean, vector<double> dist){
+    
+    double y=0.0;
+    for (int i=0; i<dist.size(); i++){
+        y += pow((i-mean),2)*dist[i];
+    }
+    y = sqrt(y);
+    
+    return(y);
+}
+
 void QueuePerformance::saveResults(string fileName, int widx){
     
     ofstream resFile(fileName);
