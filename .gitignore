@@ -1,5 +1,8 @@
-/RelSys/dist/
-/RelSys/build/
 /RelSys/nbproject/
 /RelSys/Makefile
 /RelSys/.dep.inc
+/RelSys/dist/
+/RelSys/build/
+/RelSys/.vscode/
+*.exe
+*.bat
