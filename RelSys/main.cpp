@@ -93,7 +93,7 @@ int main(int argc, char** argv) {
 
     //setup model object
     RelocEvaluation mdl(nQueues,wd_array);
-
+    
     //first simulate open/blocked time-windows
     int seed = 123;
     int bin = -1; //set to -1 for auto
@@ -109,7 +109,10 @@ int main(int argc, char** argv) {
     
     //run the model
     mdl.runHeuristic(widx);
-
+    
+    //mdl.validateModel(widx);
+    //mdl.evaluateModel();
+    
     //get the result
     cout << "--- RESULTS ---" << endl;
 
@@ -133,7 +136,7 @@ int main(int argc, char** argv) {
 
     //setup simulation model object
     RelocSimulation sim_mdl(nQueues,wd_array);
-
+    
     //setup and run simulation
     sim_mdl.setSeed(123); //set the seed
     double burnIn = -1; //burn-in time (set to -1 for auto)

@@ -158,12 +158,6 @@ void RelocEvaluation::setBinDischargeRates(vector<double> disRates){
     }
 }
 
-void RelocEvaluation::simulateMarginalDist(double smb, int cSam){
-    //use this method to evaluate the solution with simulation
-    sampleBurnIn = smb; //burn-in time
-    collectSamples = cSam; //number of samples to collect
-    simMargDist=true;
-}
 
 void RelocEvaluation::runSimulation(int sd, int burnIn,
         int minTime, int minSamples){
@@ -232,6 +226,13 @@ void RelocEvaluation::evalSingleWard(int widx){
     }
 }
 
+//int RelocEvaluation::calculateStateSpaceSize(int main_widx){
+//    
+//    
+//    
+//}
+
+
 void RelocEvaluation::validateModel(int main_widx){
     
     mfocus = main_widx;
@@ -245,7 +246,7 @@ void RelocEvaluation::validateModel(int main_widx){
     
         //create and add surrogate queues to the system
         double arr;
-        int nhq = nWards-1; //number of hyper queues
+        nhq = nWards-1; //number of hyper queues
         
         //upper and lower limits in each queue. must include all queues (main and hyper queues)
         upperLimits.resize(nWards,0);
@@ -266,30 +267,22 @@ void RelocEvaluation::validateModel(int main_widx){
             }
         }
         
-        //prepare and fit PH parameters for each surrogate (hyper) queue
-        cout << "Fitting PH parameters... " << endl;
+        //create objects for each surrogate (hyper) queue
         hq_array = new HyperQueue[nhq];
         for (int i=0; i<nhq; i++){
             arr =  getWardArrivalRate(hyperWidx_vector[i])*getWardRelocationProbabilities(hyperWidx_vector[i])[mfocus];
             
             hq_array[i] = HyperQueue(hyperWidx_vector[i],hyperBlockedStates[i],hyperOpenStates[i],//statesBlocked,statesOpen,
                 arr,getWardServiceRate(hyperWidx_vector[i]),sim_pointer);
-            cout << "Fit " << (i+1) << endl;
-            hq_array[i].fitAll(seed);
         }
-        cout << "Done." << endl;
         
         //create the main (heuristic) queue object
-        //cout << "Preparing..." << flush;
-        
         hqueue = new HeuristicQueue(mfocus,binMap,getWardCapacity(mfocus),upperLimits,lowerLimits,
                 getWardArrivalRate(mfocus),getWardServiceRate(mfocus),nhq,hq_array,wards_pointer);
         if (changeDisRates){
             //change the bin discharge rates
             hqueue->newbinDischargeRates(newDisRates);
         }
-        
-        //cout << "done." << endl;
         
         cout << "Number of states = " << hqueue->Ns << endl;
         stateSpaceSize = hqueue->Ns;
@@ -310,6 +303,14 @@ void RelocEvaluation::evaluateModel(){
         evalSingleWard(mfocus);
         
     }else if (validateReady){
+        
+        //fit PH parameters for each surrogate (hyper) queue
+        cout << "Fitting PH parameters... " << endl;
+        for (int i=0; i<nhq; i++){
+            cout << "Fit " << (i+1) << endl;
+            hq_array[i].fitAll(seed);
+        }
+        cout << "Done." << endl;
         
         cout << "Evaluating Queue " << (mfocus+1) << "..." << endl;
         

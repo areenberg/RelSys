@@ -43,11 +43,11 @@ public:
     void evaluateModel(); //evaluate the solution (requires a validated model)
     void runSimulation(int seed, int burnIn,
         int minTime, int minSamples=50);
-    void simulateMarginalDist(double sampleBurnIn, int collectSamples); //replace numerical evaluation with a simulation
     void setBinMap(vector<vector<int>> bMap);
     void setBinDischargeRates(vector<double> disRates);
     void setOpenHyperStates(int n);
     void setBlockedHyperStates(int n);
+//    int calculateStateSpaceSize(int main_widx); //pre-evaluate the size of the state space
     
     //VARIABLES
     vector<double> pi; //state distribution
@@ -96,7 +96,7 @@ private:
     vector<int> hyperBlockedStates; //number of blocked states for each hyper queue
     vector<int> upperLimits, lowerLimits, hyperWidx_vector;
     bool simReady,validateReady,simMargDist, changeDisRates;
-    int nWards, seed, collectSamples, mfocus;
+    int nWards, nhq, seed, collectSamples, mfocus;
     double sampleBurnIn;
     RelocSimulation * sim_pointer;
     HyperQueue * hq_array;

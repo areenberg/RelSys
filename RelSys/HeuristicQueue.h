@@ -108,7 +108,7 @@ private:
     void checkInput();
     int forwardOne(int Ku, vector<int> &j, int targetval, int targetidx);
     int backwardOne(int Ku, vector<int> &j, int targetval, int targetidx);
-
+    void calculateStateSpaceSize();
 
     int hyperOpenStates(int hq); //get number of open states in hyperqueue hq
     int hyperBlockedStates(int hq); //get number of blocked states in hyperqueue hq

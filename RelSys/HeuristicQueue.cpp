@@ -448,14 +448,22 @@ void HeuristicQueue::buildTransposedChain(){
     sbar.endBar();    
 }
 
-void HeuristicQueue::calculateSize(){
-    //calculate and store the size of the state space
+void HeuristicQueue::calculateStateSpaceSize(){
+    //calculates the size of the state space
     
     Ns = cmb.capWithLimits(cap,upperLim,lowerLim); //size of the main queue itself;
     
     for (int i=0; i<Nh; i++){
         Ns *= getHyperSize(i);
     }
+    
+}
+
+void HeuristicQueue::calculateSize(){
+    //calculate and store the size of the state space
+    
+    //calculate size of the state space
+    calculateStateSpaceSize();
     
     //calculate size of marginal distribution
     int l=0,u=0;
