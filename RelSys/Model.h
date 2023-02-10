@@ -49,10 +49,10 @@ public:
     //will automatically select the model type if modelType=auto
     void runModel();
     
-    void setSeed();
-    void setBurnIn();
-    void setMinimumSimulationTime();
-    void setMinSamples();
+    void setSeed(int sd);
+    void setBurnIn(double bn);
+    void setMinimumSimulationTime(double mnTime);
+    void setMinSamples(int mnSamples);
     void setHyperStates(int openStates, int blockedStates);
     
     //VARIABLES
@@ -64,7 +64,8 @@ public:
     
     Model(vector<double> arrRates, vector<double> serTimes,
         vector<int> cap,vector<vector<double>> relProbMat,
-        vector<int> prefQ,vector<int> evalQ, string mdlt="auto");
+        vector<int> prefQ,vector<int> evalQ, string mdlt="auto",
+        bool eqze=true);
     
     Model(const Model& orig);
     virtual ~Model();
@@ -79,6 +80,8 @@ private:
     void runSimulation();
     void setupCustomers();
     void setupQueues();
+    void prepareOutput();
+    int evaluateStateSpaceSize(int main_widx);
     double estimateRuntime(int stateSpaceSize);
     
     
@@ -86,18 +89,21 @@ private:
     RelocEvaluation * mdlHeu; //pointer for the approximation
     RelocSimulation * mdlSim; //pointer for the simulation
     QueueData * queues;
-    CustomerData * customers; 
+    CustomerData * customers;
+    SystemParameters * sysParam;
     
     string modelType; //indicate the model chosen (auto, simulation or approximation)
     vector<int> evalQueues; //indices of queues to evaluate from the QueueData array
-    int nQueues, seed, minSamples, 
+    int nQueues, nCustomers, seed, minSamples, 
         openHyperStates, blockedHyperStates;
     double burnIn, minTime;
+    bool equalize; //indicates if service rates are equalized (default=true)
     
     //fundamental system parameters
     vector<double> arrivalRates,serviceTimes;
     vector<int> capacity, preferredQueues, evaluateQueues;
     vector<vector<double>> relocationProbabilityMatrix;
+    
     
     
 };
