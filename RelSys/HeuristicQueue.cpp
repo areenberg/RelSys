@@ -72,7 +72,7 @@ void HeuristicQueue::optimizeRelocNetwork(){
         n = nWards-redidx.size();        
     }
     
-    cout << "Removed " << nWards-n << " hyper-queue(s)." << endl;
+    //cout << "Removed " << nWards-n << " hyper-queue(s)." << endl;
     
     vector<bool> rem(nWards,false);
     
@@ -124,22 +124,22 @@ void HeuristicQueue::optimizeRelocNetwork(){
     }
     
     //print binMap to user
-    cout << "Final type-bin map:" << endl;
-    cout << "type/bin   " << flush;
-    for (int i=0; i<binMap[0].size(); i++){
-        cout << (i+1) << " " << flush;
-    }
-    cout << "\n" << endl;
-    for (int i=0; i<binMap.size(); i++){
-        for (int j=0; j<(binMap[i].size()+1); j++){
-            if (j==0){
-                cout << "       " << (i+1) << "   " << flush;
-            }else{
-                cout << binMap[i][(j-1)] << " " << flush;
-            }
-        }
-        cout << endl;
-    }
+//    cout << "Final type-bin map:" << endl;
+//    cout << "type/bin   " << flush;
+//    for (int i=0; i<binMap[0].size(); i++){
+//        cout << (i+1) << " " << flush;
+//    }
+//    cout << "\n" << endl;
+//    for (int i=0; i<binMap.size(); i++){
+//        for (int j=0; j<(binMap[i].size()+1); j++){
+//            if (j==0){
+//                cout << "       " << (i+1) << "   " << flush;
+//            }else{
+//                cout << binMap[i][(j-1)] << " " << flush;
+//            }
+//        }
+//        cout << endl;
+//    }
     
     
     //create index mapping for wards and hyper queues
@@ -275,16 +275,16 @@ void HeuristicQueue::adjustLimits(){
         lowerLim[bidx] = mn;
     }
     
-    cout << "Final upper cap. limits:" << endl;
-    for (int i=0; i<upperLim.size(); i++){
-        cout << upperLim[i] << " " << flush;
-    }
-    cout << endl;
-    cout << "Final lower cap. limits:" << endl;
-    for (int i=0; i<lowerLim.size(); i++){
-        cout << lowerLim[i] << " " << flush;
-    }
-    cout << endl;
+//    cout << "Final upper cap. limits:" << endl;
+//    for (int i=0; i<upperLim.size(); i++){
+//        cout << upperLim[i] << " " << flush;
+//    }
+//    cout << endl;
+//    cout << "Final lower cap. limits:" << endl;
+//    for (int i=0; i<lowerLim.size(); i++){
+//        cout << lowerLim[i] << " " << flush;
+//    }
+//    cout << endl;
     
 }
 

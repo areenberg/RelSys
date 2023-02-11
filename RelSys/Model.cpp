@@ -164,7 +164,37 @@ void Model::prepareOutput(){
 
 void Model::determineModelType(){
     
+    //estimate complete runtime of
+    //approximation
+
+    mdlHeu = new RelocEvaluation(nQueues,queues);
+    mdlHeu->runSimulation(seed,0,0,0);    
+    mdlHeu->setOpenHyperStates(openHyperStates);
+    mdlHeu->setBlockedHyperStates(blockedHyperStates);
+
+    int mxStatSize = 2.5e8; //maximum allowed state space size
+    double maxRt = 2e4; //maximum allowed total runtime
     
+    double rt=0;
+    int mxStat=-1;
+    
+    cout << "Automatically selecting modeling approach." << endl;
+    for (int idx=0; idx<evaluateQueues.size(); idx++){
+        mdlHeu->validateModel(evaluateQueues[idx]);
+        if (mdlHeu->stateSpaceSize>mxStat){
+            mxStat = mdlHeu->stateSpaceSize;
+        } 
+        rt += estimateRuntime(mdlHeu->stateSpaceSize);
+    }
+    if (rt<maxRt && mxStat<mxStatSize){
+        cout << "Selected approximation." << endl;
+        modelType="approximation";
+    }else{
+        cout << "Selected simulation." << endl;
+        modelType="simulation";
+    }
+    
+    delete mdlHeu;
     
 }
 
@@ -239,19 +269,27 @@ void Model::runSimulation(){
 
 void Model::runModel(){
     
-    if (modelType=="auto"){
+    if (modelType.compare("auto")==0){
         determineModelType();
     }
     
+    if (modelType.compare("approximation")==0){
+        int widx;
+        for (int idx=0; idx<evaluateQueues.size(); idx++){
+            widx=evaluateQueues[idx];
+            cout << "----- QUEUE " << widx << " -----" << endl;
+            runHeuristic(widx);
+        }    
+    }else if (modelType.compare("simulation")==0){
+        runSimulation();
+    }else{
+        cout << "Unrecognized model type." << endl;
+        exit(1);
+    }
+    
+    cout << "EVALUATION COMPLETED" << endl;
     
 }
-
-int Model::evaluateStateSpaceSize(int main_widx){
-    
-    
-    return(0);
-}
-
 
 double Model::estimateRuntime(int stateSpaceSize){
     //estimates the runtime of the approximation

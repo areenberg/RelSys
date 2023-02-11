@@ -135,7 +135,7 @@ void RelocSimulation::evalWardLoads(){
             }
         }
         wardLoadUpperBounds[widx]=(a/(getWardServiceRate(widx)*getWardCapacity(widx)));
-        cout << "Ward " << (widx+1) << " load: [" << wardLoadLowerBounds[widx] << ";" << wardLoadUpperBounds[widx] << "]" << endl;
+        //cout << "Ward " << (widx+1) << " load: [" << wardLoadLowerBounds[widx] << ";" << wardLoadUpperBounds[widx] << "]" << endl;
     }
     
 }
@@ -363,7 +363,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
         //re-sample time tracking
         subsetTimeSamples(minSamples);
         //print open/blocked time sample sizes
-        printTimeSamples();
+        //printTimeSamples();
     }
     
     auto stop = chrono::system_clock::now();
@@ -414,7 +414,7 @@ void RelocSimulation::checkTerminate(){
         for (int widx=0; widx<nWards; widx++){
             if (timeSamplingEnabled && openTimes[widx].empty() &&
                     wardLoadLowerBounds[widx]<0.1){
-                cout << "Ward " << (widx+1) << " load caused simulation to terminate early." << flush;
+                cout << "Queue " << (widx+1) << " load caused simulation to terminate early." << flush;
                 timeOut=true;
             }else if(checkAccuracy && interElapsed>200 && nWardFreq[widx]<100){
                 skipAccuracy.push_back(widx);

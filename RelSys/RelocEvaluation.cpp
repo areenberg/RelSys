@@ -252,10 +252,10 @@ void RelocEvaluation::validateModel(int main_widx){
         upperLimits.resize(nWards,0);
         lowerLimits.resize(nWards,0);
         //automatically adjust truncation
-        cout << "Setting limits... ";
+        //cout << "Setting limits... ";
         setUpperLimits(upperLimits,mfocus);
         setLowerLimits(lowerLimits,mfocus);
-        cout << "done." << endl;
+        //cout << "done." << endl;
         
         //hyper queue indices
         hyperWidx_vector.resize(nhq,0);
@@ -312,7 +312,7 @@ void RelocEvaluation::evaluateModel(){
         }
         cout << "Done." << endl;
         
-        cout << "Evaluating Queue " << (mfocus+1) << "..." << endl;
+        //cout << "Evaluating Queue " << (mfocus+1) << "..." << endl;
         
         //solve for steady-state distribution
         LinSolver solver;
@@ -346,7 +346,7 @@ void RelocEvaluation::runHeuristic(int main_widx){
         
         validateModel(main_widx);
         
-        cout << "Evaluating Ward " << (main_widx+1) << "..." << endl;
+        //cout << "Evaluating Queue " << (main_widx+1) << "..." << endl;
         evaluateModel();
         auto stop = high_resolution_clock::now(); //stop time 
         auto duration = duration_cast<milliseconds>(stop - start); 
@@ -367,7 +367,7 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     
     double mn,k,p;
     
-    cout << "Upper truncation cap. limits:" << endl;
+    //cout << "Upper truncation cap. limits:" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
         
         //truncation using Chebyshev's inequality
@@ -383,20 +383,20 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
             upperLimits[pidx] = getWardCapacity(main_widx);
         }
             
-        cout << upperLimits[pidx] << " " << flush;
+        //cout << upperLimits[pidx] << " " << flush;
     }
-    cout << endl;
+    //cout << endl;
     
 }
 
 void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
     //lower truncation limits are not adjusted (for now).
     
-    cout << "Lower truncation cap. limits:" << endl;
+    //cout << "Lower truncation cap. limits:" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
-        cout << lowerLimits[pidx] << " " << flush;
+        //cout << lowerLimits[pidx] << " " << flush;
     }
-    cout << endl;
+    //cout << endl;
     
 }
 

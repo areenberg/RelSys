@@ -81,7 +81,6 @@ private:
     void setupCustomers();
     void setupQueues();
     void prepareOutput();
-    int evaluateStateSpaceSize(int main_widx);
     double estimateRuntime(int stateSpaceSize);
     
     
@@ -95,7 +94,7 @@ private:
     string modelType; //indicate the model chosen (auto, simulation or approximation)
     vector<int> evalQueues; //indices of queues to evaluate from the QueueData array
     int nQueues, nCustomers, seed, minSamples, 
-        openHyperStates, blockedHyperStates;
+        openHyperStates, blockedHyperStates, statSize;
     double burnIn, minTime;
     bool equalize; //indicates if service rates are equalized (default=true)
     
