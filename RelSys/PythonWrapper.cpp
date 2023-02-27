@@ -8,13 +8,6 @@
 using namespace std;
 namespace py = pybind11;
 
-
-//TASKS TO GO
-//- create on/off switch for verbose from model
-//- create method for checking input parameters
-//- move compiled library and example file to separate folder
-//- commit and push to github and *update readme*
-
 //input data structure
 struct {
     vector<double> arrivalRates;
@@ -26,14 +19,22 @@ struct {
 
 //model settings structure
 struct {
+    bool verbose=false;
     bool evalAll=true;
     bool equalizeService=true;
     vector<int> evaluatedQueue;
     string modelType="auto";
+
+    int seed=-1;
+    double burnIn=-1;
+    double minimumSimulationTime=-1;
+    int minSamples=-1;
+    vector<int> hyperStates = {-1,-1};
 } settings;
 
 //results
 struct {
+    bool evaluated=false;
     vector<double> shortageProbability;
     vector<double> availProbability;
     vector<vector<double>> queueDenDist;
@@ -55,6 +56,47 @@ py::list relProb, py::list prefQ){
 
 }
 
+void setSeed(int sd){
+    settings.seed = sd;
+}
+
+void setBurnIn(double bn){
+    if (bn>0){
+        settings.burnIn=bn;
+    }else{
+        py::print("Burn-in time must be larger than 0. Aborting program.");
+        exit(1);
+    }
+}
+
+void setMinimumSimulationTime(double mnTime){
+    if (mnTime>0){
+        settings.minimumSimulationTime=mnTime;
+    }else{
+        py::print("Simulation time must be larger than 0. Aborting program.");
+        exit(1);
+    }
+}
+
+void setMinSamples(int mnSamples){
+    if (mnSamples>0){
+        settings.minSamples=mnSamples;
+    }else{
+        py::print("Min. number of open/shortage samples must be larger than 0. Aborting program.");
+        exit(1);
+    }
+}
+
+void setHyperStates(int openStates, int blockedStates){
+    if (openStates>0 && blockedStates>0){
+        settings.hyperStates[0] = openStates;
+        settings.hyperStates[1] = blockedStates;
+    }else{
+        py::print("The number of open and blocked states must be larger than 0. Aborting program.");
+        exit(1);
+    }
+}
+
 bool parametersAvail(){
     if (!data.arrivalRates.empty()&&!data.serviceTimes.empty()&&
     !data.capacity.empty()&&!data.relocationProbabilities.empty()&&
@@ -63,6 +105,96 @@ bool parametersAvail(){
     }else{
         return(false);    
     }
+}
+
+void setVerbose(bool set){
+    settings.verbose=set;
+}
+
+void checkParameters(){
+    //checks if parameters are feasible
+
+    if (data.arrivalRates.size() != data.serviceTimes.size()){
+        py::print("The number of arrival rates must equal the number of service times. Aborting program.");
+        exit(1);
+    }
+    if (data.arrivalRates.size() != data.relocationProbabilities.size()){
+        py::print("The number of arrival rates, and service times, must equal the number of rows in the relocation matrix. Aborting program.");
+        exit(1);
+    }
+    if (data.arrivalRates.size() != data.preferredQueue.size()){
+        py::print("The number of arrival rates, and service times, must equal the length of the vector specifying the preferred queues. Aborting program.");
+        exit(1);
+    }
+    if (settings.evaluatedQueue.size()>data.capacity.size() || settings.evaluatedQueue.empty()){
+        py::print("The length of the vector of evaluated queues must be between 1 and n_queues. Aborting program.");
+        exit(1);
+    }        
+    for (int i=0; i<data.relocationProbabilities.size(); i++){
+        if (data.capacity.size() != data.relocationProbabilities[i].size()){
+            py::print("The length of the capacity vector must equal the number of columns in the relocation matrix. Aborting program.");
+            exit(1);
+        }
+    }        
+    for (int i=0; i<data.arrivalRates.size(); i++){
+        if (data.arrivalRates[i]<=0.0 || data.serviceTimes[i]<=0.0 ){
+            py::print("Arrival rates and service times must be larger than 0.0. Aborting program.");
+            exit(1);
+        }
+        for (int j=0; j<data.relocationProbabilities[i][j]; j++){
+            if (data.relocationProbabilities[i][j]<0.0 || data.relocationProbabilities[i][j]>1.0){
+                py::print("Values in the relocation matrix must be between 0.0 and 1.0. Aborting program.");
+                exit(1);
+            }
+        }
+    }
+    for (int i=0; i<data.preferredQueue.size(); i++){
+        if (data.preferredQueue[i]<0 || data.preferredQueue[i]>(data.capacity.size()-1)){
+            py::print("Indices in the vector of preferred queues must be between 0 and n_queues-1. Aborting program.");
+            exit(1);
+        }
+    }
+    for (int i=0; i<data.capacity.size(); i++){
+        if (data.capacity[i]<1){
+            py::print("The capacity of each queue must be equal to or larger than 1. Aborting program.");
+            exit(1);
+        }
+    }          
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        if (settings.evaluatedQueue[i]<0 || settings.evaluatedQueue[i]>(data.capacity.size()-1)){
+            py::print("Indices in the vector of evaluated queues must lie in the interval between 0 and n_queues-1. Aborting program.");
+            exit(1);
+        }    
+    }
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        for (int j=0; j<settings.evaluatedQueue.size(); j++){
+            if (i!=j && settings.evaluatedQueue[i]==settings.evaluatedQueue[j]){
+                py::print("All indices in the vector of evaluated queues must be unique. The same queue cannot be evaluated twice. Aborting program.");
+                exit(1);
+            }
+        }    
+    }
+    double sm;
+    for (int i=0; i<data.relocationProbabilities.size(); i++){
+        sm=0;
+        for (int j=0; j<data.relocationProbabilities[i].size(); j++){
+            sm+=data.relocationProbabilities[i][j];
+        }
+        if (sm>1.0){
+            string out = "The sum of the relocation probabilities in row "+to_string(i)+" is equal to "+to_string(sm)+". The sum must be equal to or smaller than 1.0. Aborting program.";
+            py::print(out);
+            exit(1);
+        }
+    }
+    if ((settings.minimumSimulationTime!=-1 && settings.burnIn==-1) || (settings.minimumSimulationTime==-1 && settings.burnIn!=-1)){
+        py::print("It is not possible to set the overall simulation time without setting the burn-in time and vice versa. Aborting program.");
+        exit(1);
+    }
+    if (settings.minimumSimulationTime!=-1 && settings.burnIn!=-1 && settings.minimumSimulationTime<=settings.burnIn){
+        py::print("The simulation time has to be longer than the burn-in time. Aborting program.");
+        exit(1);
+    }        
+
 }
 
 void evaluateAllQueues(){
@@ -93,47 +225,102 @@ void equalizeService(bool equalize){
 }
 
 py::list getArrivalRates(){
-    return(py::cast(data.arrivalRates));
+    if (parametersAvail()){
+        return(py::cast(data.arrivalRates));
+    }else{
+        py::print("The requested parameter has not been imported. Aborting program.");
+        exit(1);
+    }
 }
 
 py::list getServiceTimes(){
-    return(py::cast(data.serviceTimes));
+    if (parametersAvail()){
+        return(py::cast(data.serviceTimes));
+    }else{
+        py::print("The requested parameter has not been imported. Aborting program.");
+        exit(1);
+    }
 }
 
 py::list getCapacity(){
-    return(py::cast(data.capacity));
+    if (parametersAvail()){
+        return(py::cast(data.capacity));
+    }else{
+        py::print("The requested parameter has not been imported. Aborting program.");
+        exit(1);
+    }
 }
 
 py::list getRelocationProbabilities(){
-    return(py::cast(data.relocationProbabilities));
+    if (parametersAvail()){
+        return(py::cast(data.relocationProbabilities));
+    }else{
+        py::print("The requested parameter has not been imported. Aborting program.");
+        exit(1);
+    }
 }
 
 py::list getPreferredQueue(){
-    return(py::cast(data.preferredQueue));
+    if (parametersAvail()){
+        return(py::cast(data.preferredQueue));
+    }else{
+        py::print("The requested parameter has not been imported. Aborting program.");
+        exit(1);
+    }
 }
 
 py::list getDensityDistribution(int queueIndex){
-    return(py::cast(results.queueDenDist[queueIndex]));
+    if (results.evaluated){
+        return(py::cast(results.queueDenDist[queueIndex]));
+    }else{
+        py::print("The model has not been evaluated. Aborting program.");
+        exit(1);
+    }
 }
 
 py::list getFrequencyDistribution(int queueIndex){
-    return(py::cast(results.queueFreqDist[queueIndex]));
+    if (results.evaluated){
+        return(py::cast(results.queueFreqDist[queueIndex]));
+    }else{
+        py::print("The model has not been evaluated. Aborting program.");
+        exit(1);
+    }
 }
 
 double getShortageProbability(int queueIndex){
-    return(results.shortageProbability[queueIndex]);
+    if (results.evaluated){
+        return(results.shortageProbability[queueIndex]);
+    }else{
+        py::print("The model has not been evaluated. Aborting program.");
+        exit(1);
+    }
 }
 
 double getAvailProbability(int queueIndex){
-    return(results.availProbability[queueIndex]);
+    if (results.evaluated){
+        return(results.availProbability[queueIndex]);
+    }else{
+        py::print("The model has not been evaluated. Aborting program.");
+        exit(1);
+    }
 }
 
 double getExpectedOccupancy(int queueIndex){
-    return(results.expectedOccupancy[queueIndex]);
+    if (results.evaluated){
+        return(results.expectedOccupancy[queueIndex]);
+    }else{
+        py::print("The model has not been evaluated. Aborting program.");
+        exit(1);
+    }
 }
 
 double getExpOccFraction(int queueIndex){
-    return(results.expOccFraction[queueIndex]);
+    if (results.evaluated){
+        return(results.expOccFraction[queueIndex]);
+    }else{
+        py::print("The model has not been evaluated. Aborting program.");
+        exit(1);
+    }
 }
 
 void runCalculations(){
@@ -144,7 +331,7 @@ void runCalculations(){
 
     //check if input provided
     if(!parametersAvail()){
-        cout << "The input parameters are not available. Please use importData() to import parameters for the model. Aborting program." << endl;
+        py::print("The input parameters are missing. Use importData() to import the parameters. Aborting program.");
         exit(1);
     }
     //indices of queues to be evaluated by the model
@@ -153,11 +340,16 @@ void runCalculations(){
     }
 
     //check parameters are feasible
-    //CODE HERE    
+    checkParameters();    
     
     //--------------------------
     //MODEL EVALUATION
     //--------------------------
+
+    //control verbose from model (deactivate cout)
+    if (!settings.verbose){
+        cout.setstate(std::ios_base::failbit);
+    }
 
     //create the model object
     Model mdl(data.arrivalRates,data.serviceTimes,data.capacity,
@@ -165,8 +357,27 @@ void runCalculations(){
             settings.evaluatedQueue,settings.modelType,
             settings.equalizeService);
     
+    //additional settings
+    if (settings.seed!=-1){
+        mdl.setSeed(settings.seed);
+    }
+    if (settings.burnIn!=-1){
+        mdl.setBurnIn(settings.burnIn);
+    }
+    if (settings.minimumSimulationTime!=-1){
+        mdl.setMinimumSimulationTime(settings.minimumSimulationTime);
+    }
+    if (settings.minSamples!=-1){
+        mdl.setMinSamples(settings.minSamples);
+    }
+    if (settings.hyperStates[0]!=-1 && settings.hyperStates[1]!=-1){
+        mdl.setHyperStates(settings.hyperStates[0],settings.hyperStates[1]);
+    }
+    
     //now evaluate the model
     mdl.runModel();
+
+    cout.clear(); //reactivate cout
     
     //--------------------------
     // GET THE RESULTS
@@ -213,6 +424,9 @@ void runCalculations(){
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.expOccFraction[settings.evaluatedQueue[i]] = mdl.expOccFraction[settings.evaluatedQueue[i]];
     }
+    
+    results.evaluated = true;
+
 }
 
 PYBIND11_MODULE(relsys, m) {
@@ -221,9 +435,15 @@ PYBIND11_MODULE(relsys, m) {
     m.def("input",&importData,"Import the input data to the model.");
 
     //model settings
-    m.def("setType",&setType,"Specify the method to use in the evaluation of the model (auto, simulation, approximation)."); 
-    m.def("queuesEval",&queuesToEvaluate,"Specify indices of queues to evaluate.");
-    m.def("equalize",equalizeService,"Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).");
+    m.def("setType",&setType,"Set the method to use in the evaluation of the model (auto, simulation, approximation)."); 
+    m.def("queuesEval",&queuesToEvaluate,"Set the indices of queues to evaluate.");
+    m.def("equalize",&equalizeService,"Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).");
+    m.def("setVerbose",&setVerbose,"Control verbose (True = On, False = Off)");
+    m.def("setSeed",&setSeed,"Set the seed.");
+    m.def("setBurnIn",&setBurnIn,"Set the burn-in time of the simulation.");
+    m.def("setSimTime",&setMinimumSimulationTime,"Set the simulation time.");
+    m.def("setSamples",&setMinSamples,"Set the minimum number of open/shortage samples.");
+    m.def("setHyperPhases",&setHyperStates,"Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.");
 
     //run calculations    
     m.def("run", &runCalculations,"Evaluate the model using the input parameters.");

@@ -12,7 +12,6 @@ preferredQueue = [0,1,2,3]
 #import parameters
 relsys.input(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
 relsys.setType("approximation")
-relsys.equalize(True)
 
 #run the model
 relsys.run()

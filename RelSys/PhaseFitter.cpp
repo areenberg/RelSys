@@ -539,17 +539,17 @@ double PhaseFitter::set_steplength(int p, double **T)
 }
 
 
-void PhaseFitter::input_density()
-{   
-  int i, j, dim;
-  double t, deltat, prob, observation, parameter[2], *pie, **q, *exit;
-  double maxprob, maxdeltat, h;
-  FILE *infil, *utfil;
+// void PhaseFitter::input_density()
+// {   
+//   int i, j, dim;
+//   double t, deltat, prob, observation, parameter[2], *pie, **q, *exit;
+//   double maxprob, maxdeltat, h;
+//   //FILE *infil, *utfil;
   
-  int choice = densityType; //control input density type
-  int choice1 = 1; //choose if PH input should be from file
-  double truncpoint = truncationPoint; //truncation point
-  double dt = densityInterval; //size of interval dt
+//   int choice = densityType; //control input density type
+//   int choice1 = 1; //choose if PH input should be from file
+//   double truncpoint = truncationPoint; //truncation point
+//   double dt = densityInterval; //size of interval dt
   
 /*
   printf("\nType of density:\n");
@@ -563,157 +563,157 @@ void PhaseFitter::input_density()
   printf("Select(1-7): ");
   scanf("%d", &choice);
 */
-  switch(choice) {
-  case 1:
-    printf("A uniform (rectangle) distribution between a and b:\n");
-    printf("a:");
-    scanf("%lf", &parameter[0]);
-    printf("b:");
-    scanf("%lf", &parameter[1]);
-    break;
-  case 2:
-    printf("A normal distribution with mean mu and standard deviation sigma:\n");
-    printf("mu:");
-    scanf("%lf", &parameter[0]);
-    printf("sigma:");
-    scanf("%lf", &parameter[1]);
-    break;
-  case 3:
-    printf("A lognormal distribution with parameters alfa and beta:\n");
-    printf("alfa:");
-    scanf("%lf", &parameter[0]);
-    printf("beta:");
-    scanf("%lf", &parameter[1]);
-    break;
-  case 4:
-    printf("A Weibull distribution with shape parameter beta and scale parameter lambda:\n");
-    printf("beta:");
-    scanf("%lf", &parameter[0]);
-    printf("lambda:");
-    scanf("%lf", &parameter[1]);
-    break;
-  case 5:
-    printf("An inverse Gauss distribution with parameters c and xi:\n");
-    printf("c:");
-    scanf("%lf", &parameter[0]);
-    printf("xi:");
-    scanf("%lf", &parameter[1]);
-    break;
-  case 6:
-/*
-    printf("How will the pi-vector (starting probabilities) and the T-matrix (jump rates)\nof the phasetype distribution be entered?\n");
-    printf("      1. From file 'input-phases'\n");
-    printf("      2. From keyboard\n");
-    printf("Select 1 or 2: ");
-    scanf("%d", &choice1);
-    printf("Time at which density can be truncated:");
-    scanf("%lf", &truncpoint);
-    printf("Exact time interval corresponding to one point:");
-    scanf("%lf", &dt);
-*/
-    switch (choice1) {
-    case 1: //from file
-      infil=fopen("input-phases", "r");
-      fscanf(infil, "%d", &dim);
-      pie = v_alloc(dim);
-      q = m_alloc(dim,dim);
-      for (i=0; i < dim; i++) {
-	fscanf(infil, "%le", &pie[i]);
-	for (j=0; j < dim; j++)
-	  fscanf(infil, "%le", &q[i][j]);
-      }
-      fclose(infil);
-      break;
-    case 2: //from keyboard
-      printf("Dimension p: ");
-      scanf("%d", &dim);
-      pie = v_alloc(dim);
-      q = m_alloc(dim,dim);
-      for (i=0; i < dim; i++) {
-	printf("pi[%d]: ", i+1);
-	scanf("%le", &pie[i]);
-	for (j=0; j < dim; j++) {
-	  printf("T[%d][%d]: ", i+1, j+1);
-	  scanf("%le", &q[i][j]);
-	}            
-      }     
-      break;
-        case 3: //from program
+//   switch(choice) {
+//   case 1:
+//     printf("A uniform (rectangle) distribution between a and b:\n");
+//     printf("a:");
+//     scanf("%lf", &parameter[0]);
+//     printf("b:");
+//     scanf("%lf", &parameter[1]);
+//     break;
+//   case 2:
+//     printf("A normal distribution with mean mu and standard deviation sigma:\n");
+//     printf("mu:");
+//     scanf("%lf", &parameter[0]);
+//     printf("sigma:");
+//     scanf("%lf", &parameter[1]);
+//     break;
+//   case 3:
+//     printf("A lognormal distribution with parameters alfa and beta:\n");
+//     printf("alfa:");
+//     scanf("%lf", &parameter[0]);
+//     printf("beta:");
+//     scanf("%lf", &parameter[1]);
+//     break;
+//   case 4:
+//     printf("A Weibull distribution with shape parameter beta and scale parameter lambda:\n");
+//     printf("beta:");
+//     scanf("%lf", &parameter[0]);
+//     printf("lambda:");
+//     scanf("%lf", &parameter[1]);
+//     break;
+//   case 5:
+//     printf("An inverse Gauss distribution with parameters c and xi:\n");
+//     printf("c:");
+//     scanf("%lf", &parameter[0]);
+//     printf("xi:");
+//     scanf("%lf", &parameter[1]);
+//     break;
+//   case 6:
+// /*
+//     printf("How will the pi-vector (starting probabilities) and the T-matrix (jump rates)\nof the phasetype distribution be entered?\n");
+//     printf("      1. From file 'input-phases'\n");
+//     printf("      2. From keyboard\n");
+//     printf("Select 1 or 2: ");
+//     scanf("%d", &choice1);
+//     printf("Time at which density can be truncated:");
+//     scanf("%lf", &truncpoint);
+//     printf("Exact time interval corresponding to one point:");
+//     scanf("%lf", &dt);
+// */
+//     switch (choice1) {
+//     case 1: //from file
+//       infil=fopen("input-phases", "r");
+//       fscanf(infil, "%d", &dim);
+//       pie = v_alloc(dim);
+//       q = m_alloc(dim,dim);
+//       for (i=0; i < dim; i++) {
+// 	fscanf(infil, "%le", &pie[i]);
+// 	for (j=0; j < dim; j++)
+// 	  fscanf(infil, "%le", &q[i][j]);
+//       }
+//       fclose(infil);
+//       break;
+//     case 2: //from keyboard
+//       printf("Dimension p: ");
+//       scanf("%d", &dim);
+//       pie = v_alloc(dim);
+//       q = m_alloc(dim,dim);
+//       for (i=0; i < dim; i++) {
+// 	printf("pi[%d]: ", i+1);
+// 	scanf("%le", &pie[i]);
+// 	for (j=0; j < dim; j++) {
+// 	  printf("T[%d][%d]: ", i+1, j+1);
+// 	  scanf("%le", &q[i][j]);
+// 	}            
+//       }     
+//       break;
+//         case 3: //from program
             
-            break;
-    }
-    exit = v_alloc(dim);
-    for (i=0; i < dim; i++) 
-      for (j=0; j < dim; j++)
-	exit[i] -= q[i][j];
-    //show_pi_T(dim, pie, q, exit); //<<--- uncomment to print pi and T
-/*
-    printf("\n");
-    printf("\nChoose step-length for the Runge_Kutta procedure:");
-    printf("\n1. Default value.");
-    printf("\n2. Your own choice of value.");
-    printf("\nSelect 1 or 2.\n");
-    scanf("%d", &stepchoice);
-*/
-    //if (stepchoice == 2) {
-    //  printf("Step-length = ");
-    //  scanf("%le", &h);
-    //}
-    //else {
-    h = set_steplength(dim, q);
+//             break;
+//     }
+//     exit = v_alloc(dim);
+//     for (i=0; i < dim; i++) 
+//       for (j=0; j < dim; j++)
+// 	exit[i] -= q[i][j];
+//     //show_pi_T(dim, pie, q, exit); //<<--- uncomment to print pi and T
+// /*
+//     printf("\n");
+//     printf("\nChoose step-length for the Runge_Kutta procedure:");
+//     printf("\n1. Default value.");
+//     printf("\n2. Your own choice of value.");
+//     printf("\nSelect 1 or 2.\n");
+//     scanf("%d", &stepchoice);
+// */
+//     //if (stepchoice == 2) {
+//     //  printf("Step-length = ");
+//     //  scanf("%le", &h);
+//     //}
+//     //else {
+//     h = set_steplength(dim, q);
     
-    //}
-    ExportToEMPHTmain_Phasetype(dim, h, dt, truncpoint, pie, q, exit);     
-    ExportToMatlab_Phasetype(dim, h, dt, truncpoint, pie, q, exit);
-    free(pie);
-    free(exit);
-    free(q);
-    break;
-  case 7:
-    printf("You must do some programming, - see instructions\n");
-    /* This is where the parameters are entered */
-    break;
-  }
+//     //}
+//     ExportToEMPHTmain_Phasetype(dim, h, dt, truncpoint, pie, q, exit);     
+//     ExportToMatlab_Phasetype(dim, h, dt, truncpoint, pie, q, exit);
+//     free(pie);
+//     free(exit);
+//     free(q);
+//     break;
+//   case 7:
+//     printf("You must do some programming, - see instructions\n");
+//     /* This is where the parameters are entered */
+//     break;
+//   }
   
-  if (choice <= 5 || choice == 7) {
-    utfil=fopen("sample","w");
-    printf("Time at which density can be truncated:");
-    scanf("%lf", &truncpoint);
-    printf("Maximum acceptable probability in one point: ");
-    scanf("%lf", &maxprob);
-    printf("Maximum time interval corresponding to one point: ");
-    scanf("%lf", &maxdeltat);
-    t=0;
-    while (t<truncpoint) {
-      if (density(t,choice,parameter) < maxprob/maxdeltat)
-        deltat = maxdeltat;
-      else 
-        deltat = maxprob / density(t,choice,parameter);
-      prob = deltat / 6*(density(t,choice,parameter)+
-		     4*density(t+deltat/2,choice,parameter)+
-		     density(t+deltat,choice,parameter));
-      while (prob > maxprob) {
-        deltat = deltat*0.9;
-        prob = deltat/6*(density(t,choice,parameter)+
-		       4*density(t+deltat/2,choice,parameter)+
-		       density(t+deltat,choice,parameter));
-      }
-      if (prob>0) {
-        observation=(t*density(t,choice,parameter)+
-		     4*(t+deltat/2)*density(t+deltat/2,choice,parameter)+
-		     (t+deltat)*density(t+deltat,choice,parameter))/
-		       (density(t,choice,parameter)+
-			4*density(t+deltat/2,choice,parameter)+
-			density(t+deltat,choice,parameter));
-        fprintf(utfil, "%e %e \n", observation, prob);
-      }
-      t+=deltat;
-    }
-    fprintf(utfil, "-1");
-    fclose(utfil);
-    ExportToMatlab(choice, parameter, truncpoint);
-  }
-}
+  // if (choice <= 5 || choice == 7) {
+  //   utfil=fopen("sample","w");
+  //   printf("Time at which density can be truncated:");
+  //   scanf("%lf", &truncpoint);
+  //   printf("Maximum acceptable probability in one point: ");
+  //   scanf("%lf", &maxprob);
+  //   printf("Maximum time interval corresponding to one point: ");
+  //   scanf("%lf", &maxdeltat);
+  //   t=0;
+  //   while (t<truncpoint) {
+  //     if (density(t,choice,parameter) < maxprob/maxdeltat)
+  //       deltat = maxdeltat;
+  //     else 
+  //       deltat = maxprob / density(t,choice,parameter);
+  //     prob = deltat / 6*(density(t,choice,parameter)+
+	// 	     4*density(t+deltat/2,choice,parameter)+
+	// 	     density(t+deltat,choice,parameter));
+  //     while (prob > maxprob) {
+  //       deltat = deltat*0.9;
+  //       prob = deltat/6*(density(t,choice,parameter)+
+	// 	       4*density(t+deltat/2,choice,parameter)+
+	// 	       density(t+deltat,choice,parameter));
+  //     }
+  //     if (prob>0) {
+  //       observation=(t*density(t,choice,parameter)+
+	// 	     4*(t+deltat/2)*density(t+deltat/2,choice,parameter)+
+	// 	     (t+deltat)*density(t+deltat,choice,parameter))/
+	// 	       (density(t,choice,parameter)+
+	// 		4*density(t+deltat/2,choice,parameter)+
+	// 		density(t+deltat,choice,parameter));
+  //       fprintf(utfil, "%e %e \n", observation, prob);
+  //     }
+  //     t+=deltat;
+  //   }
+  //   fprintf(utfil, "-1");
+  //   fclose(utfil);
+  //   ExportToMatlab(choice, parameter, truncpoint);
+  // }
+// }
 
 
 void PhaseFitter::input_sample(int NoOfInput[3])
@@ -802,137 +802,137 @@ void PhaseFitter::input_sample(int NoOfInput[3])
 }
 
 
-void PhaseFitter::input_Csample(int NoOfInput[3])
-{
-  int i, choice, indicator;
-  double Obs, Weight, Low, Upp;
-  FILE *utfil, *infil;
+// void PhaseFitter::input_Csample(int NoOfInput[3])
+// {
+//   int i, choice, indicator;
+//   double Obs, Weight, Low, Upp;
+//   FILE *utfil, *infil;
   
-  printf("\nThe sample is entered:\n");
-  printf("      1. Unweighted, from keyboard\n"); 
-  printf("      2. Weighted, from keyboard\n");
-  printf("      3. Unweighted, from file 'unweighted'\n");
-  printf("      4. Weighted, from file 'sample'\n");
-  printf("Select (1-4): ");
-  scanf("%d", &choice);
-  i=1;    
-  switch(choice) {
-  case 1:
-    Weight = 1;
-    utfil=fopen("sample","w");
-    printf("\nThe indicator is: = 0 for right censored observation\n");
-    printf("                  = 1 for uncensored observation.\n");
-    printf("                  = 2 for interval censored observation.\n");
-    printf("Quit with indicator = -1\n");
-    printf("\nIndicator 1:");
-    scanf("%d",&indicator);
-    while ( indicator != -1) {
-      if (indicator == 2) {
-	printf("Interval-observation %d:", i);
-	scanf("%le %le", &Low, &Upp);
-        fprintf(utfil, "%d %e %e %e \n", indicator, Low, Upp, Weight);
-	NoOfInput[2] ++;
-      }
-      else {
-	printf("Observation %d:", i);
-	scanf("%le", &Obs);
-	fprintf(utfil, "%d %e %e \n", indicator, Obs, Weight);
-	if (indicator == 0)
-	  NoOfInput[0] ++;
-	if (indicator == 1)
-	  NoOfInput[1] ++;
-      }
-      printf("\nIndicator %d:", i+1);
-      scanf("%d", &indicator);
-      i++;
-    }
-    fprintf(utfil, "-1");
-    fclose(utfil);
-    break;     
-  case 2:
-    utfil=fopen("sample","w");
-    printf("\nThe indicator is:   =0 for right censored observation\n");
-    printf("                    =1 for uncensored observation \n");
-    printf("                    =2 for interval censored observation \n");
-    printf("Quit with indicator = -1\n");
-    printf("\nIndicator 1:");
-    scanf("%d",&indicator);
-    while ( indicator != -1) {
-      if (indicator == 2) {
-	printf("Interval-observation %d:", i);
-	scanf("%le %le", &Low, &Upp);
-	printf("Number of cases %d:", i);
-	scanf("%le", &Weight);
-        fprintf(utfil, "%d %e %e %e \n", indicator, Low, Upp, Weight);
-	NoOfInput[2] ++;
-      }
-      else {
-	printf("Observation %d:", i);
-	scanf("%le", &Obs);
-	printf("Number of cases %d:", i);
-	scanf("%le", &Weight);
-	fprintf(utfil, "%d %e %e \n", indicator, Obs, Weight);
-	if (indicator == 0)
-	  NoOfInput[0] ++;
-	if (indicator == 1)
-	  NoOfInput[1] ++;
-      }
-      printf("\nIndicator %d:", i+1);
-      scanf("%d", &indicator);
-      i++;
-    }
-    fprintf(utfil, "-1");
-    fclose(utfil);
-    break;
-  case 3:
-    Weight=1;
-    infil=fopen("unweighted", "r");
-    utfil=fopen("sample", "w");
-    fscanf(infil, "%d", &indicator);
-    while (indicator != -1) {
-      if (indicator == 2) {
-	fscanf(infil, "%le %le", &Low, &Upp); 
-	fprintf(utfil, "%d %e %e %e \n", indicator, Low, Upp, Weight);
-	NoOfInput[2] ++;
-      }
-      else {
-	fscanf(infil, "%le", &Obs);
-	fprintf(utfil, "%d %e %e \n", indicator, Obs, Weight);
-	if (indicator == 0)
-	  NoOfInput[0] ++;
-	if (indicator == 1)
-	  NoOfInput[1] ++;
-      }
-      fscanf(infil, "%d", &indicator);
-    }
-    fprintf(utfil, "-1");
-    fclose(infil);
-    fclose(utfil);
-    break;
-  case 4:
-    infil=fopen("sample", "r");
-    fscanf(infil, "%d", &indicator);
-    while (indicator != -1) {
-      if (indicator == 2) {
-	fscanf(infil, "%le %le %le", &Low, &Upp, &Weight); 
-	NoOfInput[2] ++;
-      }
-      else {
-	fscanf(infil, "%le %le", &Obs, &Weight);
-	if (indicator == 0)
-	  NoOfInput[0] ++;
-	if (indicator == 1)
-	  NoOfInput[1] ++;
-      }
-      fscanf(infil, "%d", &indicator);
-    }
-    fclose(infil);
-    break;
-  default:
-    printf("Wrong number\n");
-    break; 
-  }
-}
+//   printf("\nThe sample is entered:\n");
+//   printf("      1. Unweighted, from keyboard\n"); 
+//   printf("      2. Weighted, from keyboard\n");
+//   printf("      3. Unweighted, from file 'unweighted'\n");
+//   printf("      4. Weighted, from file 'sample'\n");
+//   printf("Select (1-4): ");
+//   scanf("%d", &choice);
+//   i=1;    
+//   switch(choice) {
+//   case 1:
+//     Weight = 1;
+//     utfil=fopen("sample","w");
+//     printf("\nThe indicator is: = 0 for right censored observation\n");
+//     printf("                  = 1 for uncensored observation.\n");
+//     printf("                  = 2 for interval censored observation.\n");
+//     printf("Quit with indicator = -1\n");
+//     printf("\nIndicator 1:");
+//     scanf("%d",&indicator);
+//     while ( indicator != -1) {
+//       if (indicator == 2) {
+// 	printf("Interval-observation %d:", i);
+// 	scanf("%le %le", &Low, &Upp);
+//         fprintf(utfil, "%d %e %e %e \n", indicator, Low, Upp, Weight);
+// 	NoOfInput[2] ++;
+//       }
+//       else {
+// 	printf("Observation %d:", i);
+// 	scanf("%le", &Obs);
+// 	fprintf(utfil, "%d %e %e \n", indicator, Obs, Weight);
+// 	if (indicator == 0)
+// 	  NoOfInput[0] ++;
+// 	if (indicator == 1)
+// 	  NoOfInput[1] ++;
+//       }
+//       printf("\nIndicator %d:", i+1);
+//       scanf("%d", &indicator);
+//       i++;
+//     }
+//     fprintf(utfil, "-1");
+//     fclose(utfil);
+//     break;     
+//   case 2:
+//     utfil=fopen("sample","w");
+//     printf("\nThe indicator is:   =0 for right censored observation\n");
+//     printf("                    =1 for uncensored observation \n");
+//     printf("                    =2 for interval censored observation \n");
+//     printf("Quit with indicator = -1\n");
+//     printf("\nIndicator 1:");
+//     scanf("%d",&indicator);
+//     while ( indicator != -1) {
+//       if (indicator == 2) {
+// 	printf("Interval-observation %d:", i);
+// 	scanf("%le %le", &Low, &Upp);
+// 	printf("Number of cases %d:", i);
+// 	scanf("%le", &Weight);
+//         fprintf(utfil, "%d %e %e %e \n", indicator, Low, Upp, Weight);
+// 	NoOfInput[2] ++;
+//       }
+//       else {
+// 	printf("Observation %d:", i);
+// 	scanf("%le", &Obs);
+// 	printf("Number of cases %d:", i);
+// 	scanf("%le", &Weight);
+// 	fprintf(utfil, "%d %e %e \n", indicator, Obs, Weight);
+// 	if (indicator == 0)
+// 	  NoOfInput[0] ++;
+// 	if (indicator == 1)
+// 	  NoOfInput[1] ++;
+//       }
+//       printf("\nIndicator %d:", i+1);
+//       scanf("%d", &indicator);
+//       i++;
+//     }
+//     fprintf(utfil, "-1");
+//     fclose(utfil);
+//     break;
+//   case 3:
+//     Weight=1;
+//     infil=fopen("unweighted", "r");
+//     utfil=fopen("sample", "w");
+//     fscanf(infil, "%d", &indicator);
+//     while (indicator != -1) {
+//       if (indicator == 2) {
+// 	fscanf(infil, "%le %le", &Low, &Upp); 
+// 	fprintf(utfil, "%d %e %e %e \n", indicator, Low, Upp, Weight);
+// 	NoOfInput[2] ++;
+//       }
+//       else {
+// 	fscanf(infil, "%le", &Obs);
+// 	fprintf(utfil, "%d %e %e \n", indicator, Obs, Weight);
+// 	if (indicator == 0)
+// 	  NoOfInput[0] ++;
+// 	if (indicator == 1)
+// 	  NoOfInput[1] ++;
+//       }
+//       fscanf(infil, "%d", &indicator);
+//     }
+//     fprintf(utfil, "-1");
+//     fclose(infil);
+//     fclose(utfil);
+//     break;
+//   case 4:
+//     infil=fopen("sample", "r");
+//     fscanf(infil, "%d", &indicator);
+//     while (indicator != -1) {
+//       if (indicator == 2) {
+// 	fscanf(infil, "%le %le %le", &Low, &Upp, &Weight); 
+// 	NoOfInput[2] ++;
+//       }
+//       else {
+// 	fscanf(infil, "%le %le", &Obs, &Weight);
+// 	if (indicator == 0)
+// 	  NoOfInput[0] ++;
+// 	if (indicator == 1)
+// 	  NoOfInput[1] ++;
+//       }
+//       fscanf(infil, "%d", &indicator);
+//     }
+//     fclose(infil);
+//     break;
+//   default:
+//     printf("Wrong number\n");
+//     break; 
+//   }
+// }
 
 void PhaseFitter::assign_vectors(int No)
 {
@@ -949,43 +949,43 @@ void PhaseFitter::assign_vectors(int No)
   //fclose(infil);
 }
 
-void PhaseFitter::assign_Cvectors(int NoOfInput[3])
-{
-  int i, j, k, indicator;
-  double Obs, Weight, Low, Upp;
-  FILE *infil;
+// void PhaseFitter::assign_Cvectors(int NoOfInput[3])
+// {
+//   int i, j, k, indicator;
+//   double Obs, Weight, Low, Upp;
+//   FILE *infil;
 
-  i=0; j=0; k=0;
-  infil=fopen("sample", "r");
-  fscanf(infil, "%d", &indicator);
-  while (indicator != -1) {
-    if (indicator == 2) {
-      fscanf(infil, "%le %le %le", &Low, &Upp, &Weight);
-      lower[i]=Low;
-      upper[i]=Upp;
-      intweight[i]=Weight;
-      SumOfInt += intweight[i];
-      i++;
-    }
-    else {
-      fscanf(infil, "%le %le", &Obs, &Weight);
-      if(indicator == 0) {
-	censur[j] = Obs;
-	cweight[j] = Weight;
-	SumOfCensored += cweight[j];
-	j++;
-      }
-      if(indicator == 1) {
-	obs[k] = Obs;
-	weight[k] = Weight;
-	SumOfWeights += weight[k];
-	k++;
-      }
-    }
-    fscanf(infil, "%d", &indicator);
-  }
-  fclose(infil);
-}
+//   i=0; j=0; k=0;
+//   infil=fopen("sample", "r");
+//   fscanf(infil, "%d", &indicator);
+//   while (indicator != -1) {
+//     if (indicator == 2) {
+//       fscanf(infil, "%le %le %le", &Low, &Upp, &Weight);
+//       lower[i]=Low;
+//       upper[i]=Upp;
+//       intweight[i]=Weight;
+//       SumOfInt += intweight[i];
+//       i++;
+//     }
+//     else {
+//       fscanf(infil, "%le %le", &Obs, &Weight);
+//       if(indicator == 0) {
+// 	censur[j] = Obs;
+// 	cweight[j] = Weight;
+// 	SumOfCensored += cweight[j];
+// 	j++;
+//       }
+//       if(indicator == 1) {
+// 	obs[k] = Obs;
+// 	weight[k] = Weight;
+// 	SumOfWeights += weight[k];
+// 	k++;
+//       }
+//     }
+//     fscanf(infil, "%d", &indicator);
+//   }
+//   fclose(infil);
+// }
 
 int PhaseFitter::sort_observations(int size, double *vec1, double *vec2)
 {
