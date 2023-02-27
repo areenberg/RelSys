@@ -1,280 +1,348 @@
-# RelSys
-RelSys is a tool for evaluating a system of queues with finite capacity and multiple classes of customers. The queues are connected, but *only* through customer relocations (i.e. customers that are transferred to an alternative queue if they are blocked instead of being rejected from the system).
-The tool is written in C++ and currently employs two different approaches for evaluating the system. The first (`RelocEvaluation`) is a mathematical model and is based on a continuous-time Markov chain approximation of the system, and the second (`RelocSimulation`) is a discrete-event simulation. The input is the same in both cases, but each approach comes with different methods for evaluating the system and viewing the results.
+# RelSys (**Rel**ocation **Sys**tem)
+RelSys is a tool for evaluating a system of queues where arriving customers can be relocated to an alternative queue if none of the servers in the preferred queue are idle.
+The source code is written in C++, but we have developed a module for the users preferring Python (Linux).
 
 # Table of contents
 
-1. How does it work
-2. Getting started
+1. Description of RelSys
+   * Input parameters
+   * Output types
+2. How to use
+   * Python (Linux)
+   * C++
 3. How to cite
 4. Licence
 
-# How does it work
+# Description of RelSys
 
-Consider a number of parallel queues with finite capacity. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue (also denoted the Erlang loss or Erlang-B system), a customer is rejected and lost from the system if all the servers are occupied upon arrival. However, in the RelSys-modeling tool, we allow customers to be transferred with a probability to one of the other queues. If there is an idle server in the alternative queue, the customer is accepted and served with an exponentially distributed time with the same rate-parameter as the customer would have had in the original queue. The figure below depicts an example featuring two queues where customers are relocated (i.e. transferred) with a probability to the other queue whenever the preferred queue is full. 
+Consider a number of parallel queues where the capacity of the queue equals the number of servers. That is, queues where customers arrive according to a Poisson process and have exponentially distributed service-time. In the common M/M/c/c queue (also denoted the Erlang loss or Erlang-B system), a customer is rejected and lost from the system if all the servers are occupied upon arrival. In RelSys, we allow customers to be transferred with a probability to one of the other queues. If there is an idle server in the alternative queue, the customer is accepted and served with an exponentially distributed time with the same rate-parameter as the customer would have in the preferred queue. The figure below depicts an example featuring two queues where customers are relocated (i.e. transferred) with a probability to the other queue whenever the preferred queue is full. 
 
 <img src="https://github.com/areenberg/RelSys/blob/development/images/example_system.jpeg" width="430" height="500">
 
-## Briefly about the setup
-
-The RelSys tool is divided into:
-
-1. *Customer setup*, where objects for each customer type are created using the `CustomerData` class.
-2. *Queue setup*, where objects for each queue are created using the `QueueData` class. Data from the customer objects are used in the creation of the queue objects through a class called `SystemParameters` (see the figure below).
-3. *Model choice and evaluation*, where a modeling approach is selected (either `RelocEvaluation` or `RelocSimulation`) and a solution is found.
-4. *Get the results*, where results are printed/saved using the methods from the model objects. E.g. `mdl.blockingProbability` to get the probability of customer blocking.
-
-The figure below shows how the various classes and input parameters are connected. 
-
-<img src="https://github.com/areenberg/RelSys/blob/master/images/programSetupGraph.jpg" width="500" height="650">
-
 ## Input parameters
 
-There are seven types of input parameters:
+RelSys has five types of input parameters for the model:
 
-* Arrival rates (`double`). Used in the `CustomerData` class.
-* Service times (`double`). Used in the `CustomerData` class.
-* Relocation probabilities (`vector<double>`). Used in the `CustomerData` class.
-* The queue preferred by the customer type (`int`). Used in the `CustomerData` class.
-* Capacities (`int`). Used in the `QueueData` class.
-* Number of customer types (`int`). Used in the `SystemParameters` class, and to create an array of `CustomerData` objects.
-* Number of queues (`int`). Used in `SystemParameters`, the model class `RelocEvaluation`/`RelocSimulation`, and to create an array of `QueueData` objects.  
+* An arrival rate vector. Each element corresponds to a customer type.
+* A service time vector. Each element corresponds to a customer type.
+* A relocation probability matrix. Rows correspond to customer types and columns to queues.  
+* A capacity vector. Each element corresponds to a queue.
+* A preferrence vector. Each element indicates the preferred queue of each customer type.
 
-The relation between these parameters and the various classes is depicted with grey arrows in the figure above.
+## Output types
 
-## Run and get results (Output methods)
+RelSys has six output types:
 
-As previously mentioned, the system can be evaluated using one of two modeling approaches:
+* Occupancy *probability* distributions.
+* Occupancy *frequency* distributions (only available if the system was evaluated using simulation).
+* Shortage probabilities.
+* Availability probabilities.
+* Expected occupancy.
+* Expected fraction of capacity occupied.
 
-1. Using a continuous-time Markov chain (CTMC) approximation of the system through `RelocEvaluation`.
-2. Using a discrete-event simulation through `RelocSimulation`.
+# How to use
 
-Both approaches take the number of queues and an array of `QueueData` objects, e.g. `RelocEvaluation mdl(nQueues,wd_array)`. The subsequent setup varies depending on the class.
+RelSys is available for Python users on Linux, and for C++ users on all operating systems. 
 
-## `RelocEvaluation`
+## Python (Linux)
 
-After creating the model object, and prior to evaluating the system, a simulation of the internal dynamics have to be conducted. This is done using the `runSimulation(int seed, int burnIn, int minTime, int minSamples)` method. Here, `int seed` is the simulation seed, `int burnIn` is the burn-in time, `int minTime` is the minimum simulation-time the simulation has to run (this can often be set equal to `burnIn`) and `int minSamples` is the minimum number of samples that are collected by the simulation. This parameter has a default value of 50.
+We have created a RelSys module for Python with `pybind11`. Head to the directory `Python/Linux/`, or run `wget https://github.com/areenberg/RelSys/blob/development/Python/Linux/relsys.cpython-310-x86_64-linux-gnu.so` to download the SO-file for the module.
 
-Now, the system can be evaluated using the method `runHeuristic(int widx)`, where `int widx` is the index of the queue being evaluated.
+Start by importing the module,
 
-### Getting the results
-
-The `RelocEvaluation` class features four types of performance measures. These are:
-
-* Marginal probability distribution: `vector<double> marginalDist`.
-* Probability of rejection: `double blockingProbability`.
-* Expected server occupancy: `double expectedOccupancy`.
-* Expected fraction of servers occupied: `double expOccFraction`. 
-
-## `RelocSimulation`
-
-Similar to `RelocEvaluation` we need to conduct some preliminary setup before the system can be evaluated. First, a seed is chosen using the `setSeed(int seed)` method. Next, we disable some of the features that we dont need using the `disableTimeSampling()` method. This speeds up the simulation.
-
-Now, the system can be evaluated using `simulate(double burnIn, double minTime, vector<int> maxWardSamples, int minSamples)`, where `double burnIn` is the burn-in time, `double minTime` is the minimum simulation time, `vector<int> maxWardSamples` is an upper bound on the number of samples the simulation is allowed to collect from each queue. In most cases, this functionality should be disabled, which is done by setting the input vector to `vector<int> maxWardSamples(1,-1)` (i.e. with one element that has a value of -1). The final parameter, `int minSamples`, is the minimum number of samples of periods where the queues are either open or in shortage of capacity. This parameter has a default value of 50, but has no effect on the results if the method `disableTimeSampling()` has been used.
-
-### Getting the results
-
-The `RelocSimulation` class features five types of performance measures. These are:
-
-* Marginal frequency distribution: `vector<vector<int>> wardFreqDist`.
-* Marginal probability distribution: `vector<vector<double>> wardDenDist`.
-* Probability of rejection: `vector<double> blockingProbability`.
-* Expected server occupancy: `vector<double> expectedOccupancy`.
-* Expected fraction of servers occupied: `vector<double> expOccFraction`. 
-
-# Getting started
-
-Start by loading the fundamental classes.
-
-```c++
-
-#include "CustomerData.h" //information about each customer type
-#include "SystemParameters.h" //information about the overall system parameters
-#include "QueueData.h" //information about each queue
-#include "RelocEvaluation.h" //to evaluate the system using the CTMC approximation
-#include "RelocSimulation.h" //to evaluate the system using discrete-event simulation
-
+```python
+import relsys
 ```
 
-Now, specify the customer type parameters. In this example we consider a system of four types.
+Now, specify the input parameters for the model. In this example, we consider a system containing 4 customer types and 4 queues.
+
+```python
+arrivalRates = [0.8,2.5,0.6,2.8]
+
+serviceTimes = [10,5,10,8]
+
+capacity = [15,20,10,30]
+
+relocationProbabilities = [[0.0,0.4,0.1,0.5],
+                           [0.3,0.0,0.5,0.0],
+                           [0.0,0.5,0.0,0.5],
+                           [0.2,0.3,0.5,0.0]]
+
+preferredQueue = [0,1,2,3]
+```
+
+The input parameters are imported using the `input` function,
+
+```python
+relsys.input(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
+```
+
+The model can now be evaluated with `run`,
+
+```python
+relsys.run()
+```
+
+Return the resulting occupancy distributions with `getDensity` and shortage probabilities with `getShortageProb`,
+
+```python
+for queueIdx in range(4):
+    print(relsys.getDensity(queueIdx))
+
+for queueIdx in range(4):
+    print(relsys.getShortageProb(queueIdx))
+```
+
+### The complete example
+
+```python
+#import the module
+import relsys 
+
+#arrival rates of each customer type
+arrivalRates = [0.8,2.5,0.6,2.8]
+
+#mean service time of each customer type
+serviceTimes = [10,5,10,8]
+
+#capacity of each queue
+capacity = [15,20,10,30]
+
+#fraction of rejected customers that are moved to an alternative queue node
+#this is a number of customers x number of queues matrix
+relocationProbabilities = [[0.0,0.4,0.1,0.5],
+                           [0.3,0.0,0.5,0.0],
+                           [0.0,0.5,0.0,0.5],
+                           [0.2,0.3,0.5,0.0]]
+
+#queue indices preferred by each customer type
+preferredQueue = [0,1,2,3]
+
+#import the parameters
+relsys.input(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
+
+#run the model
+relsys.run()
+
+#check the resulting occupancy distribution of each queue 
+for queueIdx in range(4):
+    print(relsys.getDensity(queueIdx))
+
+#check the resulting shortage probabilities of each queue 
+for queueIdx in range(4):
+    print(relsys.getShortageProb(queueIdx))
+```
+
+## List of functions
+
+### Import data
+* `input`. Import the input data to the model.
+
+### Model settings
+
+* `setType`. Set the method to use in the evaluation of the model (auto, simulation, approximation). 
+* `queuesEval`. Set the indices of queues to evaluate.
+* `equalize`. Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).
+* `setVerbose`. Control verbose (True = On, False = Off).
+* `setSeed`. Set the seed.
+* `setBurnIn`. Set the burn-in time of the simulation.
+* `setSimTime`. Set the simulation time.
+* `setSamples`. Set the minimum number of open/shortage samples.
+* `setHyperPhases`. Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.
+
+### Run calculations
+
+* `run`. Evaluate the model using the input parameters.
+
+### Get results
+
+* `getDensity`. Return the density distribution of a queue.
+* `getFreq`. Return the frequency distribution of a queue.
+* `getShortageProb`. Return the shortage probability of a queue.
+* `getAvailProb`. Return the probability that at least one server is available.
+* `getExpOccupany`. Return the expected number of occupied servers.
+* `getExpOccFraction`. Return the expected fraction of occupied servers.
+
+### Return imported variables
+
+* `getArrivalRates`. Return the imported arrival rates.
+* `getServiceTimes`. Return the imported service times.
+* `getCapacity`. Return the imported capacities.
+* `getReloc`. Return the imported relocation probabilities.
+`getPreferredQueue`. Return the imported preferred queues.
+
+## C++
+
+The approach in C++ is very similar to that of Python. The directory `RelSys/` contains the complete source code for RelSys. Start by heading here. Create a `main.cpp` file (or modify the example `main.cpp` that is already in the directory).
+
+Write the following into the `main.cpp` file,
 
 ```c++
+#include "Model.h"
 
-    //total number of customer types
-    int nCustomerTypes = 4;
+#include <iostream>
+#include <vector>
 
+using namespace std;
+
+int main(int argc, char** argv) {
+
+    //model code goes here
+
+    return 0;
+}
+```
+
+Now, put in the parameters of the model. Once again, we consider a system containing 4 customer types and 4 queues. Note that in C++, we also have to specify the indices of the queues we want to evaluate,
+
+```c++
     //arrival rates for each customer type
     vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
-
+    
     //mean service time for each customer type
     vector<double> serviceTimes = {10,5,10,8};
 
+    //capacity of each queue
+    vector<int> capacity = {15,20,10,30};
+    
     //fraction of rejected customers that are moved to an alternative queue node
     //this is an nCustomerTypes x nQueues matrix
-    vector<vector<double>> relProbs = {{0.0,0.4,0.1,0.5},
-                                       {0.0,0.0,0.2,0.3}, //<<-- note: these do not have to sum to one
-                                       {0.2,0.0,0.0,0.8},
-                                       {0.9,0.05,0.05,0.0}};
-
+    vector<vector<double>> relocationProbabilities = {{0.0,0.4,0.1,0.5},
+                                                      {0.3,0.0,0.5,0.0},
+                                                      {0.0,0.5,0.0,0.5},
+                                                      {0.2,0.3,0.5,0.0}};
+    
     //queue indices preferred by each customer type
     vector<int> preferredQueue = {0,1,2,3};
 
-    //create the customer type objects
-    CustomerData * custs_array = new CustomerData[nCustomerTypes];
-    for (int i=0; i<nCustomerTypes; i++){
-        custs_array[i] = CustomerData(preferredQueue[i],
-                                      arrivalRates[i],
-                                      serviceTimes[i],
-                                      relProbs[i]);
-    }
+    //indices of the queues to be evaluated    
+    vector<int> evaluatedQueue = {0,1,2,3};
 
 ```
 
-Note that the relocation probabilities (`relProbs`) do not have to sum to one. If the sum is less than one a fraction of the customers are lost without trying to relocate them first. The next step is to create the queues.
+Now we can create and evaluate the model,
+
+```c++
+   //create the model object
+    Model mdl(arrivalRates,serviceTimes,capacity,
+            relocationProbabilities,preferredQueue,
+            evaluatedQueue);
     
-```c++    
+    //now evaluate the model
+    mdl.runModel();
+```
+
+The following returns the resulting occupancy distributions and shortage probabilities,
+
+```c++
+    cout << "Occupancy distributions:" << endl;
+    for (int i=0; i<evaluatedQueue.size(); i++){
+        cout << "----" << "Queue " << evaluatedQueue[i] << "----" << endl;
+        for (int j=0; j<mdl.queueDenDist[evaluatedQueue[i]].size(); j++){
+            cout << mdl.queueDenDist[evaluatedQueue[i]][j] << endl;
+        }
+    }
     
-    //total number of queues
-    int nQueues = 4;
+    cout << endl << "Shortage probabilities:" << endl;
+    for (int i=0; i<evaluatedQueue.size(); i++){
+        cout << mdl.blockingProbability[evaluatedQueue[i]] << endl;
+    }
+```
+
+The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the file `PythonWrapper.cpp`, and run `g++ -O3 *.cpp -o eval`. Run the program with `./eval`. 
+
+### The complete example
+
+```c++
+#include "Model.h"
+
+#include <iostream>
+#include <vector>
+
+using namespace std;
+
+int main(int argc, char** argv) {
+
+        //arrival rates for each customer type
+    vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
+    
+    //mean service time for each customer type
+    vector<double> serviceTimes = {10,5,10,8};
 
     //capacity of each queue
     vector<int> capacity = {15,20,10,30};
-
-    //calculate system input parameters from customer types to queues
-    SystemParameters sysParam(nQueues,nCustomerTypes,custs_array);
-
-    //now create the queue objects
-    QueueData * wd_array = new QueueData[nQueues];
-    for (int i=0; i<nQueues; i++){
-        wd_array[i] = QueueData(i,  //<<-- important: this parameter must not deviate from the order of the queues in the array
-                                sysParam.queueArrivalRate(i),
-                                sysParam.queueServiceRate(i),
-                                capacity[i],
-                                sysParam.queueRelProbability(i));
-    }
-
-```
-
-The queueing objects are now ready to be plugged into the model object. In the following, we show how to create a model object, evaluate the system and get the results using both the heuristic approach and the discrete-event simulation, respectively. You will notice that the procedure is almost the same in both cases.
-
-## `RelocEvaluation` - Evaluation with a CTMC approximation
-
-First, create the model object using the aforementioned queueing array, `wd_array`.
-
-```c++
-
-    //setup model object
-    RelocEvaluation mdl(nQueues,wd_array);
-
-```
-
-Next, some minor setup is required. Important: The CTMC approach evaluates only *one queue at a time*. Thus, the target queue needs to be specified. In the following, we do this using the variable `widx`.
-
-```c++
-
-    //minor setup and preliminary calculations
-    int seed = 123;
-    int bin = 365;
-    int minTime = 365;
-    int minSamples = 50
-    mdl.runSimulation(seed,bin,minTime,minSamples);
     
-    //choose a queue to evaluate
-    int widx = 0; //queue index to be evaluated
+    //fraction of rejected customers that are moved to an alternative queue node
+    //this is an nCustomerTypes x nQueues matrix
+    vector<vector<double>> relocationProbabilities = {{0.0,0.4,0.1,0.5},
+                                                      {0.3,0.0,0.5,0.0},
+                                                      {0.0,0.5,0.0,0.5},
+                                                      {0.2,0.3,0.5,0.0}};
+    
+    //queue indices preferred by each customer type
+    vector<int> preferredQueue = {0,1,2,3};
 
-```
+    //indices of the queues to be evaluated    
+    vector<int> evaluatedQueue = {0,1,2,3};
 
-The system is now ready to be evaluated.
+   //create the model object
+    Model mdl(arrivalRates,serviceTimes,capacity,
+            relocationProbabilities,preferredQueue,
+            evaluatedQueue);
+    
+    //now evaluate the model
+    mdl.runModel();
 
-```c++
-
-    mdl.runHeuristic(widx);
-
-```
-
-Note that the memory consumption as well as the runtime might be *very* high depending on the size of the system.
-
-All four performance measures are stored in the model object when the evaluation of the system is complete. 
-
-```c++
-
-    cout << "--- RESULTS ---" << endl;
-   
-    cout << "Marginal probability distribution:" << endl;
-    for (int i=0; i<mdl.marginalDist.size(); i++){
-        cout << mdl.marginalDist[i] << endl;
+    //get the results
+    cout << "Occupancy distributions:" << endl;
+    for (int i=0; i<evaluatedQueue.size(); i++){
+        cout << "----" << "Queue " << evaluatedQueue[i] << "----" << endl;
+        for (int j=0; j<mdl.queueDenDist[evaluatedQueue[i]].size(); j++){
+            cout << mdl.queueDenDist[evaluatedQueue[i]][j] << endl;
+        }
     }
     
-    cout << "Probability of rejection:" << endl;
-    cout << mdl.blockingProbability << endl;
-
-    cout << "Expected server occupancy:" << endl;
-    cout << mdl.expectedOccupancy << endl;
-
-    cout << "Expected fraction of servers occupied:" << endl;
-    cout << mdl.expOccFraction << endl;
-
-```
-
-## `RelocSimulation` - Evaluation by simulation
-
-Once again, create the model object using the aforementioned queueing array, `wd_array`.
-
-```c++
-
-    //setup simulation model object
-    RelocSimulation sim_mdl(nQueues,wd_array);
-    
-```
-
-And again, some minor setup is required before we can proceed. The simulation evaluates all queues at the same time, so this time we do not have to settle on a single queue.
-
-```c++
-
-    //setup and run simulation
-    sim_mdl.setSeed(123); //set the seed
-    double burnIn = 365; //burn-in time
-    double minTime = 50000; //minimum simulation time
-    vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
-    sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
-    
-```
-
-The system can now be evaluated.
-
-```c++
-
-    sim_mdl.simulate(burnIn,minTime,maxWardSamples);
-
-```
-
-The simulation has much lower memory requirements than the CTMC approach and therefore able to evaluate much larger systems. The runtime and the precision depends greatly on when the simulation is terminated. In the above, the minimum simulation-time is specified using `minTime`. 
-
-Recall that in contrary to the heuristic approach, the simulation evaluates the entire system at the same time. However, for the sake of this demonstration we chose only to print the results from a single queue, `sim_widx`.
-
-```c++
-    
-    int sim_widx = 0;
-
-    cout << "Marginal frequency distribution:" << endl;
-    for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
-        cout << sim_mdl.wardFreqDist[sim_widx][i] << endl;
+    cout << endl << "Shortage probabilities:" << endl;
+    for (int i=0; i<evaluatedQueue.size(); i++){
+        cout << mdl.blockingProbability[evaluatedQueue[i]] << endl;
     }
-    cout << "Marginal probability distribution:" << endl;
-    for (int i=0; i<sim_mdl.wardFreqDist[sim_widx].size(); i++){
-        cout << sim_mdl.wardDenDist[sim_widx][i] << endl;
-    }
-    
-    cout << "Probability of rejection:" << endl;
-    cout << sim_mdl.blockingProbability[sim_widx] << endl;
 
-    cout << "Expected server occupancy:" << endl;
-    cout << sim_mdl.expectedOccupancy[sim_widx] << endl;
-
-    cout << "Expected fraction of servers occupied:" << endl;
-    cout << sim_mdl.expOccFraction[sim_widx] << endl;
-
+    return 0;
+}
 ```
+
+## Model object and methods
+
+### Model object
+
+```c++
+Model(vector<double> arrRates, //vector of arrival rates
+        vector<double> serTimes, //vector of service times
+        vector<int> cap, //vector of capacities
+        vector<vector<double>> relProbMat, //relocation probability matrix
+        vector<int> prefQ, //vector of preferred queues
+        vector<int> evalQ, //queues to evaluate 
+        string mdlt="auto", //sets the model type (auto, approximation or simulation)
+        bool eqze=true); //If true, all service times are equalized and arrival rates adjusted to keep the load on the queues.
+```
+
+### Model methods
+
+* `runModel()`. Evaluate the model.
+* `setSeed(int sd)`. Set a seed.
+* `setBurnIn(double bn)`. Set the burn-in time.
+* `setMinimumSimulationTime(double mnTime)`. Set the simulation time. 
+* `setMinSamples(int mnSamples)`. Set the minimum number of open/shortage samples.
+* `setHyperStates(int openStates, int blockedStates)`. Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.
+
+
+# Applications of RelSys
+
+## Articles
+
+Andersen, Anders Reenberg, Bo Friis Nielsen, and Andreas Lindhardt Plesner. 2023. "An Approximation of the Inpatient Distribution in Hospitals with Patient Relocation Using Markov Chains." Healthcare Analytics 3: 100145. https://doi.org/10.1016/j.health.2023.100145.
+
+Leeters, Christoph, and Anders Reenberg Andersen. 2023. "Queueing systems with relocation of customers." ORbit: medlemsblad for Dansk Selskab for Operationsanalyse.
 
 # How to cite
 
@@ -284,7 +352,7 @@ Anders Reenberg Andersen. (2022). areenberg/RelSys: RelSys - first release (v1.0
 
 # License
 
-Copyright 2021 Anders Reenberg Andersen.
+Copyright 2023 Anders Reenberg Andersen.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.

@@ -42,6 +42,7 @@ RelocEvaluation::RelocEvaluation(int nW, QueueData * wards):
 wards_pointer(wards),
 nWards(nW),
 simReady(false),
+validateReady(false),
 simMargDist(false),
 changeDisRates(false)        
 {
@@ -157,12 +158,6 @@ void RelocEvaluation::setBinDischargeRates(vector<double> disRates){
     }
 }
 
-void RelocEvaluation::simulateMarginalDist(double smb, int cSam){
-    //use this method to evaluate the solution with simulation
-    sampleBurnIn = smb; //burn-in time
-    collectSamples = cSam; //number of samples to collect
-    simMargDist=true;
-}
 
 void RelocEvaluation::runSimulation(int sd, int burnIn,
         int minTime, int minSamples){
@@ -231,109 +226,131 @@ void RelocEvaluation::evalSingleWard(int widx){
     }
 }
 
+//int RelocEvaluation::calculateStateSpaceSize(int main_widx){
+//    
+//    
+//    
+//}
 
-void RelocEvaluation::runHeuristic(int main_widx){
+
+void RelocEvaluation::validateModel(int main_widx){
     
-    if (isSingleWard(main_widx)){
+    mfocus = main_widx;
     
-        evalSingleWard(main_widx);
+    if (isSingleWard(mfocus)){
+        
+        stateSpaceSize = getWardCapacity(mfocus);
+        validateReady = true; //tag the model as validated
         
     }else if (simReady){
-        auto start = high_resolution_clock::now(); //start time 
-        
+    
         //create and add surrogate queues to the system
         double arr;
-        int nhq = nWards-1; //number of hyper queues
-    
+        nhq = nWards-1; //number of hyper queues
+        
+        //upper and lower limits in each queue. must include all queues (main and hyper queues)
+        upperLimits.resize(nWards,0);
+        lowerLimits.resize(nWards,0);
+        //automatically adjust truncation
+        //cout << "Setting limits... ";
+        setUpperLimits(upperLimits,mfocus);
+        setLowerLimits(lowerLimits,mfocus);
+        //cout << "done." << endl;
+        
         //hyper queue indices
-        vector<int> hyperWidx_vector(nhq,0);
+        hyperWidx_vector.resize(nhq,0);
         int added = 0;
         for (int i=0; i<nWards; i++){
-            if (i!=main_widx){
+            if (i!=mfocus){
                 hyperWidx_vector[added] = i;
                 added++;
             }
         }
         
-        //prepare and fit PH parameters for each surrogate (hyper) queue
-        cout << "Fitting PH parameters ..." << endl;
-        HyperQueue * hq_array = new HyperQueue[nhq];
+        //create objects for each surrogate (hyper) queue
+        hq_array = new HyperQueue[nhq];
         for (int i=0; i<nhq; i++){
-            arr =  getWardArrivalRate(hyperWidx_vector[i])*getWardRelocationProbabilities(hyperWidx_vector[i])[main_widx];
+            arr =  getWardArrivalRate(hyperWidx_vector[i])*getWardRelocationProbabilities(hyperWidx_vector[i])[mfocus];
             
             hq_array[i] = HyperQueue(hyperWidx_vector[i],hyperBlockedStates[i],hyperOpenStates[i],//statesBlocked,statesOpen,
                 arr,getWardServiceRate(hyperWidx_vector[i]),sim_pointer);
+        }
+        
+        //create the main (heuristic) queue object
+        hqueue = new HeuristicQueue(mfocus,binMap,getWardCapacity(mfocus),upperLimits,lowerLimits,
+                getWardArrivalRate(mfocus),getWardServiceRate(mfocus),nhq,hq_array,wards_pointer);
+        if (changeDisRates){
+            //change the bin discharge rates
+            hqueue->newbinDischargeRates(newDisRates);
+        }
+        
+        cout << "Number of states = " << hqueue->Ns << endl;
+        stateSpaceSize = hqueue->Ns;
+        
+        validateReady = true; //tag the model as validated
+    }else{
+        cout << "Execution failed because simulation was not available." << endl;
+        cout << "In order to solve this issue, run the runSimulation() method prior to runHeuristic()." << endl;
+    }    
+        
+}
+
+
+void RelocEvaluation::evaluateModel(){
+    if (isSingleWard(mfocus)){
+        
+        cout << "Detected single queue - evaluate using Erlang B." << endl;
+        evalSingleWard(mfocus);
+        
+    }else if (validateReady){
+        
+        //fit PH parameters for each surrogate (hyper) queue
+        cout << "Fitting PH parameters... " << endl;
+        for (int i=0; i<nhq; i++){
             cout << "Fit " << (i+1) << endl;
             hq_array[i].fitAll(seed);
         }
         cout << "Done." << endl;
         
-        //specifications of main queue
-        double arrivalRate = getWardArrivalRate(main_widx);
-        double serviceRate = getWardServiceRate(main_widx);
-        int capacity = getWardCapacity(main_widx);
+        //cout << "Evaluating Queue " << (mfocus+1) << "..." << endl;
         
-        //upper and lower limits in each queue. must include all queues (main and hyper queues)
-        vector<int> upperLimits(nWards,0);
-        vector<int> lowerLimits(nWards,0);
-        //automatically adjust truncation
-        cout << "Setting limits..." << endl;
-        setUpperLimits(upperLimits,main_widx);
-        setLowerLimits(lowerLimits,main_widx);
-        
-        //create the main (heuristic) queue object
-        //cout << "Preparing..." << flush;
-     
-        HeuristicQueue hqueue(main_widx,binMap,capacity,upperLimits,lowerLimits,
-                arrivalRate,serviceRate,nhq,hq_array,wards_pointer);
-        if (changeDisRates){
-            //change the bin discharge rates
-            hqueue.newbinDischargeRates(newDisRates);
-        }
-        
-        //cout << "done." << endl;
-        
-        cout << "Evaluating Ward " << (main_widx+1) << "..." << endl;
-        cout << "Number of states = " << hqueue.Ns << endl;
-    
         //solve for steady-state distribution
         LinSolver solver;
-        if (simMargDist){ //for evaluating the solution with simulation (note: fairly slow and untested)
-            solver.monteCarlo(hqueue,sampleBurnIn,
-                    collectSamples);
-            marginalDist = hqueue.margDist;
+        initializeStateDistribution(hqueue);    
+        double solverTolerance = 1e-9;
+        solver.sor(pi,hqueue,1.0,solverTolerance);
             
-        }else{ //for evaluating the solution numerically
-            initializeStateDistribution(hqueue);    
-            double solverTolerance = 1e-9;
-            solver.sor(pi,hqueue,1.0,solverTolerance);
+        vmemory = solver.vmemory; //estimate of maximum memory usage
             
-            vmemory = solver.vmemory; //estimate of maximum memory usage
+        //store the marginal distribution and some other metrics
+        hqueue->marginalDist(pi);
+        marginalDist = hqueue->margDist;
             
-            //store the marginal distribution and some other metrics
-            hqueue.marginalDist(pi);
-            marginalDist = hqueue.margDist;
-            
-        }
-        expectedOccupancy = hqueue.expectedOccupancy();
-        expOccFraction = expectedOccupancy/(double)capacity;
+        expectedOccupancy = hqueue->expectedOccupancy();
+        expOccFraction = expectedOccupancy/(double)getWardCapacity(mfocus);
         blockingProbability = marginalDist[marginalDist.size()-1];
         
+        delete hqueue; //free memory related to model
+        
+    }else{
+        cout << "Execution failed because model has not been validated." << endl;
+        cout << "In order to solve this issue, run the validateModel() method prior to evaluateModel()." << endl;
+    }
+    
+}
+
+
+void RelocEvaluation::runHeuristic(int main_widx){
+    
+        auto start = high_resolution_clock::now(); //start time 
+        
+        validateModel(main_widx);
+        
+        //cout << "Evaluating Queue " << (main_widx+1) << "..." << endl;
+        evaluateModel();
         auto stop = high_resolution_clock::now(); //stop time 
         auto duration = duration_cast<milliseconds>(stop - start); 
         cout << "Runtime of CTMC (excl. simulation): " << duration.count() << " milliseconds\n" << endl;
-        
-        //print and store some general metrics
-//        cout << "\nWARD " << (main_widx+1) << " STATS:" << endl;
-//        
-//        cout << "Expected load = " << expectedOccupancy << endl;
-//        cout << "Capacity utilization = " << expOccFraction*100 << "%\n" << endl;
-        
-        
-    }else{
-        cout << "Execution failed because simulation was not available." << endl;
-        cout << "In order to solve this issue, run the runSimulation() method prior to runHeuristic()." << endl;
-    }
     
 }
 
@@ -350,7 +367,7 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     
     double mn,k,p;
     
-    cout << "Upper truncation cap. limits:" << endl;
+    //cout << "Upper truncation cap. limits:" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
         
         //truncation using Chebyshev's inequality
@@ -366,20 +383,20 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
             upperLimits[pidx] = getWardCapacity(main_widx);
         }
             
-        cout << upperLimits[pidx] << " " << flush;
+        //cout << upperLimits[pidx] << " " << flush;
     }
-    cout << endl;
+    //cout << endl;
     
 }
 
 void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
     //lower truncation limits are not adjusted (for now).
     
-    cout << "Lower truncation cap. limits:" << endl;
+    //cout << "Lower truncation cap. limits:" << endl;
     for (int pidx=0; pidx<nWards; pidx++){
-        cout << lowerLimits[pidx] << " " << flush;
+        //cout << lowerLimits[pidx] << " " << flush;
     }
-    cout << endl;
+    //cout << endl;
     
 }
 
@@ -454,37 +471,37 @@ double RelocEvaluation::Gfunction(double q, double x){
     
 }
 
-void RelocEvaluation::initializeStateDistribution(HeuristicQueue &hqueue, bool erlangInit){
+void RelocEvaluation::initializeStateDistribution(HeuristicQueue * hqueue, bool erlangInit){
     //initial state distribution
-    pi.resize(hqueue.Ns,0);
+    pi.resize(hqueue->Ns,0);
     
     double sm=0;
     if (erlangInit){
         //initialize using the Erlang loss model
-        hqueue.initializeState();
+        hqueue->initializeState();
         int K;
-        for (int i=0; i<hqueue.Ns; i++){
+        for (int i=0; i<hqueue->Ns; i++){
             K=0;
-            for (int j=0; j<hqueue.nBins; j++){
-                K+=hqueue.state[j];
+            for (int j=0; j<hqueue->nBins; j++){
+                K+=hqueue->state[j];
             }
-            pi[i]=erlangLoss(K,hqueue.arrivalRate,hqueue.serviceRate,hqueue.cap);
+            pi[i]=erlangLoss(K,hqueue->arrivalRate,hqueue->serviceRate,hqueue->cap);
             sm+=pi[i];
-            hqueue.nextCurrentState();
+            hqueue->nextCurrentState();
         }
     }else{
         //initialize using random numbers
         mt19937 rgen(seed);
-        uniform_real_distribution<> dis(1,hqueue.Ns);
+        uniform_real_distribution<> dis(1,hqueue->Ns);
     
-        for (int i=0; i<hqueue.Ns; i++){
+        for (int i=0; i<hqueue->Ns; i++){
             pi[i] = dis(rgen);
             sm += pi[i]; 
         }
     }     
     
     //normalize    
-    for (int i=0; i<hqueue.Ns; i++){
+    for (int i=0; i<hqueue->Ns; i++){
         pi[i] /= sm;
     }
     
@@ -534,10 +551,10 @@ vector<double> RelocEvaluation::getWardRelocationProbabilities(int ward){
     return((wards_pointer + ward)->relocationProbabilities);
 }
 
-void RelocEvaluation::calculateWardStateSpaceSize(int ward, int numberOfWards){
-    
-    return((wards_pointer + ward)->calculateWardStateSpace(numberOfWards));
-}
+//void RelocEvaluation::calculateWardStateSpaceSize(int ward, int numberOfWards){
+//    
+//    return((wards_pointer + ward)->calculateWardStateSpace(numberOfWards));
+//}
 
 int RelocEvaluation::getWardStateSpaceSize(int ward){
     

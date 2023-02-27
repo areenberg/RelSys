@@ -67,6 +67,7 @@ public:
     double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
+    HeuristicQueue() {}; //dummy constructor (not included in cpp-file)
     HeuristicQueue(int main_widx, vector<vector<int>> binMap, int c, vector<int> upperLim, vector<int> lowerLim,
     double aRate, double sRate, int nhq, HyperQueue* hbQueues, QueueData * wards);
     HeuristicQueue(const HeuristicQueue& orig);
@@ -107,7 +108,7 @@ private:
     void checkInput();
     int forwardOne(int Ku, vector<int> &j, int targetval, int targetidx);
     int backwardOne(int Ku, vector<int> &j, int targetval, int targetidx);
-
+    void calculateStateSpaceSize();
 
     int hyperOpenStates(int hq); //get number of open states in hyperqueue hq
     int hyperBlockedStates(int hq); //get number of blocked states in hyperqueue hq

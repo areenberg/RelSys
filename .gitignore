@@ -4,5 +4,6 @@
 /RelSys/dist/
 /RelSys/build/
 /RelSys/.vscode/
+.vscode/
 *.exe
 *.bat
