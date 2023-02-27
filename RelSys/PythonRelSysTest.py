@@ -18,20 +18,20 @@ relsys.equalize(True)
 relsys.run()
 
 #results
-for queueIdx in range(4):
-    print(relsys.getDensity(queueIdx))
+#for queueIdx in range(4):
+#    print(relsys.getDensity(queueIdx))
 
-for queueIdx in range(4):
-    print(relsys.getFreq(queueIdx))
+#for queueIdx in range(4):
+#    print(relsys.getFreq(queueIdx))
 
 for queueIdx in range(4):
     print(relsys.getShortageProb(queueIdx))
 
-for queueIdx in range(4):
-    print(relsys.getAvailProb(queueIdx))
+#for queueIdx in range(4):
+#    print(relsys.getAvailProb(queueIdx))
     
-for queueIdx in range(4):
-    print(relsys.getExpOccupany(queueIdx))
+#for queueIdx in range(4):
+#    print(relsys.getExpOccupany(queueIdx))
 
-for queueIdx in range(4):
-    print(relsys.getExpOccFraction(queueIdx))
+#for queueIdx in range(4):
+#    print(relsys.getExpOccFraction(queueIdx))

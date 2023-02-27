@@ -1146,8 +1146,8 @@ int PhaseFitter::AskForInput(int NoOfInput[3])
   printf("Select 1 or 2: ");
   scanf("%d", &input);
 */
-  switch(input) {
-  case 1:
+  // switch(input) {
+  // case 1:
 /*
     printf("\nThe sample contains:\n");
     printf("   1. no censored observations \n");
@@ -1156,8 +1156,8 @@ int PhaseFitter::AskForInput(int NoOfInput[3])
     scanf("%d", &sampletype);
 */  
     sampletype = 1; //always no censored observations  
-    switch(sampletype) {
-    case 1:
+    // switch(sampletype) {
+    // case 1:
       input_sample(NoOfInput); //counts the number of samples in NoOfInput[1]
       obs = v_alloc(NoOfInput[1]); //allocates memory for the samples
       weight = v_alloc(NoOfInput[1]); //allocates memory for the weights
@@ -1165,8 +1165,8 @@ int PhaseFitter::AskForInput(int NoOfInput[3])
       NoOfObs = sort_observations(NoOfInput[1], obs, weight); //sort observations
       //Export_Sample();
       //printf("Total number of observations = %d\n", (int) SumOfWeights);   
-      break;
-    case 2:    
+    //   break;
+    // case 2:    
 //      input_Csample(NoOfInput);
 //      if (NoOfInput[0] > 0) {
 //	censur = v_alloc(NoOfInput[0]);
@@ -1195,17 +1195,17 @@ int PhaseFitter::AskForInput(int NoOfInput[3])
 //      printf("     non-censored = %d\n", (int)(SumOfWeights));
 //      printf("   right-censored = %d\n", (int)(SumOfCensored));  
 //      printf("interval-censored = %d\n", (int)(SumOfInt)); 
-      break;
-    }
-    break; 
-  case 2:
-    input_density();
-    NoOfObs = count_input();
-    obs = v_alloc(NoOfObs);
-    weight = v_alloc(NoOfObs);
-    assign_vectors(NoOfObs);
-    break;
-  }
+  //     break;
+  //   }
+  //   break; 
+  // case 2:
+  //   input_density();
+  //   NoOfObs = count_input();
+  //   obs = v_alloc(NoOfObs);
+  //   weight = v_alloc(NoOfObs);
+  //   assign_vectors(NoOfObs);
+  //   break;
+  // }
   return(sampletype);
 }
 
@@ -1265,7 +1265,7 @@ void PhaseFitter::selectstructure(int p, double *pi, double **T, double *t, int 
 		     int **Tlegal)
 {
   int i, j;
-  FILE *infil;
+  //FILE *infil;
 
   int structure = PHDistribution; //structure of output PH distribution
   
@@ -1319,35 +1319,35 @@ void PhaseFitter::selectstructure(int p, double *pi, double **T, double *t, int 
     Tlegal[p-1][p-1]=1;
     pilegal[p-1]=1;
     break;
-  case 6:
-    infil=fopen("distrtype", "r");
-    for (i=0; i < p; i++) {
-      fscanf(infil,"%d", &pilegal[i]);
-      for (j=0; j < p; j++)
-	fscanf(infil,"%d", &Tlegal[i][j]);
-    }
-    printf("Number of phases:%d\n",p);
-    fclose(infil);
-    break;
-  case 7:
-    infil=fopen("phases", "r");
-    for (i=0; i < p; i++) {
-      fscanf(infil, "%le", &pi[i]);
-      for (j=0; j < p; j++)
-	fscanf(infil, "%le", &T[i][j]);
-    }
-    fclose(infil);
-    break;
-  case 8:
-    for (i=0; i < p; i++) {
-      printf("pi[%d]: ", i+1);
-      scanf("%le", &pi[i]);
-      for (j=0; j < p; j++) {
-	printf("T[%d][%d]: ", i+1, j+1);
-	scanf("%le", &T[i][j]);
-      }         
-    }   
-   break;
+  // case 6:
+  //   infil=fopen("distrtype", "r");
+  //   for (i=0; i < p; i++) {
+  //     fscanf(infil,"%d", &pilegal[i]);
+  //     for (j=0; j < p; j++)
+	// fscanf(infil,"%d", &Tlegal[i][j]);
+  //   }
+  //   printf("Number of phases:%d\n",p);
+  //   fclose(infil);
+  //   break;
+  // case 7:
+  //   infil=fopen("phases", "r");
+  //   for (i=0; i < p; i++) {
+  //     fscanf(infil, "%le", &pi[i]);
+  //     for (j=0; j < p; j++)
+	// fscanf(infil, "%le", &T[i][j]);
+  //   }
+  //   fclose(infil);
+  //   break;
+  // case 8:
+  //   for (i=0; i < p; i++) {
+  //     printf("pi[%d]: ", i+1);
+  //     scanf("%le", &pi[i]);
+  //     for (j=0; j < p; j++) {
+	// printf("T[%d][%d]: ", i+1, j+1);
+	// scanf("%le", &T[i][j]);
+  //     }         
+  //   }   
+  //  break;
   }
   
   if (structure < 7) {
@@ -1364,7 +1364,6 @@ void PhaseFitter::selectstructure(int p, double *pi, double **T, double *t, int 
     //printf("\nRandom initiation - enter an integer (at random):");
     //scanf("%d",&i);
     srand(i);
-    printf("\n");
     randomphase(p, pi, T, t, pilegal, Tlegal);
   }
   else 
@@ -1628,7 +1627,7 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
   int k, stepindicator, stepchoice; 
   double RKstep;
 
-  stepchoice = 1; //<<-- use the default
+  //stepchoice = 1; //<<-- use the default
 /*
   printf("Choose step-length for the Runge_Kutta procedure:");
   printf("\n1. Default value");
@@ -1636,14 +1635,14 @@ void PhaseFitter::EMiterate(int NoOfEMsteps, int p, double *pi, double **T, doub
   printf("\nSelect 1 or 2 :");
   scanf("%d", &stepchoice);
 */
-  if (stepchoice == 2) {
-    printf("Step-length = ");
-    scanf("%le", &RKstep);
-    stepindicator = 0;
-  }
-  else{
+  // if (stepchoice == 2) {
+  //   printf("Step-length = ");
+  //   scanf("%le", &RKstep);
+  //   stepindicator = 0;
+  // }
+  // else{
     stepindicator = 1;
-  } 
+  // } 
   
   //cout << "Fitting parameters..." << flush;
   StatusBar sbar(NoOfEMsteps,30);  
@@ -1748,7 +1747,7 @@ void PhaseFitter::run(int NoOfEMsteps, int intSeed, int inDType, double trP, dou
     selectstructure(p, pi, T, t, pilegal, Tlegal);
     //show_pi_T(p, pi, T, t);
 
-    while (fitting == 1) {    
+    //while (fitting == 1) {    
         //printf("\nNumber of EM-iterations: ");
         //scanf("%d", &NoOfEMsteps);
         EMiterate(NoOfEMsteps, p, pi, T, t, gvector, avector, bvector, cmatrix, 
@@ -1765,50 +1764,51 @@ void PhaseFitter::run(int NoOfEMsteps, int intSeed, int inDType, double trP, dou
         printf("Select 1-3: ");
         scanf("%d", &choice);
     */
-        choice = 3; //always quit
-        switch(choice) {
-        case 1:
-        break;
-        case 2:
-            free(pi); free(t); free(pilegal);
-            free_matrix(T, p);  free_integermatrix(Tlegal,p); 
-            free(avector); free(bvector); free_matrix(cmatrix,p);
-            free(Bmean); free(Zmean); free_matrix(Nmean, p);    
-            free_matrix(ka, 4);  free_matrix(kb, 4); free_3dimmatrix(kc, 4, p); 
-            if(NoOfInt>0) {
-                free(gvector); free_matrix(kg, 4); 
-                free_matrix(a_left, NoToSave); free_matrix(g_left, NoToSave);
-                free_matrix(b_left, NoToSave); free_3dimmatrix(c_left, NoToSave, p); 
-            }
-            if(sampletype == 2)
-                free(ett);    
+        // choice = 3;
+        //fitting = 0; //always quit
+        // switch(choice) {
+        // case 1:
+        // break;
+        // case 2:
+        //     free(pi); free(t); free(pilegal);
+        //     free_matrix(T, p);  free_integermatrix(Tlegal,p); 
+        //     free(avector); free(bvector); free_matrix(cmatrix,p);
+        //     free(Bmean); free(Zmean); free_matrix(Nmean, p);    
+        //     free_matrix(ka, 4);  free_matrix(kb, 4); free_3dimmatrix(kc, 4, p); 
+        //     if(NoOfInt>0) {
+        //         free(gvector); free_matrix(kg, 4); 
+        //         free_matrix(a_left, NoToSave); free_matrix(g_left, NoToSave);
+        //         free_matrix(b_left, NoToSave); free_3dimmatrix(c_left, NoToSave, p); 
+        //     }
+        //     if(sampletype == 2)
+        //         free(ett);    
       
-            printf("Number of phases of the PH-distribution to be fitted, (p): ");
-            scanf("%d", &newp);
-            p = newp;
-            pi=v_alloc(p); T=m_alloc(p, p);  t=v_alloc(p);
-            pilegal=int_v_alloc(p); Tlegal=int_m_alloc(p, p);
-            avector=v_alloc(p);  bvector=v_alloc(p); cmatrix=m_alloc(p, p);  
-            Bmean=v_alloc(p); Zmean=v_alloc(p); Nmean=m_alloc(p, p+1); 
-            ka=m_alloc(4, p);  kb=m_alloc(4, p); kc=m3_alloc(4, p, p); 
-            if (sampletype==2) {
-                ett = v_alloc(p);
-            for(i=0; i < p; i++)
-                ett[i] = 1;
-            }
-            if(NoOfInt>0) {
-                gvector=v_alloc(p); kg=m_alloc(4,p);
-                a_left=m_alloc(NoToSave,p); g_left=m_alloc(NoToSave,p);
-                b_left=m_alloc(NoToSave,p); c_left=m3_alloc(NoToSave, p, p);
-            }
-            selectstructure(p, pi, T, t, pilegal, Tlegal);
-            show_pi_T(p, pi, T, t);
-            break;
-            case 3:
-                fitting = 0;
-            break;
-        }
-    }
+        //     printf("Number of phases of the PH-distribution to be fitted, (p): ");
+        //     scanf("%d", &newp);
+        //     p = newp;
+        //     pi=v_alloc(p); T=m_alloc(p, p);  t=v_alloc(p);
+        //     pilegal=int_v_alloc(p); Tlegal=int_m_alloc(p, p);
+        //     avector=v_alloc(p);  bvector=v_alloc(p); cmatrix=m_alloc(p, p);  
+        //     Bmean=v_alloc(p); Zmean=v_alloc(p); Nmean=m_alloc(p, p+1); 
+        //     ka=m_alloc(4, p);  kb=m_alloc(4, p); kc=m3_alloc(4, p, p); 
+        //     if (sampletype==2) {
+        //         ett = v_alloc(p);
+        //     for(i=0; i < p; i++)
+        //         ett[i] = 1;
+        //     }
+        //     if(NoOfInt>0) {
+        //         gvector=v_alloc(p); kg=m_alloc(4,p);
+        //         a_left=m_alloc(NoToSave,p); g_left=m_alloc(NoToSave,p);
+        //         b_left=m_alloc(NoToSave,p); c_left=m3_alloc(NoToSave, p, p);
+        //     }
+        //     selectstructure(p, pi, T, t, pilegal, Tlegal);
+        //     show_pi_T(p, pi, T, t);
+        //     break;
+        //     case 3:
+        //         fitting = 0;
+        //     break;
+        // }
+    //}
   
     free(pi); free_matrix(T, p);  free(t); free(pilegal);
     free_integermatrix(Tlegal,p); 
