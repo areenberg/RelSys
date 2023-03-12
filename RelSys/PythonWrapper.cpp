@@ -35,10 +35,10 @@ struct {
 //results
 struct {
     bool evaluated=false;
-    vector<double> shortageProbability;
-    vector<double> availProbability;
-    vector<vector<double>> queueDenDist;
-    vector<vector<int>> queueFreqDist;
+    vector<double> shortageProbability,shortageProbabilityPref;
+    vector<double> availProbability,availProbabilityPref;
+    vector<vector<double>> queueDenDist,queueDenDistPref;
+    vector<vector<int>> queueFreqDist,queueFreqDistPref;
     vector<double> expectedOccupancy;
     vector<double> expOccFraction;
 } results;
@@ -269,36 +269,64 @@ py::list getPreferredQueue(){
     }
 }
 
-py::list getDensityDistribution(int queueIndex){
+py::list getDensityDistribution(int queueIndex, string type){
     if (results.evaluated){
-        return(py::cast(results.queueDenDist[queueIndex]));
+        if (type.compare("all")==0){
+            return(py::cast(results.queueDenDist[queueIndex]));
+        }else if (type.compare("preferred")==0){
+            return(py::cast(results.queueDenDistPref[queueIndex]));
+        }else{
+            py::print("Output type not recognized. Choose between 'all' and 'preferrred'. Aborting program.");
+            exit(1);    
+        }
     }else{
         py::print("The model has not been evaluated. Aborting program.");
         exit(1);
     }
 }
 
-py::list getFrequencyDistribution(int queueIndex){
+py::list getFrequencyDistribution(int queueIndex, string type){
     if (results.evaluated){
-        return(py::cast(results.queueFreqDist[queueIndex]));
+        if (type.compare("all")==0){
+            return(py::cast(results.queueFreqDist[queueIndex]));
+        }else if (type.compare("preferred")==0){
+            return(py::cast(results.queueFreqDistPref[queueIndex]));
+        }else{
+            py::print("Output type not recognized. Choose between 'all' and 'preferrred'. Aborting program.");
+            exit(1);    
+        }
     }else{
         py::print("The model has not been evaluated. Aborting program.");
         exit(1);
     }
 }
 
-double getShortageProbability(int queueIndex){
+double getShortageProbability(int queueIndex, string type){
     if (results.evaluated){
-        return(results.shortageProbability[queueIndex]);
+        if (type.compare("all")==0){
+            return(results.shortageProbability[queueIndex]);
+        }else if (type.compare("preferred")==0){
+            return(results.shortageProbabilityPref[queueIndex]);
+        }else{
+            py::print("Output type not recognized. Choose between 'all' and 'preferrred'. Aborting program.");
+            exit(1);    
+        }
     }else{
         py::print("The model has not been evaluated. Aborting program.");
         exit(1);
     }
 }
 
-double getAvailProbability(int queueIndex){
+double getAvailProbability(int queueIndex, string type){
     if (results.evaluated){
-        return(results.availProbability[queueIndex]);
+        if (type.compare("all")==0){
+            return(results.availProbability[queueIndex]);
+        }else if (type.compare("preferred")==0){
+            return(results.availProbabilityPref[queueIndex]);
+        }else{
+            py::print("Output type not recognized. Choose between 'all' and 'preferrred'. Aborting program.");
+            exit(1);    
+        }
     }else{
         py::print("The model has not been evaluated. Aborting program.");
         exit(1);
@@ -385,32 +413,42 @@ void runCalculations(){
 
     //queue density distribution    
     results.queueDenDist.resize(data.capacity.size());
+    results.queueDenDistPref.resize(data.capacity.size());
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.queueDenDist[settings.evaluatedQueue[i]].resize(mdl.queueDenDist[settings.evaluatedQueue[i]].size());
+        results.queueDenDistPref[settings.evaluatedQueue[i]].resize(mdl.queueDenDistPref[settings.evaluatedQueue[i]].size());
         for (int j=0; j<mdl.queueDenDist[settings.evaluatedQueue[i]].size(); j++){
             results.queueDenDist[settings.evaluatedQueue[i]][j] = mdl.queueDenDist[settings.evaluatedQueue[i]][j];
+            results.queueDenDistPref[settings.evaluatedQueue[i]][j] = mdl.queueDenDistPref[settings.evaluatedQueue[i]][j];
         }
     }
 
     //queue frequency distribution    
     results.queueFreqDist.resize(data.capacity.size());
+    results.queueFreqDistPref.resize(data.capacity.size());
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.queueFreqDist[settings.evaluatedQueue[i]].resize(mdl.queueFreqDist[settings.evaluatedQueue[i]].size());
+        results.queueFreqDistPref[settings.evaluatedQueue[i]].resize(mdl.queueFreqDistPref[settings.evaluatedQueue[i]].size());
         for (int j=0; j<mdl.queueFreqDist[settings.evaluatedQueue[i]].size(); j++){
             results.queueFreqDist[settings.evaluatedQueue[i]][j] = mdl.queueFreqDist[settings.evaluatedQueue[i]][j];
+            results.queueFreqDistPref[settings.evaluatedQueue[i]][j] = mdl.queueFreqDistPref[settings.evaluatedQueue[i]][j];
         }
     }
     
     //shortage probabilities
     results.shortageProbability.resize(data.capacity.size(),-1);
+    results.shortageProbabilityPref.resize(data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.shortageProbability[settings.evaluatedQueue[i]] = mdl.blockingProbability[settings.evaluatedQueue[i]];
+        results.shortageProbabilityPref[settings.evaluatedQueue[i]] = mdl.blockingProbabilityPref[settings.evaluatedQueue[i]];
     }
 
     //availability probabilities
     results.availProbability.resize(data.capacity.size(),-1);
+    results.availProbabilityPref.resize(data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.availProbability[settings.evaluatedQueue[i]] = 1.0-mdl.blockingProbability[settings.evaluatedQueue[i]];
+        results.availProbabilityPref[settings.evaluatedQueue[i]] = 1.0-mdl.blockingProbabilityPref[settings.evaluatedQueue[i]];
     }
 
     //expected occupancy
@@ -449,10 +487,10 @@ PYBIND11_MODULE(relsys, m) {
     m.def("run", &runCalculations,"Evaluate the model using the input parameters.");
     
     //return results
-    m.def("getDensity",&getDensityDistribution,"Return the density distribution of a queue.");
-    m.def("getFreq",&getFrequencyDistribution,"Return the frequency distribution of a queue.");
-    m.def("getShortageProb",&getShortageProbability,"Return the shortage probability of a queue.");
-    m.def("getAvailProb",&getAvailProbability,"Return the probability that at least one server is available.");
+    m.def("getDensity",&getDensityDistribution,"Return the density distribution of a queue.",py::arg("queueIndex"),py::arg("type")="all");
+    m.def("getFreq",&getFrequencyDistribution,"Return the frequency distribution of a queue.",py::arg("queueIndex"),py::arg("type")="all");
+    m.def("getShortageProb",&getShortageProbability,"Return the shortage probability of a queue.",py::arg("queueIndex"),py::arg("type")="all");
+    m.def("getAvailProb",&getAvailProbability,"Return the probability that at least one server is available.",py::arg("queueIndex"),py::arg("type")="all");
     m.def("getExpOccupany",&getExpectedOccupancy,"Return the expected number of occupied servers.");
     m.def("getExpOccFraction",&getExpOccFraction,"Return the expected fraction of occupied servers.");
 

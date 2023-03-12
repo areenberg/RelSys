@@ -140,10 +140,10 @@ for queueIdx in range(4):
 
 ### Model settings
 
-* `setType`. Set the method to use in the evaluation of the model (auto, simulation, approximation). 
+* `setType`. Set the method to use in the evaluation of the model ("auto", "simulation", "approximation"). 
 * `queuesEval`. Set the indices of queues to evaluate.
 * `equalize`. Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).
-* `setVerbose`. Control verbose (True = On, False = Off).
+* `setVerbose`. Control verbose (True: On, False: Off).
 * `setSeed`. Set the seed.
 * `setBurnIn`. Set the burn-in time of the simulation.
 * `setSimTime`. Set the simulation time.
@@ -156,10 +156,10 @@ for queueIdx in range(4):
 
 ### Get results
 
-* `getDensity`. Return the density distribution of a queue.
-* `getFreq`. Return the frequency distribution of a queue.
-* `getShortageProb`. Return the shortage probability of a queue.
-* `getAvailProb`. Return the probability that at least one server is available.
+* `getDensity`. Return the density distribution of a queue. The second argument specifies the arrival type: "all" (default) and "preferred".
+* `getFreq`. Return the frequency distribution of a queue. The second argument specifies the arrival type: "all" (default) and "preferred".
+* `getShortageProb`. Return the shortage probability of a queue. The second argument specifies the arrival type: "all" (default) and "preferred".
+* `getAvailProb`. Return the probability that at least one server is available. The second argument specifies the arrival type: "all" (default) and "preferred".
 * `getExpOccupany`. Return the expected number of occupied servers.
 * `getExpOccFraction`. Return the expected fraction of occupied servers.
 
