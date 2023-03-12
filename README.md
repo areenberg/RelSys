@@ -142,7 +142,7 @@ for queueIdx in range(4):
 
 * `setType`. Set the method to use in the evaluation of the model ("auto", "simulation", "approximation"). 
 * `queuesEval`. Set the indices of queues to evaluate.
-* `equalize`. Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).
+* `equalize`. Specify if service times should be equalized and loads correspondingly adjusted (True: On, False: Off).
 * `setVerbose`. Control verbose (True: On, False: Off).
 * `setSeed`. Set the seed.
 * `setBurnIn`. Set the burn-in time of the simulation.
