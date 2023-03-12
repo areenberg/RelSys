@@ -47,7 +47,7 @@ public:
 
     vector<vector<int>> qColumnIndices;
     vector<vector<double>> qValues;
-    vector<double> margDist; //marginal probability distribution
+    vector<double> margDist, margDistPref; //marginal probability distribution
 
     //methods
     void buildChain();
@@ -62,9 +62,9 @@ public:
     void allOutgoing(); //generate all jumpToIdx relative to the current state      
 //    void allIngoing(); //generate all jumpFromIdx relative to the current state (currently buggy)
     
-    void marginalDist(vector<double> &pi); //returns the marginal distribution
+    void marginalDist(vector<double> &pi); //calculates the marginal distributions for preferred and all arrivals
     double expectedOccupancy(); //returns the expected occupancy of capacity
-    double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
+//    double rejectionProbability(); //returns the rejection probability using the marginal occupancy distribution
 
     //constructor and destructor
     HeuristicQueue() {}; //dummy constructor (not included in cpp-file)

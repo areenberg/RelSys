@@ -51,8 +51,8 @@ public:
     
     //VARIABLES
     vector<double> pi; //state distribution
-    vector<double> marginalDist; //marginal distribution of the main queue
-    double blockingProbability, expectedOccupancy, expOccFraction;
+    vector<double> marginalDist, marginalDistPref; //marginal distribution of the main queue (all arrivals, and preferred)
+    double blockingProbability, blockingProbabilityPref, expectedOccupancy, expOccFraction;
     double vmemory; //virtual memory consumption during runtime in kilobytes
     int stateSpaceSize;
     
@@ -68,7 +68,7 @@ private:
     void setDefaultHyperQueueStates();
     void initializeStateDistribution(HeuristicQueue * hqueue, bool erlangInit=false);
     void setUpperLimits(vector<int> &upperLimits, int &main_widx);
-    void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
+//    void setLowerLimits(vector<int> &lowerLimits, int &main_widx);
     
     bool isSingleWard(int widx);
     bool noRelocations(int widx);

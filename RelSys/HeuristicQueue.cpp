@@ -351,22 +351,70 @@ void HeuristicQueue::marginalDist(vector<double> &pi){
     //overall state probability distribution.
     
     margDist.resize(margDist.size(),0);
+    margDistPref.resize(margDistPref.size(),0);
+    vector<vector<double>> margDistReloc(Nh);
+    vector<double> hyperBlockingProb(Nh,0);
+    int hq;
+    for (hq=0; hq<Nh; hq++){
+        margDistReloc[hq].resize(margDist.size(),0);
+    } 
     
-    int l = 0,u = 0;
-    for (int i=0; i<lowerLim.size(); i++){
-        u += upperLim[i]; l += lowerLim[i];
-    }
+//    int l = 0,u = 0;
+//    for (int i=0; i<lowerLim.size(); i++){
+//        u += upperLim[i]; 
+//        l += lowerLim[i];
+//    }
     
     int occupancy;
     initializeState();
     for (int i=0; i<Ns; i++){
+        
+        //evaluate occupancy in the queue in focus
         occupancy = 0;
         for (int j=0; j<lowerLim.size(); j++){
             occupancy += state[j];
         }
-        margDist[occupancy-l] += pi[i];
+        
+        //evaluate marg. dist. for preferred arrivals
+//        margDistPref[occupancy-l] += pi[i];
+        margDistPref[occupancy] += pi[i];
+        
+        //evaluate marg. dist. for hyper queues
+        hq=Nh-1;
+        for (int j=(state.size()-1); j>=lowerLim.size(); j--){
+            if(state[j]<hyperBlockedStates(hq)){ //hyper queue is blocked
+                margDistReloc[hq][occupancy] += pi[i];
+                hyperBlockingProb[hq] += pi[i];
+            }
+        }
+        
         nextCurrentState();
     }
+    for (hq=0; hq<Nh; hq++){
+        for (int i=0; i<margDistReloc[hq].size(); i++){
+            margDistReloc[hq][i]/=hyperBlockingProb[hq];
+            
+        }
+    }
+    
+    //evaluate marg. dist. for all arrivals (mix of preferred and relocated)
+    
+    //total arrival rate to queue in focus
+    double totArr=arrivalRate;
+    for (hq=0; hq<Nh; hq++){
+        totArr += (getHyperArrivalRate(hq)*hyperBlockingProb[hq]);
+    }
+    
+    //weighted average of the 1+Nh marginal distributions
+    for (int i=0; i<margDist.size(); i++){
+        margDist[i]=(arrivalRate/totArr)*margDistPref[i];
+        for (hq=0; hq<Nh; hq++){
+            if (hyperBlockingProb[hq]>0.0){
+                margDist[i]+=(((getHyperArrivalRate(hq)*hyperBlockingProb[hq])/totArr)*margDistReloc[hq][i]);
+            }
+        }
+    }
+    
     
 }
 
@@ -379,16 +427,16 @@ double HeuristicQueue::expectedOccupancy(){
     
     double y = 0; int k = 0;
     for (int i=l; i<=min(u,cap); i++){
-        y += i*margDist[k];
+        y += i*margDistPref[k];
         k++;
     }
     
     return(y);
 }
 
-double HeuristicQueue::rejectionProbability(){
-    return(margDist[margDist.size()-1]);
-}
+//double HeuristicQueue::rejectionProbability(){
+//    return(margDist[margDist.size()-1]);
+//}
 
 void HeuristicQueue::printStateSpace(){
    initializeState();
@@ -472,6 +520,7 @@ void HeuristicQueue::calculateSize(){
     }
     int dsize=min(u,cap)-l+1;
     margDist.resize(dsize,0);
+    margDistPref.resize(dsize,0);
     
     
     //hyper queue indices

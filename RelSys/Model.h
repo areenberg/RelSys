@@ -56,10 +56,11 @@ public:
     void setHyperStates(int openStates, int blockedStates);
     
     //VARIABLES
-    vector<vector<double>> queueDenDist;
-    vector<vector<int>> queueFreqDist;
+    vector<vector<double>> queueDenDist,queueDenDistPref;
+    vector<vector<int>> queueFreqDist,queueFreqDistPref;
     vector<double> blockingProbability,
-    expectedOccupancy,expOccFraction;
+    blockingProbabilityPref,expectedOccupancy,
+    expOccFraction;
     
     
     Model(vector<double> arrRates, vector<double> serTimes,

@@ -203,11 +203,15 @@ bool RelocEvaluation::noRelocations(int widx){
 
 void RelocEvaluation::evalSingleWard(int widx){
     marginalDist.resize((getWardCapacity(widx)+1),0);
+    marginalDistPref.resize((getWardCapacity(widx)+1),0);
     if (getWardArrivalRate(widx)<=1e-16){
         marginalDist[0] = 1.0;
+        marginalDistPref[0] = 1.0;
+        blockingProbability = 0.0;
+        blockingProbabilityPref = 0.0;
+        
         expectedOccupancy = 0.0;
         expOccFraction = 0.0;
-        blockingProbability = 0.0;
     }else{
         //use the erlang loss model
         double lambda = getWardArrivalRate(widx);
@@ -215,23 +219,18 @@ void RelocEvaluation::evalSingleWard(int widx){
         int servers = getWardCapacity(widx);
         for (int k=0; k<marginalDist.size(); k++){
             marginalDist[k] = erlangLoss(k,lambda,mu,servers);
+            marginalDistPref[k] = marginalDist[k];
         }
         
         expectedOccupancy = 0.0;
-        for (int k=0; k<marginalDist.size(); k++){
-            expectedOccupancy += marginalDist[k]*k;
+        for (int k=0; k<marginalDistPref.size(); k++){
+            expectedOccupancy += marginalDistPref[k]*k;
         }
         expOccFraction = expectedOccupancy/(double)servers;
         blockingProbability = marginalDist[marginalDist.size()-1];
+        blockingProbabilityPref = marginalDistPref[marginalDistPref.size()-1];
     }
 }
-
-//int RelocEvaluation::calculateStateSpaceSize(int main_widx){
-//    
-//    
-//    
-//}
-
 
 void RelocEvaluation::validateModel(int main_widx){
     
@@ -254,7 +253,7 @@ void RelocEvaluation::validateModel(int main_widx){
         //automatically adjust truncation
         //cout << "Setting limits... ";
         setUpperLimits(upperLimits,mfocus);
-        setLowerLimits(lowerLimits,mfocus);
+//        setLowerLimits(lowerLimits,mfocus);
         //cout << "done." << endl;
         
         //hyper queue indices
@@ -323,12 +322,14 @@ void RelocEvaluation::evaluateModel(){
         vmemory = solver.vmemory; //estimate of maximum memory usage
             
         //store the marginal distribution and some other metrics
-        hqueue->marginalDist(pi);
+        hqueue->marginalDist(pi); //calculate both marginal dist. types
+        marginalDistPref = hqueue->margDistPref;
         marginalDist = hqueue->margDist;
             
         expectedOccupancy = hqueue->expectedOccupancy();
         expOccFraction = expectedOccupancy/(double)getWardCapacity(mfocus);
         blockingProbability = marginalDist[marginalDist.size()-1];
+        blockingProbabilityPref = marginalDistPref[marginalDistPref.size()-1];
         
         delete hqueue; //free memory related to model
         
@@ -389,16 +390,16 @@ void RelocEvaluation::setUpperLimits(vector<int> &upperLimits, int &main_widx){
     
 }
 
-void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
-    //lower truncation limits are not adjusted (for now).
-    
-    //cout << "Lower truncation cap. limits:" << endl;
-    for (int pidx=0; pidx<nWards; pidx++){
-        //cout << lowerLimits[pidx] << " " << flush;
-    }
-    //cout << endl;
-    
-}
+//void RelocEvaluation::setLowerLimits(vector<int> &lowerLimits, int &main_widx){
+//    //lower truncation limits are not adjusted (for now).
+//    
+//    //cout << "Lower truncation cap. limits:" << endl;
+//    for (int pidx=0; pidx<nWards; pidx++){
+//        //cout << lowerLimits[pidx] << " " << flush;
+//    }
+//    //cout << endl;
+//    
+//}
 
 double RelocEvaluation::sampleMean(vector<int> &freqDist){
     

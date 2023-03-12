@@ -152,11 +152,16 @@ void Model::prepareOutput(){
     
     queueDenDist.resize(nQueues);
     queueFreqDist.resize(nQueues);
+    queueDenDistPref.resize(nQueues);
+    queueFreqDistPref.resize(nQueues);
     for (int i=0; i<nQueues; i++){
         queueDenDist[i].resize((capacity[i]+1),-1);
         queueFreqDist[i].resize((capacity[i]+1),-1);
+        queueDenDistPref[i].resize((capacity[i]+1),-1);
+        queueFreqDistPref[i].resize((capacity[i]+1),-1);
     }
     blockingProbability.resize(nQueues,-1);
+    blockingProbabilityPref.resize(nQueues,-1);
     expectedOccupancy.resize(nQueues,-1);
     expOccFraction.resize(nQueues,-1);
     
@@ -224,8 +229,10 @@ void Model::runHeuristic(int main_widx){
     //get the result
     for (int i=0; i<mdlHeu->marginalDist.size(); i++){
         queueDenDist[main_widx][i] = mdlHeu->marginalDist[i];
+        queueDenDistPref[main_widx][i] = mdlHeu->marginalDistPref[i];
     }
     blockingProbability[main_widx] = mdlHeu->blockingProbability;
+    blockingProbabilityPref[main_widx] = mdlHeu->blockingProbabilityPref;
     expectedOccupancy[main_widx] = mdlHeu->expectedOccupancy;
     expOccFraction[main_widx] = mdlHeu->expOccFraction;
     
@@ -253,12 +260,15 @@ void Model::runSimulation(){
         
         for (int i=0; i<mdlSim->wardFreqDist[widx].size(); i++){
             queueFreqDist[widx][i] = mdlSim->wardFreqDist[widx][i];
+            queueFreqDistPref[widx][i] = mdlSim->wardFreqDistPref[widx][i];
         }
         for (int i=0; i<mdlSim->wardDenDist[widx].size(); i++){
             queueDenDist[widx][i] = mdlSim->wardDenDist[widx][i];
+            queueDenDistPref[widx][i] = mdlSim->wardDenDistPref[widx][i];
         }
         
         blockingProbability[widx] = mdlSim->blockingProbability[widx];
+        blockingProbabilityPref[widx] = mdlSim->blockingProbabilityPref[widx];
         expectedOccupancy[widx] = mdlSim->expectedOccupancy[widx];
         expOccFraction[widx] = mdlSim->expOccFraction[widx];
     }
