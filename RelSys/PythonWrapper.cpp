@@ -476,7 +476,7 @@ PYBIND11_MODULE(relsys, m) {
     m.def("setType",&setType,"Set the method to use in the evaluation of the model (auto, simulation, approximation)."); 
     m.def("queuesEval",&queuesToEvaluate,"Set the indices of queues to evaluate.");
     m.def("equalize",&equalizeService,"Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).");
-    m.def("setVerbose",&setVerbose,"Control verbose (True = On, False = Off)");
+    m.def("setVerbose",&setVerbose,"Control verbose (True=On, False=Off)");
     m.def("setSeed",&setSeed,"Set the seed.");
     m.def("setBurnIn",&setBurnIn,"Set the burn-in time of the simulation.");
     m.def("setSimTime",&setMinimumSimulationTime,"Set the simulation time.");
@@ -487,10 +487,10 @@ PYBIND11_MODULE(relsys, m) {
     m.def("run", &runCalculations,"Evaluate the model using the input parameters.");
     
     //return results
-    m.def("getDensity",&getDensityDistribution,"Return the density distribution of a queue.",py::arg("queueIndex"),py::arg("type")="all");
-    m.def("getFreq",&getFrequencyDistribution,"Return the frequency distribution of a queue.",py::arg("queueIndex"),py::arg("type")="all");
-    m.def("getShortageProb",&getShortageProbability,"Return the shortage probability of a queue.",py::arg("queueIndex"),py::arg("type")="all");
-    m.def("getAvailProb",&getAvailProbability,"Return the probability that at least one server is available.",py::arg("queueIndex"),py::arg("type")="all");
+    m.def("getDensity",&getDensityDistribution,"Return the density distribution of a queue.",py::arg("queueIndex"),py::arg("type")="preferred");
+    m.def("getFreq",&getFrequencyDistribution,"Return the frequency distribution of a queue.",py::arg("queueIndex"),py::arg("type")="preferred");
+    m.def("getShortageProb",&getShortageProbability,"Return the shortage probability of a queue.",py::arg("queueIndex"),py::arg("type")="preferred");
+    m.def("getAvailProb",&getAvailProbability,"Return the probability that at least one server is available.",py::arg("queueIndex"),py::arg("type")="preferred");
     m.def("getExpOccupany",&getExpectedOccupancy,"Return the expected number of occupied servers.");
     m.def("getExpOccFraction",&getExpOccFraction,"Return the expected fraction of occupied servers.");
 
