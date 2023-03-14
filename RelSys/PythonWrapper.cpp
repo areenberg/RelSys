@@ -21,9 +21,9 @@ struct {
 struct {
     bool verbose=false;
     bool evalAll=true;
-    bool equalizeService=true;
+    bool equalizeService=false;
     vector<int> evaluatedQueue;
-    string modelType="auto";
+    string modelType="simulation";
 
     int seed=-1;
     double burnIn=-1;
