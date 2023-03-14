@@ -169,7 +169,7 @@ for queueIdx in range(4):
 * `getServiceTimes`. Return the imported service times.
 * `getCapacity`. Return the imported capacities.
 * `getReloc`. Return the imported relocation probabilities.
-`getPreferredQueue`. Return the imported preferred queues.
+* `getPreferredQueue`. Return the imported preferred queues.
 
 ## C++
 
