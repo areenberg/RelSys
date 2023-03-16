@@ -42,6 +42,16 @@ public:
     //would have relocationProbabilities = {0.5,0.0,0.5};
     vector<double> relocationProbabilities; 
 
+    //time-dependent arrival intensity specified as a fraction of the arrival
+    //rate stated above
+    vector<double> timeDep;
+    
+    void addTimeDependency(vector<double> tDep);
+    
+    //use this method to set the service rate to a value of 1
+    //and scale the arrival rate keeping the load on the system
+    void equalServiceRate();
+    
     //calculate local state space size
     void calculateWardStateSpace(int wardsTotal);
     

@@ -40,7 +40,8 @@ serTimeExponential(true),
 timeSamplingEnabled(true),
 checkAccuracy(false),
 checkBurnIn(false),
-burnInInit(true),        
+burnInInit(true),
+timeDepEnabled(false),        
 stdMult(1.0),
 accTol(5e-3)        
 {
@@ -74,6 +75,12 @@ void RelocSimulation::initializeSystem(){
     //evaluate the (per bed) ward loads
     evalWardLoads();
     
+}
+
+void RelocSimulation::enableTimeDependency(QueuePerformance * qP){
+    qPer=qP; //the queue occupancy distributions
+    timeDepEnabled = true; //enable time-dependency
+    cycleLen = wards_pointer->timeDep.size(); //get length of one cycle
 }
 
 void RelocSimulation::disableTimeSampling(){
@@ -128,7 +135,7 @@ void RelocSimulation::evalWardLoads(){
             }
         }
         wardLoadUpperBounds[widx]=(a/(getWardServiceRate(widx)*getWardCapacity(widx)));
-        cout << "Ward " << (widx+1) << " load: [" << wardLoadLowerBounds[widx] << ";" << wardLoadUpperBounds[widx] << "]" << endl;
+        //cout << "Ward " << (widx+1) << " load: [" << wardLoadLowerBounds[widx] << ";" << wardLoadUpperBounds[widx] << "]" << endl;
     }
     
 }
@@ -153,8 +160,34 @@ void RelocSimulation::initializeArrivalTimes(double currentClock){
 void RelocSimulation::updateArrivalTime(int widx, int pidx){
     //derives the next arrival time for a single ward-patient pair
     
+    if (timeDepEnabled){
+        updateArrivalTime_TimeDep(widx,pidx);
+    }else{
+        updateArrivalTime_Stationary(widx,pidx);
+    }
+    
+}
+
+void RelocSimulation::updateArrivalTime_TimeDep(int widx, int pidx){
+    
+    double delta=0.0;
+    do{
+        delta += randomExponential(arrivalRateMatrix[widx][pidx]);
+    }while(randomUniform()>getWardTimeDep(widx,timeIndex(clock+delta)));
+    
+    nextArrivalTime[widx][pidx] += delta;
+}
+
+void RelocSimulation::updateArrivalTime_Stationary(int widx, int pidx){
+    
     nextArrivalTime[widx][pidx] += randomExponential(arrivalRateMatrix[widx][pidx]);
     
+}
+
+int RelocSimulation::timeIndex(double cl){
+    //return the time index corresponding to the
+    //clock in cl
+    return(floor(cl-floor(cl/cycleLen)*cycleLen));
 }
 
 void RelocSimulation::generateArrival(){
@@ -263,7 +296,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
     maxWrdSam.resize(nWards);
     if (maxWardSamples.size()==1 && maxWardSamples[0]==-1){
         for (int i=0; i<nWards; i++){
-            maxWrdSam[i] = numeric_limits<int>::max();
+            maxWrdSam[i] = numeric_limits<int>::max()-1;
         }
     }else{
         for (int i=0; i<nWards; i++){
@@ -330,7 +363,7 @@ void RelocSimulation::simulate(double bIn, double minTime,
         //re-sample time tracking
         subsetTimeSamples(minSamples);
         //print open/blocked time sample sizes
-        printTimeSamples();
+        //printTimeSamples();
     }
     
     auto stop = chrono::system_clock::now();
@@ -381,7 +414,7 @@ void RelocSimulation::checkTerminate(){
         for (int widx=0; widx<nWards; widx++){
             if (timeSamplingEnabled && openTimes[widx].empty() &&
                     wardLoadLowerBounds[widx]<0.1){
-                cout << "Ward " << (widx+1) << " load caused simulation to terminate early." << flush;
+                cout << "Queue " << (widx+1) << " load caused simulation to terminate early." << flush;
                 timeOut=true;
             }else if(checkAccuracy && interElapsed>200 && nWardFreq[widx]<100){
                 skipAccuracy.push_back(widx);
@@ -551,6 +584,9 @@ void RelocSimulation::initFreqDenDist(){
     wardFreqDist.resize(nWards);//marginal frequency distribution
     wardDenDist.resize(nWards);//marginal density distribution
     nWardFreq.resize(nWards); //samples in marginal freq. dist.
+    wardFreqDistPref.resize(nWards);//marginal frequency distribution
+    wardDenDistPref.resize(nWards);//marginal density distribution
+    nWardFreqPref.resize(nWards); //samples in marginal freq. dist.
     freqDist.resize(nWards); //frequency distribution
     
     for (int widx=0; widx<nWards; widx++){
@@ -558,6 +594,9 @@ void RelocSimulation::initFreqDenDist(){
         wardFreqDist[widx].resize(c,0);
         wardDenDist[widx].resize(c,0);
         nWardFreq[widx] = 0;
+        wardFreqDistPref[widx].resize(c,0);
+        wardDenDistPref[widx].resize(c,0);
+        nWardFreqPref[widx] = 0;
         freqDist[widx].resize(nWards);
         for (int pidx=0; pidx<nWards; pidx++){
             freqDist[widx][pidx].resize(c,0);
@@ -569,13 +608,24 @@ void RelocSimulation::initFreqDenDist(){
 void RelocSimulation::occupancyDistTracking(int &targetWard, int &patientType){
     
     if (clock>burnIn){
-        if ( (targetWard!=patientType && getWardCapacity(patientType)==capUse[patientType]) ||
+        
+        //distribution observed only for preferred arrivals
+        //note: preferred arrivals observe all wards at the same time
+        if (targetWard==patientType){
+            for (int widx=0; widx<nWards; widx++){
+                if (nWardFreqPref[widx]<maxWrdSam[widx]){
+                    wardFreqDistPref[widx][capUse[widx]]++;
+                    nWardFreqPref[widx]++;
+                }
+            }
+        }
+        
+        //distribution observed from all arrivals to the target ward
+        if ( (targetWard!=patientType && getWardCapacity(patientType)==capUse[patientType]) || 
                 targetWard==patientType ){
             //record distribution over all patient types in the ward
-//            int wardSum=0;
             for (int pidx=0; pidx<nWards; pidx++){
                 freqDist[targetWard][pidx][wardOccupancy[targetWard][pidx]]++;
-//                wardSum += wardOccupancy[targetWard][pidx];
             }
             
             if (nWardFreq[targetWard]<maxWrdSam[targetWard]){ //check sampling does not exceed maximum sampling limit
@@ -645,24 +695,40 @@ void RelocSimulation::performanceMeasures(){
     
     //derive estimate of density and expected occupancy
     wardDenDist.resize(nWards);
+    wardDenDistPref.resize(nWards);
     expectedOccupancy.resize(nWards,0);
     for (int widx=0; widx<nWards; widx++){
         wardDenDist[widx].resize(wardFreqDist[widx].size(),0);
+        wardDenDistPref[widx].resize(wardFreqDistPref[widx].size(),0);
+
+        //density distribution for preferred arrivals
+        if (nWardFreqPref[widx]==0){
+           wardDenDistPref[widx][0]=1.0;
+           expectedOccupancy[widx]=0.0;
+        }else{
+            for (int i=0; i<wardFreqDistPref[widx].size(); i++){
+                wardDenDistPref[widx][i] = (double)wardFreqDistPref[widx][i]/(double)nWardFreqPref[widx];
+                expectedOccupancy[widx] += i*wardDenDistPref[widx][i];
+            }
+        }
+
+        //density distribution for all arrivals to the ward
         if (nWardFreq[widx]==0){
            wardDenDist[widx][0]=1.0;
-           expectedOccupancy[widx]=0.0;
         }else{
             for (int i=0; i<wardFreqDist[widx].size(); i++){
                 wardDenDist[widx][i] = (double)wardFreqDist[widx][i]/(double)nWardFreq[widx];
-                expectedOccupancy[widx] += i*wardDenDist[widx][i];
             }
         }
+        
     }
     //blocking probability and fraction of occupied servers
     blockingProbability.resize(nWards,0);
+    blockingProbabilityPref.resize(nWards,0);
     expOccFraction.resize(nWards,0);
     for (int widx=0; widx<nWards; widx++){
         blockingProbability[widx] = wardDenDist[widx][wardDenDist[widx].size()-1];
+        blockingProbabilityPref[widx] = wardDenDistPref[widx][wardDenDistPref[widx].size()-1];
         expOccFraction[widx] = expectedOccupancy[widx]/getWardCapacity(widx);
     }
     
@@ -713,6 +779,16 @@ bool RelocSimulation::attemptDischarge(){
     capUse[service_array[serIdx].wardTarget]--;
     wardOccupancy[service_array[serIdx].wardTarget][service_array[serIdx].patientType]--;
     
+    //track occupancy if time dep. enabled
+    if (timeDepEnabled){
+        if (clock>burnIn){
+            qPer->discharge(clock,service_array[serIdx].wardTarget,true);
+        }else{
+            qPer->discharge(clock,service_array[serIdx].wardTarget,false);
+        }
+            
+    }
+    
     return(true);
 }
 
@@ -747,6 +823,17 @@ void RelocSimulation::attemptAdmission(bool &succeeded){
                 
         //adjust number of patients currently in service
         inService++;
+        
+        //track occupancy if time dep. enabled
+        if (timeDepEnabled){
+            if (clock>burnIn){
+                qPer->arrival(clock,service_array[insIdx].wardTarget,true);
+            }else{
+                qPer->arrival(clock,service_array[insIdx].wardTarget,false);
+            }
+            
+        }
+        
         succeeded = true;
     }else{
         succeeded = false;
@@ -1025,4 +1112,9 @@ int RelocSimulation::getWardStateSpaceSize(int ward){
 int RelocSimulation::getWardCapacity(int ward){
     
     return((wards_pointer + ward)->capacity);
+}
+
+double RelocSimulation::getWardTimeDep(int ward, int timeIndex){
+    
+    return((wards_pointer + ward)->timeDep[timeIndex]);
 }

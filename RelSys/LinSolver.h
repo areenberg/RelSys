@@ -37,10 +37,10 @@ using namespace std;
 class LinSolver {
 public:
     
-    void sor(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps); //derive the state distribution using SOR. requires the transition matrix is stored.
+    void sor(vector<double> &pi, HeuristicQueue * q, double relaxation, double eps); //derive the state distribution using SOR. requires the transition matrix is stored.
     //void sorOnDemand(vector<double> &pi, HeuristicQueue &q, double relaxation, double eps); //employ SOR using on-demand calculations of the state transitions
-    void powerMethod(vector<double> &pi, HeuristicQueue &q, double eps); //employs the power method. requires the transition matrix is stored. 
-    void monteCarlo(HeuristicQueue &q, double burnIn, int collectSamples); //the marginal distribution is found using a simulation of the process
+    void powerMethod(vector<double> &pi, HeuristicQueue * q, double eps); //employs the power method. requires the transition matrix is stored. 
+//    void monteCarlo(HeuristicQueue &q, double burnIn, int collectSamples); //the marginal distribution is found using a simulation of the process
     
     double vmemory;
     

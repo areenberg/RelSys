@@ -25,6 +25,7 @@
 
 #include "QueueData.h"
 #include "Customer.h"
+#include "QueuePerformance.h"
 
 #include <iostream>
 #include <vector>
@@ -45,7 +46,8 @@ public:
     void disableTimeSampling(); //disables sampling of time-window sampling
     void wilsonScoreInterval(double &wilsonSpan, int &j, int &n); //calculates Wilson-score confidence interval span
     bool wilcoxonRankSum(vector<double> x, vector<double> y); //conducts the Wilcoxon rank-sum test
-    
+    void enableTimeDependency(QueuePerformance * qP); //account for time-dependent arrival rates
+            
     void setAccuracy(double a);
     
     
@@ -54,12 +56,16 @@ public:
     vector<vector<double>> blockedTimes; //sampled blocking times for each ward
     
     //ward-patient occupancy
-    vector<vector<int>> wardFreqDist; //marginal frequency distributions
-    vector<vector<double>> wardDenDist; //marginal density distributions
-    vector<double> blockingProbability; //blocking probability
+    vector<vector<int>> wardFreqDist; //marginal frequency distributions (all arrivals)
+    vector<vector<int>> wardFreqDistPref; //marginal frequency distributions for preferred arrivals
+    vector<vector<double>> wardDenDist; //marginal density distributions (all arrivals)
+    vector<vector<double>> wardDenDistPref; //marginal density distributions for preferred arrivals
+    vector<double> blockingProbability; //blocking probability (all arrivals)
+    vector<double> blockingProbabilityPref; //blocking probability for preferred arrivals
     vector<double> expectedOccupancy; //expected server occupancy
     vector<double> expOccFraction; //expected fraction of servers occupied
-    vector<int> nWardFreq; //number of samples in the marginal distributions
+    vector<int> nWardFreq; //number of samples from the marginal distributions (all arrivals)
+    vector<int> nWardFreqPref; //number of samples from the marginal distribution for preferred arrivals 
     vector<vector<vector<int>>> freqDist; //frequency distribution
     vector<double> wardLoadUpperBounds;
     vector<double> wardLoadLowerBounds;
@@ -68,6 +74,7 @@ public:
     int nWards; //number of wards in the system
     
     long int runtime;
+    bool timeDepEnabled;
     
     //CONSTRUCTOR
     //dummy constructor (not included in cpp-file) 
@@ -91,6 +98,7 @@ private:
     double randomLogNormal(double mean, double std);
     vector<int> randomIndices(int &from, int &to, int &len);
     
+    int timeIndex(double cl);
     int wardSamplesToGo();
     int minTimeSamples();
     void nextServiceIdx();
@@ -135,7 +143,7 @@ private:
     double accTol; //density distribution accuracy
     double clockDis; //clock at most recent discharge;
     double wilsonSpan, wilsonMax;
-    int bInSize, disIdx;
+    int bInSize, disIdx, cycleLen;
     
     int min_widx, min_pidx;
     double simTime, burnIn, clock; //sim. time, burn-in time and the simulation clock
@@ -153,7 +161,7 @@ private:
     vector<Customer> service_array;
     //vector<Customer> nextArrival;
     Customer * nextArrival;
-    
+    QueuePerformance * qPer;
     
     //WARD INFORMATION METHODS AND VARIABLES
     QueueData * wards_pointer;
@@ -165,8 +173,11 @@ private:
     int getWardCapacity(int ward);
     vector<double> getWardRelocationProbabilities(int ward);
     int getWardStateSpaceSize(int ward);
+    double getWardTimeDep(int ward, int timeIndex);
     void calculateWardStateSpaceSize(int ward, int numberOfWards);
-
+    void updateArrivalTime_Stationary(int widx, int pidx);
+    void updateArrivalTime_TimeDep(int widx, int pidx);
+    
     //LOG-NORMAL SIMULATION METHODS
     double logNormalCdfInv(double cdf,double mu,double sigma);
     double normalCdfInv(double cdf, double mu, double sigma);
