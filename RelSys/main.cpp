@@ -226,6 +226,8 @@ int main(int argc, char** argv) {
         double minTime = model.minTime; //minimum simulation time
         vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
         sim_mdl.disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
+        sim_mdl.setAccPref("all");
+        sim_mdl.setAccuracy(5e-3);
 
         cout << "#seed: " << model.seed << endl;
         cout << "#burn-in: " << model.burnInTime << endl;

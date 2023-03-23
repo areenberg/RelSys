@@ -43,7 +43,8 @@ checkBurnIn(false),
 burnInInit(true),
 timeDepEnabled(false),        
 stdMult(1.0),
-accTol(5e-3)        
+accTol(5e-3),
+accPref(true)        
 {
     initializeSystem();
 }
@@ -412,11 +413,11 @@ void RelocSimulation::checkTerminate(){
     if (interElapsed>1 && (timeSamplingEnabled||checkAccuracy)){ //check after 1 second
         
         for (int widx=0; widx<nWards; widx++){
-            if (timeSamplingEnabled && openTimes[widx].empty() &&
+            if (timeSamplingEnabled && openTimes[widx].empty() && //terminate early if no hope to obtain a sufficient number of open/shortage time-samples
                     wardLoadLowerBounds[widx]<0.1){
                 cout << "Queue " << (widx+1) << " load caused simulation to terminate early." << flush;
                 timeOut=true;
-            }else if(checkAccuracy && interElapsed>200 && nWardFreq[widx]<100){
+            }else if(checkAccuracy && interElapsed>200 && ((!accPref && nWardFreq[widx]<100) || (accPref && nWardFreqPref[widx]<100))){
                 skipAccuracy.push_back(widx);
             }
         }
@@ -620,7 +621,7 @@ void RelocSimulation::occupancyDistTracking(int &targetWard, int &patientType){
             }
         }
         
-        //distribution observed from all arrivals to the target ward
+        //distribution observed from all arrivals to the target ward (both preferred and alternative)
         if ( (targetWard!=patientType && getWardCapacity(patientType)==capUse[patientType]) || 
                 targetWard==patientType ){
             //record distribution over all patient types in the ward
@@ -651,13 +652,18 @@ double RelocSimulation::accuracy(){
             
             if (!skipWardAccuracy(widx)){
             
-                if (nWardFreq[widx]==0){
+                if ((!accPref && nWardFreq[widx]==0) || (accPref && nWardFreqPref[widx]==0)){
                     return(numeric_limits<double>::max());
                 }
                 
                 for (int j=0; j<wardFreqDist[widx].size(); j++){
                 
-                    wardDenDist[widx][j] = (double)wardFreqDist[widx][j]/(double)nWardFreq[widx];
+                    if (!accPref){
+                        wardDenDist[widx][j] = (double)wardFreqDist[widx][j]/(double)nWardFreq[widx];
+                    }else{
+                        wardDenDistPref[widx][j] = (double)wardFreqDistPref[widx][j]/(double)nWardFreqPref[widx];
+                    }
+
                     wilsonScoreInterval(wilsonSpan,j,widx);
                     if (wilsonSpan>wilsonMax){
                         wilsonMax=wilsonSpan;
@@ -669,6 +675,12 @@ double RelocSimulation::accuracy(){
         }
         return(wilsonMax);
     }
+}
+
+void RelocSimulation::setAccPref(bool ap){
+    //set the sampling method in auto simulation time
+    //true: all preferred arrivals, false: all arrivals to each ward
+    accPref = ap;
 }
 
 bool RelocSimulation::skipWardAccuracy(int &widx){
@@ -1028,9 +1040,14 @@ void RelocSimulation::wilsonScoreInterval(double &wilsonSpan, int &j, int &widx)
     //calculates binomial proportion confidence intervals
     //using the Wilson score interval method.
     
-    wilsonSpan = 2*(( 1.959964/( 1.0+pow(1.959964,2.0) /(double)nWardFreq[widx]))*
-    sqrt((wardDenDist[widx][j]*(1-wardDenDist[widx][j]))/nWardFreq[widx] + (pow(1.959964,4.0)/(4.0*pow((double)nWardFreq[widx],2.0)))));
-    
+    if (!accPref){
+        wilsonSpan = 2*(( 1.959964/( 1.0+pow(1.959964,2.0) /(double)nWardFreq[widx]))*
+        sqrt((wardDenDist[widx][j]*(1-wardDenDist[widx][j]))/nWardFreq[widx] + (pow(1.959964,4.0)/(4.0*pow((double)nWardFreq[widx],2.0)))));
+    }else{
+        wilsonSpan = 2*(( 1.959964/( 1.0+pow(1.959964,2.0) /(double)nWardFreqPref[widx]))*
+        sqrt((wardDenDistPref[widx][j]*(1-wardDenDistPref[widx][j]))/nWardFreqPref[widx] + (pow(1.959964,4.0)/(4.0*pow((double)nWardFreqPref[widx],2.0)))));
+    }
+
 }
 
 bool RelocSimulation::wilcoxonRankSum(vector<double> x, vector<double> y){

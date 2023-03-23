@@ -86,11 +86,27 @@ void Model::setDefaultParameters(){
     minTime=-1;
     openHyperStates=2; 
     blockedHyperStates=1;
-    
+    accTol = 5e-3;
+    accPref = true;
 }
 
 void Model::setSeed(int sd){
     seed=sd;
+}
+
+void Model::setSimTolerance(double at){
+    accTol=at;
+}
+
+void Model::setAccuracySampleType(string stype){
+    if(stype.compare("preferred")==0){
+        accPref=true;
+    }else if(stype.compare("all")==0){
+        accPref=false;
+    }else{
+        cout << "Unknown sampling type. Choose between 'preferred' and 'all'. Aborting program." << endl;
+        exit(1);
+    }    
 }
 
 void Model::setBurnIn(double bn){
@@ -248,6 +264,8 @@ void Model::runSimulation(){
     
     //setup and run simulation
     mdlSim->setSeed(seed); //set the seed
+    mdlSim->setAccuracy(accTol);
+    mdlSim->setAccPref(accPref);
     vector<int> maxWardSamples(1,-1); //disables the limit on occupancy samples
     mdlSim->disableTimeSampling(); //speed-up the simulation by disabling the open/blocked time-window sampling
     mdlSim->simulate(burnIn,minTime,maxWardSamples); //now run the simulation
@@ -283,6 +301,8 @@ void Model::runModel(){
         determineModelType();
     }
     
+    //separate if-statements are implemented on purpose
+
     if (modelType.compare("approximation")==0){
         int widx;
         for (int idx=0; idx<evaluateQueues.size(); idx++){
@@ -293,7 +313,7 @@ void Model::runModel(){
     }else if (modelType.compare("simulation")==0){
         runSimulation();
     }else{
-        cout << "Unrecognized model type." << endl;
+        cout << "Unknown model type. Choose between 'auto', 'simulation' and 'approximation'. Aborting program." << endl;
         exit(1);
     }
     
