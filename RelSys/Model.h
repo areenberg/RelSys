@@ -51,6 +51,8 @@ public:
     
     void setSeed(int sd);
     void setBurnIn(double bn);
+    void setSimTolerance(double at);
+    void setAccuracySampleType(string stype);
     void setMinimumSimulationTime(double mnTime);
     void setMinSamples(int mnSamples);
     void setHyperStates(int openStates, int blockedStates);
@@ -66,7 +68,7 @@ public:
     Model(vector<double> arrRates, vector<double> serTimes,
         vector<int> cap,vector<vector<double>> relProbMat,
         vector<int> prefQ,vector<int> evalQ, string mdlt="auto",
-        bool eqze=true);
+        bool eqze=false);
     
     Model(const Model& orig);
     virtual ~Model();
@@ -96,8 +98,8 @@ private:
     vector<int> evalQueues; //indices of queues to evaluate from the QueueData array
     int nQueues, nCustomers, seed, minSamples, 
         openHyperStates, blockedHyperStates, statSize;
-    double burnIn, minTime;
-    bool equalize; //indicates if service rates are equalized (default=true)
+    double accTol, burnIn, minTime;
+    bool accPref,equalize; //indicates if service rates are equalized (default=true)
     
     //fundamental system parameters
     vector<double> arrivalRates,serviceTimes;

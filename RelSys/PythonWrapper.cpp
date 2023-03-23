@@ -30,6 +30,8 @@ struct {
     double minimumSimulationTime=-1;
     int minSamples=-1;
     vector<int> hyperStates = {-1,-1};
+    double accTol=5e-3;
+    string accSampleType="preferred";
 } settings;
 
 //results
@@ -54,6 +56,14 @@ py::list relProb, py::list prefQ){
     data.relocationProbabilities = relProb.cast<vector<vector<double>>>();
     data.preferredQueue = prefQ.cast<vector<int>>();
 
+}
+
+void setAccuracySampleType(string stype){
+    settings.accSampleType = stype;    
+}
+
+void setSimulationTolerance(double tol){
+    settings.accTol = tol;
 }
 
 void setSeed(int sd){
@@ -192,6 +202,10 @@ void checkParameters(){
     }
     if (settings.minimumSimulationTime!=-1 && settings.burnIn!=-1 && settings.minimumSimulationTime<=settings.burnIn){
         py::print("The simulation time has to be longer than the burn-in time. Aborting program.");
+        exit(1);
+    }
+    if (settings.accTol<=0.0 || settings.accTol>=1.0){
+        py::print("The tolerance level for the accuracy estimation procedure must be between 0 and 1 (e.g. 1e-2). Aborting program.");
         exit(1);
     }        
 
@@ -401,6 +415,8 @@ void runCalculations(){
     if (settings.hyperStates[0]!=-1 && settings.hyperStates[1]!=-1){
         mdl.setHyperStates(settings.hyperStates[0],settings.hyperStates[1]);
     }
+    mdl.setSimTolerance(settings.accTol);
+    mdl.setAccuracySampleType(settings.accSampleType);
     
     //now evaluate the model
     mdl.runModel();
@@ -478,6 +494,8 @@ PYBIND11_MODULE(relsys, m) {
     m.def("equalize",&equalizeService,"Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).");
     m.def("setVerbose",&setVerbose,"Control verbose (True=On, False=Off)");
     m.def("setSeed",&setSeed,"Set the seed.");
+    m.def("setAccSamType",&setAccuracySampleType,"Set the accuracy estimation type for the simulation (preferred, all).")
+    m.def("setSimTolerance",&setSimulationTolerance,"Set the tolerance level for the accuracy estimation in the simulation.")
     m.def("setBurnIn",&setBurnIn,"Set the burn-in time of the simulation.");
     m.def("setSimTime",&setMinimumSimulationTime,"Set the simulation time.");
     m.def("setSamples",&setMinSamples,"Set the minimum number of open/shortage samples.");

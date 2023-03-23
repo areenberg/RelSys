@@ -48,8 +48,8 @@ public:
     bool wilcoxonRankSum(vector<double> x, vector<double> y); //conducts the Wilcoxon rank-sum test
     void enableTimeDependency(QueuePerformance * qP); //account for time-dependent arrival rates
             
-    void setAccuracy(double a);
-    
+    void setAccuracy(double a); //set the tolerance of the auto simulation time 
+    void setAccPref(bool ap); //set the sampling method in auto simulation time (true: all preferred arrivals, false: all arrivals to each ward)
     
     vector<vector<double>> arrivalRateMatrix; //arrival rates of each ward-patient combination
     vector<vector<double>> openTimes; //sampled open times for each ward
@@ -140,7 +140,8 @@ private:
     bool timeOut; //indicates if the simulation has timed out
     bool serTimeExponential; //if true, then service times are exponential; other log-normal
     double stdMult; //modifies the standard deviation in the log-normal random generator
-    double accTol; //density distribution accuracy
+    double accTol; //density distribution accuracy (default: 5e-3)
+    bool accPref; //indicates if the preferred distribution should be used to validate accuracy (default: false) 
     double clockDis; //clock at most recent discharge;
     double wilsonSpan, wilsonMax;
     int bInSize, disIdx, cycleLen;
