@@ -136,40 +136,42 @@ for queueIdx in range(4):
 ## List of functions
 
 ### Import data
-* `input`. Import the input data to the model.
+* `input(list arr, list ser, list cap, list relProb, list prefQ)`. Import the input data to the model.
 
 ### Model settings
 
-* `setType`. Set the method to use in the evaluation of the model ("simulation" (default), "approximation", "auto"). 
-* `queuesEval`. Set the indices of queues to evaluate.
-* `equalize`. Specify if service times should be equalized and loads correspondingly adjusted (True: On, False: Off (default)).
-* `setVerbose`. Control verbose (True: On, False: Off (default)).
-* `setSeed`. Set the seed.
-* `setBurnIn`. Set the burn-in time of the simulation.
-* `setSimTime`. Set the simulation time.
-* `setSamples`. Set the minimum number of open/shortage samples.
-* `setHyperPhases`. Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.
+* `setType(string mdltype)`. Set the method to use in the evaluation of the model ("simulation" (default), "approximation", "auto"). 
+* `queuesEval(list qEvalIdx)`. Set the indices of queues to evaluate.
+* `equalize(bool equalize)`. Specify if service times should be equalized and loads correspondingly adjusted (True: On, False: Off (default)).
+* `setVerbose(bool set)`. Control verbose (True: On, False: Off (default)).
+* `setSeed(int sd)`. Set the seed.
+* `setAccSamType(string stype)`. Set the accuracy estimation type for the simulation ("preferred" (default), "all").
+* `setSimTolerance(double tol)`. Set the tolerance level for the accuracy estimation in the simulation (default: 5e-3).
+* `setBurnIn(double bin)`. Set the burn-in time of the simulation.
+* `setSimTime(double mnTime)`. Set the simulation time.
+* `setSamples(int mnSamples)`. Set the minimum number of open/shortage samples.
+* `setHyperPhases(int openStates, int blockedStates)`. Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.
 
 ### Run calculations
 
-* `run`. Evaluate the model using the input parameters.
+* `run()`. Evaluate the model using the input parameters.
 
 ### Get results
 
-* `getDensity`. Return the density distribution of a queue. The second argument specifies the arrival type: "all" and "preferred" (default).
-* `getFreq`. Return the frequency distribution of a queue. The second argument specifies the arrival type: "all" and "preferred" (default).
-* `getShortageProb`. Return the shortage probability of a queue. The second argument specifies the arrival type: "all" and "preferred" (default).
-* `getAvailProb`. Return the probability that at least one server is available. The second argument specifies the arrival type: "all" and "preferred" (default).
-* `getExpOccupany`. Return the expected number of occupied servers.
-* `getExpOccFraction`. Return the expected fraction of occupied servers.
+* `getDensity(int queueIdx=0, string type="preferred")`. Return the density distribution of a queue. The second argument specifies the arrival type: "all" and "preferred" (default).
+* `getFreq(int queueIdx=0, string type="preferred")`. Return the frequency distribution of a queue. The second argument specifies the arrival type: "all" and "preferred" (default).
+* `getShortageProb(int queueIdx=0, string type="preferred")`. Return the shortage probability of a queue. The second argument specifies the arrival type: "all" and "preferred" (default).
+* `getAvailProb(int queueIdx=0, string type="preferred")`. Return the probability that at least one server is available. The second argument specifies the arrival type: "all" and "preferred" (default).
+* `getExpOccupany(int queueIdx=0)`. Return the expected number of occupied servers.
+* `getExpOccFraction(int queueIdx=0)`. Return the expected fraction of occupied servers.
 
 ### Return imported variables
 
-* `getArrivalRates`. Return the imported arrival rates.
-* `getServiceTimes`. Return the imported service times.
-* `getCapacity`. Return the imported capacities.
-* `getReloc`. Return the imported relocation probabilities.
-* `getPreferredQueue`. Return the imported preferred queues.
+* `getArrivalRates()`. Return the imported arrival rates.
+* `getServiceTimes()`. Return the imported service times.
+* `getCapacity()`. Return the imported capacities.
+* `getReloc()`. Return the imported relocation probabilities.
+* `getPreferredQueue()`. Return the imported preferred queues.
 
 ## C++
 
@@ -238,18 +240,18 @@ The following returns the resulting occupancy distributions and shortage probabi
     cout << "Occupancy distributions:" << endl;
     for (int i=0; i<evaluatedQueue.size(); i++){
         cout << "----" << "Queue " << evaluatedQueue[i] << "----" << endl;
-        for (int j=0; j<mdl.queueDenDist[evaluatedQueue[i]].size(); j++){
-            cout << mdl.queueDenDist[evaluatedQueue[i]][j] << endl;
+        for (int j=0; j<mdl.queueDenDistPref[evaluatedQueue[i]].size(); j++){
+            cout << mdl.queueDenDistPref[evaluatedQueue[i]][j] << endl;
         }
     }
     
     cout << endl << "Shortage probabilities:" << endl;
     for (int i=0; i<evaluatedQueue.size(); i++){
-        cout << mdl.blockingProbability[evaluatedQueue[i]] << endl;
+        cout << mdl.blockingProbabilityPref[evaluatedQueue[i]] << endl;
     }
 ```
 
-The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the file `PythonWrapper.cpp`, and run `g++ -O3 *.cpp -o eval`. Run the program with `./eval`. 
+The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the file `PythonWrapper.cpp`, and run `g++ -O3 *.cpp -o eval` in your terminal. Run the program with `./eval`. 
 
 ### The complete example
 
@@ -297,14 +299,14 @@ int main(int argc, char** argv) {
     cout << "Occupancy distributions:" << endl;
     for (int i=0; i<evaluatedQueue.size(); i++){
         cout << "----" << "Queue " << evaluatedQueue[i] << "----" << endl;
-        for (int j=0; j<mdl.queueDenDist[evaluatedQueue[i]].size(); j++){
-            cout << mdl.queueDenDist[evaluatedQueue[i]][j] << endl;
+        for (int j=0; j<mdl.queueDenDistPref[evaluatedQueue[i]].size(); j++){
+            cout << mdl.queueDenDistPref[evaluatedQueue[i]][j] << endl;
         }
     }
     
     cout << endl << "Shortage probabilities:" << endl;
     for (int i=0; i<evaluatedQueue.size(); i++){
-        cout << mdl.blockingProbability[evaluatedQueue[i]] << endl;
+        cout << mdl.blockingProbabilityPref[evaluatedQueue[i]] << endl;
     }
 
     return 0;

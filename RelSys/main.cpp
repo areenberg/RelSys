@@ -60,14 +60,14 @@ int main(int argc, char** argv) {
     cout << "Marginal density distribution:" << endl;
     for (int i=0; i<evaluatedQueue.size(); i++){
         cout << "----" << "Queue " << evaluatedQueue[i] << "----" << endl;
-        for (int j=0; j<mdl.queueDenDist[evaluatedQueue[i]].size(); j++){
-            cout << mdl.queueDenDist[evaluatedQueue[i]][j] << endl;
+        for (int j=0; j<mdl.queueDenDistPref[evaluatedQueue[i]].size(); j++){
+            cout << mdl.queueDenDistPref[evaluatedQueue[i]][j] << endl;
         }
     }
     
     cout << endl << "Probability of rejection:" << endl;
     for (int i=0; i<evaluatedQueue.size(); i++){
-        cout << mdl.blockingProbability[evaluatedQueue[i]] << endl;
+        cout << mdl.blockingProbabilityPref[evaluatedQueue[i]] << endl;
     }
     
     cout << endl << "Expected server occupancy:" << endl;

@@ -67,7 +67,7 @@ public:
     
     Model(vector<double> arrRates, vector<double> serTimes,
         vector<int> cap,vector<vector<double>> relProbMat,
-        vector<int> prefQ,vector<int> evalQ, string mdlt="auto",
+        vector<int> prefQ,vector<int> evalQ, string mdlt="simulation",
         bool eqze=false);
     
     Model(const Model& orig);

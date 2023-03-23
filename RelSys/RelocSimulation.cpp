@@ -44,7 +44,7 @@ burnInInit(true),
 timeDepEnabled(false),        
 stdMult(1.0),
 accTol(5e-3),
-accPref(false)        
+accPref(true)        
 {
     initializeSystem();
 }

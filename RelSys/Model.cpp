@@ -87,7 +87,7 @@ void Model::setDefaultParameters(){
     openHyperStates=2; 
     blockedHyperStates=1;
     accTol = 5e-3;
-    accPref = false;
+    accPref = true;
 }
 
 void Model::setSeed(int sd){

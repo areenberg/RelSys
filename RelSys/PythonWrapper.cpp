@@ -486,31 +486,31 @@ void runCalculations(){
 PYBIND11_MODULE(relsys, m) {
     
     //import data
-    m.def("input",&importData,"Import the input data to the model.");
+    m.def("input",&importData,"Import the input data to the model.",py::arg("arr"),py::arg("ser"),py::arg("cap"),py::arg("relProb"),py::arg("prefQ"));
 
     //model settings
-    m.def("setType",&setType,"Set the method to use in the evaluation of the model (auto, simulation, approximation)."); 
-    m.def("queuesEval",&queuesToEvaluate,"Set the indices of queues to evaluate.");
-    m.def("equalize",&equalizeService,"Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).");
-    m.def("setVerbose",&setVerbose,"Control verbose (True=On, False=Off)");
-    m.def("setSeed",&setSeed,"Set the seed.");
-    m.def("setAccSamType",&setAccuracySampleType,"Set the accuracy estimation type for the simulation (preferred, all).")
-    m.def("setSimTolerance",&setSimulationTolerance,"Set the tolerance level for the accuracy estimation in the simulation.")
-    m.def("setBurnIn",&setBurnIn,"Set the burn-in time of the simulation.");
-    m.def("setSimTime",&setMinimumSimulationTime,"Set the simulation time.");
-    m.def("setSamples",&setMinSamples,"Set the minimum number of open/shortage samples.");
-    m.def("setHyperPhases",&setHyperStates,"Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.");
+    m.def("setType",&setType,"Set the method to use in the evaluation of the model (auto, simulation, approximation).",py::arg("mdltype")); 
+    m.def("queuesEval",&queuesToEvaluate,"Set the indices of queues to evaluate.",py::arg("qEvalIdx"));
+    m.def("equalize",&equalizeService,"Specify if service times should be equalized and loads correspondingly adjusted (True=On, False=Off).",py::arg("equalize"));
+    m.def("setVerbose",&setVerbose,"Control verbose (True=On, False=Off)",py::arg("set"));
+    m.def("setSeed",&setSeed,"Set the seed.",py::arg("sd"));
+    m.def("setAccSamType",&setAccuracySampleType,"Set the accuracy estimation type for the simulation (preferred, all).",py::arg("stype"));
+    m.def("setSimTolerance",&setSimulationTolerance,"Set the tolerance level for the accuracy estimation in the simulation.",py::arg("tol"));
+    m.def("setBurnIn",&setBurnIn,"Set the burn-in time of the simulation.",py::arg("bin"));
+    m.def("setSimTime",&setMinimumSimulationTime,"Set the simulation time.",py::arg("mnTime"));
+    m.def("setSamples",&setMinSamples,"Set the minimum number of open/shortage samples.",py::arg("mnSamples"));
+    m.def("setHyperPhases",&setHyperStates,"Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.",py::arg("openStates"),py::arg("blockedStates"));
 
     //run calculations    
     m.def("run", &runCalculations,"Evaluate the model using the input parameters.");
     
     //return results
-    m.def("getDensity",&getDensityDistribution,"Return the density distribution of a queue.",py::arg("queueIndex"),py::arg("type")="preferred");
-    m.def("getFreq",&getFrequencyDistribution,"Return the frequency distribution of a queue.",py::arg("queueIndex"),py::arg("type")="preferred");
-    m.def("getShortageProb",&getShortageProbability,"Return the shortage probability of a queue.",py::arg("queueIndex"),py::arg("type")="preferred");
-    m.def("getAvailProb",&getAvailProbability,"Return the probability that at least one server is available.",py::arg("queueIndex"),py::arg("type")="preferred");
-    m.def("getExpOccupany",&getExpectedOccupancy,"Return the expected number of occupied servers.");
-    m.def("getExpOccFraction",&getExpOccFraction,"Return the expected fraction of occupied servers.");
+    m.def("getDensity",&getDensityDistribution,"Return the density distribution of a queue.",py::arg("queueIndex")=0,py::arg("type")="preferred");
+    m.def("getFreq",&getFrequencyDistribution,"Return the frequency distribution of a queue.",py::arg("queueIndex")=0,py::arg("type")="preferred");
+    m.def("getShortageProb",&getShortageProbability,"Return the shortage probability of a queue.",py::arg("queueIndex")=0,py::arg("type")="preferred");
+    m.def("getAvailProb",&getAvailProbability,"Return the probability that at least one server is available.",py::arg("queueIndex")=0,py::arg("type")="preferred");
+    m.def("getExpOccupany",&getExpectedOccupancy,"Return the expected number of occupied servers.",py::arg("queueIndex")=0);
+    m.def("getExpOccFraction",&getExpOccFraction,"Return the expected fraction of occupied servers.",py::arg("queueIndex")=0);
 
     //return imported variables  
     m.def("getArrivalRates",&getArrivalRates,"Return the imported arrival rates.");
