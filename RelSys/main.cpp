@@ -8,6 +8,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include <fstream>
 
 #include "Model.h"
 
@@ -157,6 +158,13 @@ void printHelp(){
     cout << "Usage: relsys.exe [options]" << endl <<
     endl << "A demo is loaded if no options are provided." << endl << endl;
     cout << "Options include:" << endl << "-v   Activate verbose." << endl;
+    cout << "-arr <filename>   A space-separated vector containing the arrival rates of each customer type." << endl;
+    cout << "-ser <filename>   A space-separated vector containing the service times of each customer type." << endl;
+    cout << "-cap <filename>   A space-separated vector containing the capacities of each queue." << endl;
+    cout << "-rel <filename>   A space-separated matrix. Each element denotes the probability that customer type i will try to use queue j when the preferred queue is in shortage." << endl;
+    cout << "-prq <filename>   A space-separated vector containing the indices of the queues that are preferred by each customer type." << endl;
+    cout << "-evq <filename>   A space-separated vector containing the indices of the queues that are evaluated by the program." << endl;
+    
     cout << "-m <value>   Select the model type (simulation (default), approximation, auto)." << endl;
     cout << "-sd <value>    Set a seed for the model." << endl;
     cout << "-tol <value>    Set the tolerance for the automatic termination of the simulation." << endl;
@@ -259,6 +267,59 @@ void checkParameters(){
 
 }
 
+//READ/WRITE FILES
+vector<vector<double>> readMatrixFromFile(string fileName) {
+    vector<vector<double>> mat;
+    ifstream inputFile(fileName);
+
+    if (!inputFile.is_open()) {
+        cout << "The file " << fileName << " was not found or could not be opened. Aborting program." << endl;
+        exit(1);
+    }
+
+    int nRows, nCols;
+    vector<int> rowLengths;
+    string line;
+
+    while (getline(inputFile, line)) {
+        int count = 0;
+        for (char c : line) {
+            if (c == ' ') {
+                count++;
+            }
+        }
+        rowLengths.push_back(count + 1);
+    }
+
+    nRows = rowLengths.size();
+    nCols = rowLengths[0];
+
+     for (int i = 1; i < nRows; i++) {
+        if (rowLengths[i] != nCols) {
+            cout << "The matrix in file " << fileName << " is not rectangular. Aborting program." << endl;
+            exit(1);
+        }
+    }
+    inputFile.close();
+
+    mat.resize(nRows, vector<double>(nCols));
+    string val;
+
+    ifstream inputFile2(fileName);
+    for (int i = 0; i < nRows; i++) {
+        for (int j = 0; j < nCols; j++) {
+            inputFile2 >> val;
+            mat[i][j] = stod(val);
+        }
+    }
+
+    inputFile2.close();
+
+    return(mat);
+}
+
+
+
 // READ ARGUMENTS
 double argDouble(string flag, int &argc, char** argv){
     int i=0;
@@ -325,6 +386,76 @@ bool argActivate(string flag, int &argc, char** argv){
         i++;
     }while(i<argc && str.compare(flag)!=0);
     return(false);
+}
+
+void argArrivalRates(int &argc, char** argv){
+    string fileName = argString("-arr",argc,argv);
+    if (fileName.compare("NA")!=0){
+        vector<vector<double>> mat = readMatrixFromFile(fileName);
+        ::data.arrivalRates.resize(mat[0].size());
+        for (int j=0; j<mat[0].size(); j++){
+            ::data.arrivalRates[j] = mat[0][j];
+        }
+    }
+}
+
+void argServiceTimes(int &argc, char** argv){
+    string fileName = argString("-ser",argc,argv);
+    if (fileName.compare("NA")!=0){
+        vector<vector<double>> mat = readMatrixFromFile(fileName);
+        ::data.serviceTimes.resize(mat[0].size());
+        for (int j=0; j<mat[0].size(); j++){
+            ::data.serviceTimes[j] = mat[0][j];
+        }
+    }
+}
+
+void argCapacity(int &argc, char** argv){
+    string fileName = argString("-cap",argc,argv);
+    if (fileName.compare("NA")!=0){
+        vector<vector<double>> mat = readMatrixFromFile(fileName);
+        ::data.capacity.resize(mat[0].size());
+        for (int j=0; j<mat[0].size(); j++){
+            ::data.capacity[j] = (int)mat[0][j];
+        }
+    }
+}
+
+void argPreferred(int &argc, char** argv){
+    string fileName = argString("-prq",argc,argv);
+    if (fileName.compare("NA")!=0){
+        vector<vector<double>> mat = readMatrixFromFile(fileName);
+        ::data.preferredQueue.resize(mat[0].size());
+        for (int j=0; j<mat[0].size(); j++){
+            ::data.preferredQueue[j] = (int)mat[0][j];
+        }
+    }
+}
+
+void argEvalQueues(int &argc, char** argv){
+    string fileName = argString("-evq",argc,argv);
+    if (fileName.compare("NA")!=0){
+        settings.evalAll=false;
+        vector<vector<double>> mat = readMatrixFromFile(fileName);
+        settings.evaluatedQueue.resize(mat[0].size());
+        for (int j=0; j<mat[0].size(); j++){
+            settings.evaluatedQueue[j] = (int)mat[0][j];
+        }
+    }
+}
+
+void argRelocProbs(int &argc, char** argv){
+    string fileName = argString("-rel",argc,argv);
+    if (fileName.compare("NA")!=0){
+        vector<vector<double>> mat = readMatrixFromFile(fileName);
+        ::data.relocationProbabilities.resize(mat.size());
+        for (int i=0; i<mat.size(); i++){
+            ::data.relocationProbabilities[i].resize(mat[i].size());
+            for (int j=0; j<mat[i].size(); j++){
+                ::data.relocationProbabilities[i][j] = mat[i][j];    
+            }
+        }
+    }
 }
 
 void argModel(int &argc, char** argv){
@@ -405,6 +536,11 @@ void argEqualize(int &argc, char** argv){
 }
 
 void readArguments(int &argc, char** argv){
+    argArrivalRates(argc,argv);
+    argServiceTimes(argc,argv);
+    argRelocProbs(argc,argv);
+    argPreferred(argc,argv);
+    argEvalQueues(argc,argv);
     argVerbose(argc,argv);        
     argModel(argc,argv);
     argEqualize(argc,argv);
