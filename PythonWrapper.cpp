@@ -9,7 +9,7 @@ using namespace std;
 namespace py = pybind11;
 
 //input data structure
-struct {
+struct Data{
     vector<double> arrivalRates;
     vector<double> serviceTimes;
     vector<int> capacity;
@@ -18,7 +18,7 @@ struct {
 } data;
 
 //model settings structure
-struct {
+struct Settings{
     bool verbose=false;
     bool evalAll=true;
     bool equalizeService=false;
@@ -35,7 +35,7 @@ struct {
 } settings;
 
 //results
-struct {
+struct Results{
     bool evaluated=false;
     vector<double> shortageProbability,shortageProbabilityPref;
     vector<double> availProbability,availProbabilityPref;
@@ -50,11 +50,11 @@ struct {
 void importData(py::list arr, py::list ser, py::list cap,
 py::list relProb, py::list prefQ){
 
-    data.arrivalRates = arr.cast<vector<double>>();
-    data.serviceTimes = ser.cast<vector<double>>();
-    data.capacity = cap.cast<vector<int>>();
-    data.relocationProbabilities = relProb.cast<vector<vector<double>>>();
-    data.preferredQueue = prefQ.cast<vector<int>>();
+    ::data.arrivalRates = arr.cast<vector<double>>();
+    ::data.serviceTimes = ser.cast<vector<double>>();
+    ::data.capacity = cap.cast<vector<int>>();
+    ::data.relocationProbabilities = relProb.cast<vector<vector<double>>>();
+    ::data.preferredQueue = prefQ.cast<vector<int>>();
 
 }
 
@@ -108,9 +108,9 @@ void setHyperStates(int openStates, int blockedStates){
 }
 
 bool parametersAvail(){
-    if (!data.arrivalRates.empty()&&!data.serviceTimes.empty()&&
-    !data.capacity.empty()&&!data.relocationProbabilities.empty()&&
-    !data.preferredQueue.empty()){
+    if (!::data.arrivalRates.empty()&&!::data.serviceTimes.empty()&&
+    !::data.capacity.empty()&&!::data.relocationProbabilities.empty()&&
+    !::data.preferredQueue.empty()){
         return(true);
     }else{
         return(false);    
@@ -124,54 +124,54 @@ void setVerbose(bool set){
 void checkParameters(){
     //checks if parameters are feasible
 
-    if (data.arrivalRates.size() != data.serviceTimes.size()){
+    if (::data.arrivalRates.size() != ::data.serviceTimes.size()){
         py::print("The number of arrival rates must equal the number of service times. Aborting program.");
         exit(1);
     }
-    if (data.arrivalRates.size() != data.relocationProbabilities.size()){
+    if (::data.arrivalRates.size() != ::data.relocationProbabilities.size()){
         py::print("The number of arrival rates, and service times, must equal the number of rows in the relocation matrix. Aborting program.");
         exit(1);
     }
-    if (data.arrivalRates.size() != data.preferredQueue.size()){
+    if (::data.arrivalRates.size() != ::data.preferredQueue.size()){
         py::print("The number of arrival rates, and service times, must equal the length of the vector specifying the preferred queues. Aborting program.");
         exit(1);
     }
-    if (settings.evaluatedQueue.size()>data.capacity.size() || settings.evaluatedQueue.empty()){
+    if (settings.evaluatedQueue.size()>::data.capacity.size() || settings.evaluatedQueue.empty()){
         py::print("The length of the vector of evaluated queues must be between 1 and n_queues. Aborting program.");
         exit(1);
     }        
-    for (int i=0; i<data.relocationProbabilities.size(); i++){
-        if (data.capacity.size() != data.relocationProbabilities[i].size()){
+    for (int i=0; i<::data.relocationProbabilities.size(); i++){
+        if (data.capacity.size() != ::data.relocationProbabilities[i].size()){
             py::print("The length of the capacity vector must equal the number of columns in the relocation matrix. Aborting program.");
             exit(1);
         }
     }        
-    for (int i=0; i<data.arrivalRates.size(); i++){
-        if (data.arrivalRates[i]<=0.0 || data.serviceTimes[i]<=0.0 ){
+    for (int i=0; i<::data.arrivalRates.size(); i++){
+        if (::data.arrivalRates[i]<=0.0 || ::data.serviceTimes[i]<=0.0 ){
             py::print("Arrival rates and service times must be larger than 0.0. Aborting program.");
             exit(1);
         }
-        for (int j=0; j<data.relocationProbabilities[i][j]; j++){
-            if (data.relocationProbabilities[i][j]<0.0 || data.relocationProbabilities[i][j]>1.0){
+        for (int j=0; j<::data.relocationProbabilities[i][j]; j++){
+            if (::data.relocationProbabilities[i][j]<0.0 || ::data.relocationProbabilities[i][j]>1.0){
                 py::print("Values in the relocation matrix must be between 0.0 and 1.0. Aborting program.");
                 exit(1);
             }
         }
     }
-    for (int i=0; i<data.preferredQueue.size(); i++){
-        if (data.preferredQueue[i]<0 || data.preferredQueue[i]>(data.capacity.size()-1)){
+    for (int i=0; i<::data.preferredQueue.size(); i++){
+        if (::data.preferredQueue[i]<0 || ::data.preferredQueue[i]>(::data.capacity.size()-1)){
             py::print("Indices in the vector of preferred queues must be between 0 and n_queues-1. Aborting program.");
             exit(1);
         }
     }
-    for (int i=0; i<data.capacity.size(); i++){
-        if (data.capacity[i]<1){
+    for (int i=0; i<::data.capacity.size(); i++){
+        if (::data.capacity[i]<1){
             py::print("The capacity of each queue must be equal to or larger than 1. Aborting program.");
             exit(1);
         }
     }          
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
-        if (settings.evaluatedQueue[i]<0 || settings.evaluatedQueue[i]>(data.capacity.size()-1)){
+        if (settings.evaluatedQueue[i]<0 || settings.evaluatedQueue[i]>(::data.capacity.size()-1)){
             py::print("Indices in the vector of evaluated queues must lie in the interval between 0 and n_queues-1. Aborting program.");
             exit(1);
         }    
@@ -185,10 +185,10 @@ void checkParameters(){
         }    
     }
     double sm;
-    for (int i=0; i<data.relocationProbabilities.size(); i++){
+    for (int i=0; i<::data.relocationProbabilities.size(); i++){
         sm=0;
-        for (int j=0; j<data.relocationProbabilities[i].size(); j++){
-            sm+=data.relocationProbabilities[i][j];
+        for (int j=0; j<::data.relocationProbabilities[i].size(); j++){
+            sm+=::data.relocationProbabilities[i][j];
         }
         if (sm>1.0){
             string out = "The sum of the relocation probabilities in row "+to_string(i)+" is equal to "+to_string(sm)+". The sum must be equal to or smaller than 1.0. Aborting program.";
@@ -212,8 +212,8 @@ void checkParameters(){
 }
 
 void evaluateAllQueues(){
-    settings.evaluatedQueue.resize(data.capacity.size());
-    for (int i=0; i<data.capacity.size(); i++){
+    settings.evaluatedQueue.resize(::data.capacity.size());
+    for (int i=0; i<::data.capacity.size(); i++){
         settings.evaluatedQueue[i] = i;
     }
 }
@@ -240,7 +240,7 @@ void equalizeService(bool equalize){
 
 py::list getArrivalRates(){
     if (parametersAvail()){
-        return(py::cast(data.arrivalRates));
+        return(py::cast(::data.arrivalRates));
     }else{
         py::print("The requested parameter has not been imported. Aborting program.");
         exit(1);
@@ -249,7 +249,7 @@ py::list getArrivalRates(){
 
 py::list getServiceTimes(){
     if (parametersAvail()){
-        return(py::cast(data.serviceTimes));
+        return(py::cast(::data.serviceTimes));
     }else{
         py::print("The requested parameter has not been imported. Aborting program.");
         exit(1);
@@ -258,7 +258,7 @@ py::list getServiceTimes(){
 
 py::list getCapacity(){
     if (parametersAvail()){
-        return(py::cast(data.capacity));
+        return(py::cast(::data.capacity));
     }else{
         py::print("The requested parameter has not been imported. Aborting program.");
         exit(1);
@@ -267,7 +267,7 @@ py::list getCapacity(){
 
 py::list getRelocationProbabilities(){
     if (parametersAvail()){
-        return(py::cast(data.relocationProbabilities));
+        return(py::cast(::data.relocationProbabilities));
     }else{
         py::print("The requested parameter has not been imported. Aborting program.");
         exit(1);
@@ -276,7 +276,7 @@ py::list getRelocationProbabilities(){
 
 py::list getPreferredQueue(){
     if (parametersAvail()){
-        return(py::cast(data.preferredQueue));
+        return(py::cast(::data.preferredQueue));
     }else{
         py::print("The requested parameter has not been imported. Aborting program.");
         exit(1);
@@ -394,8 +394,8 @@ void runCalculations(){
     }
 
     //create the model object
-    Model mdl(data.arrivalRates,data.serviceTimes,data.capacity,
-            data.relocationProbabilities,data.preferredQueue,
+    Model mdl(::data.arrivalRates,::data.serviceTimes,::data.capacity,
+            ::data.relocationProbabilities,::data.preferredQueue,
             settings.evaluatedQueue,settings.modelType,
             settings.equalizeService);
     
@@ -428,8 +428,8 @@ void runCalculations(){
     //--------------------------
 
     //queue density distribution    
-    results.queueDenDist.resize(data.capacity.size());
-    results.queueDenDistPref.resize(data.capacity.size());
+    results.queueDenDist.resize(::data.capacity.size());
+    results.queueDenDistPref.resize(::data.capacity.size());
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.queueDenDist[settings.evaluatedQueue[i]].resize(mdl.queueDenDist[settings.evaluatedQueue[i]].size());
         results.queueDenDistPref[settings.evaluatedQueue[i]].resize(mdl.queueDenDistPref[settings.evaluatedQueue[i]].size());
@@ -440,8 +440,8 @@ void runCalculations(){
     }
 
     //queue frequency distribution    
-    results.queueFreqDist.resize(data.capacity.size());
-    results.queueFreqDistPref.resize(data.capacity.size());
+    results.queueFreqDist.resize(::data.capacity.size());
+    results.queueFreqDistPref.resize(::data.capacity.size());
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.queueFreqDist[settings.evaluatedQueue[i]].resize(mdl.queueFreqDist[settings.evaluatedQueue[i]].size());
         results.queueFreqDistPref[settings.evaluatedQueue[i]].resize(mdl.queueFreqDistPref[settings.evaluatedQueue[i]].size());
@@ -452,29 +452,29 @@ void runCalculations(){
     }
     
     //shortage probabilities
-    results.shortageProbability.resize(data.capacity.size(),-1);
-    results.shortageProbabilityPref.resize(data.capacity.size(),-1);
+    results.shortageProbability.resize(::data.capacity.size(),-1);
+    results.shortageProbabilityPref.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.shortageProbability[settings.evaluatedQueue[i]] = mdl.blockingProbability[settings.evaluatedQueue[i]];
         results.shortageProbabilityPref[settings.evaluatedQueue[i]] = mdl.blockingProbabilityPref[settings.evaluatedQueue[i]];
     }
 
     //availability probabilities
-    results.availProbability.resize(data.capacity.size(),-1);
-    results.availProbabilityPref.resize(data.capacity.size(),-1);
+    results.availProbability.resize(::data.capacity.size(),-1);
+    results.availProbabilityPref.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.availProbability[settings.evaluatedQueue[i]] = 1.0-mdl.blockingProbability[settings.evaluatedQueue[i]];
         results.availProbabilityPref[settings.evaluatedQueue[i]] = 1.0-mdl.blockingProbabilityPref[settings.evaluatedQueue[i]];
     }
 
     //expected occupancy
-    results.expectedOccupancy.resize(data.capacity.size(),-1);
+    results.expectedOccupancy.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.expectedOccupancy[settings.evaluatedQueue[i]] = mdl.expectedOccupancy[settings.evaluatedQueue[i]];
     }
 
     //expected fraction of customers occupied
-    results.expOccFraction.resize(data.capacity.size(),-1);
+    results.expOccFraction.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.expOccFraction[settings.evaluatedQueue[i]] = mdl.expOccFraction[settings.evaluatedQueue[i]];
     }

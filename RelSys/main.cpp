@@ -5,10 +5,11 @@
  *
  */
 
-#include "Model.h"
-
-#include <iostream>
 #include <vector>
+#include <string>
+#include <iostream>
+
+#include "Model.h"
 
 using namespace std;
 
@@ -18,7 +19,7 @@ using namespace std;
 //--------------------------
 
 //input data structure (including example values)
-struct {
+struct Data {
     vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
     vector<double> serviceTimes {10,5,10,8};
     vector<int> capacity = {15,20,10,30};
@@ -30,7 +31,7 @@ struct {
 } data;
 
 //model settings structure
-struct {
+struct Settings {
     bool verbose=false;
     bool evalAll=true;
     bool equalizeService=false;
@@ -41,13 +42,13 @@ struct {
     double burnIn=-1;
     double minimumSimulationTime=-1;
     int minSamples=-1;
-    vector<int> hyperStates = {-1,-1};
+    vector<int> hyperStates = {2,1};
     double accTol=5e-3;
     string accSampleType="preferred";
 } settings;
 
 //results
-struct {
+struct Results {
     bool evaluated=false;
     vector<double> shortageProbability,shortageProbabilityPref;
     vector<double> availProbability,availProbabilityPref;
@@ -57,24 +58,20 @@ struct {
     vector<double> expOccFraction;
 } results;
 
-
 //--------------------------
 //METHODS
 //--------------------------
 
-// READ ARGUMENTS
 
-
-
-//OTHER METHODS
+//ACTION METHODS
 
 void setVerbose(bool set){
     settings.verbose=set;
 }
 
 void evaluateAllQueues(){
-    settings.evaluatedQueue.resize(data.capacity.size());
-    for (int i=0; i<data.capacity.size(); i++){
+    settings.evaluatedQueue.resize(::data.capacity.size());
+    for (int i=0; i<::data.capacity.size(); i++){
         settings.evaluatedQueue[i] = i;
     }
 }
@@ -138,9 +135,17 @@ void setMinSamples(int mnSamples){
     }
 }
 
-void setHyperStates(int openStates, int blockedStates){
-    if (openStates>0 && blockedStates>0){
+void setOpenHyperStates(int openStates){
+    if (openStates>0){
         settings.hyperStates[0] = openStates;
+    }else{
+        cout << "The number of open and blocked states must be larger than 0. Aborting program." << endl;
+        exit(1);
+    }
+}
+
+void setBlockedHyperStates(int blockedStates){
+    if (blockedStates>0){
         settings.hyperStates[1] = blockedStates;
     }else{
         cout << "The number of open and blocked states must be larger than 0. Aborting program." << endl;
@@ -148,57 +153,73 @@ void setHyperStates(int openStates, int blockedStates){
     }
 }
 
+void printHelp(){
+    cout << "Usage: relsys.exe [options]" << endl <<
+    endl << "A demo is loaded if no options are provided." << endl << endl;
+    cout << "Options include:" << endl << "-v   Activate verbose." << endl;
+    cout << "-m <value>   Select the model type (simulation (default), approximation, auto)." << endl;
+    cout << "-sd <value>    Set a seed for the model." << endl;
+    cout << "-tol <value>    Set the tolerance for the automatic termination of the simulation." << endl;
+    cout << "-asamt <value>    Set the accuracy evaluation type for the automatic termination of the simulation (preferred (default), all)." << endl;
+    cout << "-bin <value>    Set the burn-in time for the simulation." << endl;
+    cout << "-stime <value>    Set the simulation time for the simulation." << endl;
+    cout << "-msam <value>    Set the minimum number of open/shortage samples for the approximation." << endl;
+    cout << "-eq    Equalize the service-rates." << endl;
+    cout << "-ops <value>    The number of open states for the approximation." << endl;
+    cout << "-bla <value>    The number of shortage/blocked states for the approximation." << endl;
+}
+
 void checkParameters(){
     //checks if parameters are feasible
 
-    if (data.arrivalRates.size() != data.serviceTimes.size()){
+    if (::data.arrivalRates.size() != ::data.serviceTimes.size()){
         cout << "The number of arrival rates must equal the number of service times. Aborting program." << endl;
         exit(1);
     }
-    if (data.arrivalRates.size() != data.relocationProbabilities.size()){
+    if (::data.arrivalRates.size() != ::data.relocationProbabilities.size()){
         cout << "The number of arrival rates, and service times, must equal the number of rows in the relocation matrix. Aborting program." << endl;
         exit(1);
     }
-    if (data.arrivalRates.size() != data.preferredQueue.size()){
+    if (::data.arrivalRates.size() != ::data.preferredQueue.size()){
         cout << "The number of arrival rates, and service times, must equal the length of the vector specifying the preferred queues. Aborting program." << endl;
         exit(1);
     }
-    if (settings.evaluatedQueue.size()>data.capacity.size() || settings.evaluatedQueue.empty()){
+    if (settings.evaluatedQueue.size()>::data.capacity.size() || settings.evaluatedQueue.empty()){
         cout << "The length of the vector of evaluated queues must be between 1 and n_queues. Aborting program." << endl;
         exit(1);
     }        
-    for (int i=0; i<data.relocationProbabilities.size(); i++){
-        if (data.capacity.size() != data.relocationProbabilities[i].size()){
+    for (int i=0; i<::data.relocationProbabilities.size(); i++){
+        if (::data.capacity.size() != ::data.relocationProbabilities[i].size()){
             cout << "The length of the capacity vector must equal the number of columns in the relocation matrix. Aborting program." << endl;
             exit(1);
         }
     }        
-    for (int i=0; i<data.arrivalRates.size(); i++){
-        if (data.arrivalRates[i]<=0.0 || data.serviceTimes[i]<=0.0 ){
+    for (int i=0; i<::data.arrivalRates.size(); i++){
+        if (::data.arrivalRates[i]<=0.0 || ::data.serviceTimes[i]<=0.0 ){
             cout << "Arrival rates and service times must be larger than 0.0. Aborting program." << endl;
             exit(1);
         }
-        for (int j=0; j<data.relocationProbabilities[i][j]; j++){
-            if (data.relocationProbabilities[i][j]<0.0 || data.relocationProbabilities[i][j]>1.0){
+        for (int j=0; j<::data.relocationProbabilities[i][j]; j++){
+            if (::data.relocationProbabilities[i][j]<0.0 || ::data.relocationProbabilities[i][j]>1.0){
                 cout << "Values in the relocation matrix must be between 0.0 and 1.0. Aborting program." << endl;
                 exit(1);
             }
         }
     }
-    for (int i=0; i<data.preferredQueue.size(); i++){
-        if (data.preferredQueue[i]<0 || data.preferredQueue[i]>(data.capacity.size()-1)){
+    for (int i=0; i<::data.preferredQueue.size(); i++){
+        if (::data.preferredQueue[i]<0 || ::data.preferredQueue[i]>(::data.capacity.size()-1)){
             cout << "Indices in the vector of preferred queues must be between 0 and n_queues-1. Aborting program." << endl;
             exit(1);
         }
     }
-    for (int i=0; i<data.capacity.size(); i++){
-        if (data.capacity[i]<1){
+    for (int i=0; i<::data.capacity.size(); i++){
+        if (::data.capacity[i]<1){
             cout << "The capacity of each queue must be equal to or larger than 1. Aborting program." << endl;
             exit(1);
         }
     }          
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
-        if (settings.evaluatedQueue[i]<0 || settings.evaluatedQueue[i]>(data.capacity.size()-1)){
+        if (settings.evaluatedQueue[i]<0 || settings.evaluatedQueue[i]>(::data.capacity.size()-1)){
             cout << "Indices in the vector of evaluated queues must lie in the interval between 0 and n_queues-1. Aborting program." << endl;
             exit(1);
         }    
@@ -212,10 +233,10 @@ void checkParameters(){
         }    
     }
     double sm;
-    for (int i=0; i<data.relocationProbabilities.size(); i++){
+    for (int i=0; i<::data.relocationProbabilities.size(); i++){
         sm=0;
-        for (int j=0; j<data.relocationProbabilities[i].size(); j++){
-            sm+=data.relocationProbabilities[i][j];
+        for (int j=0; j<::data.relocationProbabilities[i].size(); j++){
+            sm+=::data.relocationProbabilities[i][j];
         }
         if (sm>1.0){
             string out = "The sum of the relocation probabilities in row "+to_string(i)+" is equal to "+to_string(sm)+". The sum must be equal to or smaller than 1.0. Aborting program.";
@@ -236,6 +257,165 @@ void checkParameters(){
         exit(1);
     }        
 
+}
+
+// READ ARGUMENTS
+double argDouble(string flag, int &argc, char** argv){
+    int i=0;
+    string str;
+    double val;
+    do{
+        str=argv[i];
+        if (str.compare(flag)==0){
+            if (i<(argc-1)){
+                return(atof(argv[i+1]));
+            }else{
+                cout << "Missing input value for flag " << flag << endl;
+            }       
+        }
+        i++;
+    }while(i<argc && str.compare(flag)!=0);
+    return(-1);
+}
+
+double argInteger(string flag, int &argc, char** argv){
+    int i=0;
+    string str;
+    int val;
+    do{
+        str=argv[i];
+        if (str.compare(flag)==0){
+            if (i<(argc-1)){
+                return(stoi(argv[i+1]));
+            }else{
+                cout << "Missing input value for flag " << flag << endl;
+            }       
+        }
+        i++;
+    }while(i<argc && str.compare(flag)!=0);
+    return(-1);
+}
+
+string argString(string flag, int &argc, char** argv){
+    int i=0;
+    string str1,str2;
+    do{
+        str1=argv[i];
+        if (str1.compare(flag)==0){
+            if (i<(argc-1)){
+                str2 = argv[i+1];
+                return(str2);
+            }else{
+                cout << "Missing input value for flag " << flag << endl;
+            }       
+        }
+        i++;
+    }while(i<argc && str1.compare(flag)!=0);
+    return("NA");
+}
+
+bool argActivate(string flag, int &argc, char** argv){
+    int i=0;
+    string str;
+    do{
+        str=argv[i];
+        if (str.compare(flag)==0){
+            return(true);       
+        }
+        i++;
+    }while(i<argc && str.compare(flag)!=0);
+    return(false);
+}
+
+void argModel(int &argc, char** argv){
+    string str = argString("-m",argc,argv);
+    if (str.compare("NA")!=0){
+        setType(str);
+    }    
+}
+
+void argSeed(int &argc, char** argv){
+    int val = argInteger("-sd",argc,argv);
+    if (val!=-1){
+        setSeed(val);
+    }
+}
+
+void argOpenStates(int &argc, char** argv){
+    int val = argInteger("-ops",argc,argv);
+    if (val!=-1){
+        setOpenHyperStates(val);
+    }
+}
+
+void argBlockedStates(int &argc, char** argv){
+    int val = argInteger("-bls",argc,argv);
+    if (val!=-1){
+        setBlockedHyperStates(val);
+    }
+}
+
+void argAccType(int &argc, char** argv){
+    string str = argString("-asamt",argc,argv);
+    if (str.compare("NA")!=0){
+        setAccuracySampleType(str);
+    }    
+}
+
+void argTol(int &argc, char** argv){
+    double val = argDouble("-tol",argc,argv);
+    if (val!=-1){
+        setSimulationTolerance(val);
+    }    
+}
+
+void argBurnIn(int &argc, char** argv){
+    double val = argDouble("-bin",argc,argv);
+    if (val!=-1){
+        setBurnIn(val);
+    }    
+}
+
+void argSimTime(int &argc, char** argv){
+    double val = argDouble("-stime",argc,argv);
+    if (val!=-1){
+        setMinimumSimulationTime(val);
+    }    
+}
+
+void argMinSamples(int &argc, char** argv){
+    int val = argInteger("-msam",argc,argv);
+    if (val!=-1){
+        setMinSamples(val);
+    }    
+}
+
+void argVerbose(int &argc, char** argv){
+    bool act = argActivate("-v",argc,argv);
+    if (act){
+        setVerbose(true);
+    }
+}
+
+void argEqualize(int &argc, char** argv){
+    bool act = argActivate("-eq",argc,argv);
+    if (act){
+        equalizeService(true);
+    }
+}
+
+void readArguments(int &argc, char** argv){
+    argVerbose(argc,argv);        
+    argModel(argc,argv);
+    argEqualize(argc,argv);
+    argAccType(argc,argv);
+    argTol(argc,argv);
+    argSeed(argc,argv);
+    argBurnIn(argc,argv);
+    argSimTime(argc,argv);
+    argMinSamples(argc,argv);
+    argOpenStates(argc,argv);
+    argBlockedStates(argc,argv);
 }
 
 void runCalculations(){
@@ -262,8 +442,8 @@ void runCalculations(){
     }
 
     //create the model object
-    Model mdl(data.arrivalRates,data.serviceTimes,data.capacity,
-            data.relocationProbabilities,data.preferredQueue,
+    Model mdl(::data.arrivalRates,::data.serviceTimes,::data.capacity,
+            ::data.relocationProbabilities,::data.preferredQueue,
             settings.evaluatedQueue,settings.modelType,
             settings.equalizeService);
     
@@ -280,7 +460,7 @@ void runCalculations(){
     if (settings.minSamples!=-1){
         mdl.setMinSamples(settings.minSamples);
     }
-    if (settings.hyperStates[0]!=-1 && settings.hyperStates[1]!=-1){
+    if (settings.hyperStates[0]!=2 || settings.hyperStates[1]!=1){
         mdl.setHyperStates(settings.hyperStates[0],settings.hyperStates[1]);
     }
     mdl.setSimTolerance(settings.accTol);
@@ -296,8 +476,8 @@ void runCalculations(){
     //--------------------------
 
     //queue density distribution    
-    results.queueDenDist.resize(data.capacity.size());
-    results.queueDenDistPref.resize(data.capacity.size());
+    results.queueDenDist.resize(::data.capacity.size());
+    results.queueDenDistPref.resize(::data.capacity.size());
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.queueDenDist[settings.evaluatedQueue[i]].resize(mdl.queueDenDist[settings.evaluatedQueue[i]].size());
         results.queueDenDistPref[settings.evaluatedQueue[i]].resize(mdl.queueDenDistPref[settings.evaluatedQueue[i]].size());
@@ -308,8 +488,8 @@ void runCalculations(){
     }
 
     //queue frequency distribution    
-    results.queueFreqDist.resize(data.capacity.size());
-    results.queueFreqDistPref.resize(data.capacity.size());
+    results.queueFreqDist.resize(::data.capacity.size());
+    results.queueFreqDistPref.resize(::data.capacity.size());
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.queueFreqDist[settings.evaluatedQueue[i]].resize(mdl.queueFreqDist[settings.evaluatedQueue[i]].size());
         results.queueFreqDistPref[settings.evaluatedQueue[i]].resize(mdl.queueFreqDistPref[settings.evaluatedQueue[i]].size());
@@ -320,29 +500,29 @@ void runCalculations(){
     }
     
     //shortage probabilities
-    results.shortageProbability.resize(data.capacity.size(),-1);
-    results.shortageProbabilityPref.resize(data.capacity.size(),-1);
+    results.shortageProbability.resize(::data.capacity.size(),-1);
+    results.shortageProbabilityPref.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.shortageProbability[settings.evaluatedQueue[i]] = mdl.blockingProbability[settings.evaluatedQueue[i]];
         results.shortageProbabilityPref[settings.evaluatedQueue[i]] = mdl.blockingProbabilityPref[settings.evaluatedQueue[i]];
     }
 
     //availability probabilities
-    results.availProbability.resize(data.capacity.size(),-1);
-    results.availProbabilityPref.resize(data.capacity.size(),-1);
+    results.availProbability.resize(::data.capacity.size(),-1);
+    results.availProbabilityPref.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.availProbability[settings.evaluatedQueue[i]] = 1.0-mdl.blockingProbability[settings.evaluatedQueue[i]];
         results.availProbabilityPref[settings.evaluatedQueue[i]] = 1.0-mdl.blockingProbabilityPref[settings.evaluatedQueue[i]];
     }
 
     //expected occupancy
-    results.expectedOccupancy.resize(data.capacity.size(),-1);
+    results.expectedOccupancy.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.expectedOccupancy[settings.evaluatedQueue[i]] = mdl.expectedOccupancy[settings.evaluatedQueue[i]];
     }
 
     //expected fraction of customers occupied
-    results.expOccFraction.resize(data.capacity.size(),-1);
+    results.expOccFraction.resize(::data.capacity.size(),-1);
     for (int i=0; i<settings.evaluatedQueue.size(); i++){
         results.expOccFraction[settings.evaluatedQueue[i]] = mdl.expOccFraction[settings.evaluatedQueue[i]];
     }
@@ -357,20 +537,25 @@ int main(int argc, char** argv) {
     // READ ARGUMENTS
     //--------------------------
     
-    //CODE HERE
+    readArguments(argc,argv);
     
-    //--------------------------
-    // EVALUATE MODEL
-    //--------------------------
-    
-    runCalculations();
+    if (argActivate("-help",argc,argv)){
+        printHelp();
+    }else{
 
-    //--------------------------
-    // DISPLAY OR SAVE RESULTS
-    //--------------------------
+        //--------------------------
+        // EVALUATE MODEL
+        //--------------------------
     
-    //CODE HERE
+        runCalculations();
+
+        //--------------------------
+        // DISPLAY OR SAVE RESULTS
+        //--------------------------
     
+        //CODE HERE
+    
+    }
 
     return 0;
 }
