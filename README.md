@@ -173,9 +173,13 @@ for queueIdx in range(4):
 * `getReloc()`. Return the imported relocation probabilities.
 * `getPreferredQueue()`. Return the imported preferred queues.
 
+## Command-line Interface (Windows/Linux)
+
+Coming soon.
+
 ## C++
 
-The approach in C++ is very similar to that of Python. The directory `RelSys/` contains the complete source code for RelSys. Start by heading here. Create a `main.cpp` file (or modify the example `main.cpp` that is already in the directory).
+The approach in C++ is very similar to that of Python. The directory `RelSys/` contains the complete source code for RelSys. Start by heading there. Create a `main.cpp` file.
 
 Write the following into the `main.cpp` file,
 
@@ -324,8 +328,8 @@ Model(vector<double> arrRates, //vector of arrival rates
         vector<vector<double>> relProbMat, //relocation probability matrix
         vector<int> prefQ, //vector of preferred queues
         vector<int> evalQ, //queues to evaluate 
-        string mdlt="auto", //sets the model type (auto, approximation or simulation)
-        bool eqze=true); //If true, all service times are equalized and arrival rates adjusted to keep the load on the queues.
+        string mdlt="simulation", //sets the model type (auto, approximation or simulation)
+        bool eqze=false); //If true, all service times are equalized and arrival rates adjusted to keep the load on the queues.
 ```
 
 ### Model methods
@@ -336,6 +340,8 @@ Model(vector<double> arrRates, //vector of arrival rates
 * `setMinimumSimulationTime(double mnTime)`. Set the simulation time. 
 * `setMinSamples(int mnSamples)`. Set the minimum number of open/shortage samples.
 * `setHyperStates(int openStates, int blockedStates)`. Set the number of phases in the hyper-exponential distributions accounting for the open/shortage time.
+* `setSimTolerance(double at)`. Set the tolerance for the automatic termination of the simulation.
+* `setAccuracySampleType(string stype)`. Set the accuracy evaluation type for the automatic termination of the simulation (preferred , all).
 
 
 # Applications of RelSys
