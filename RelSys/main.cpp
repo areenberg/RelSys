@@ -154,6 +154,240 @@ void setBlockedHyperStates(int blockedStates){
     }
 }
 
+
+//READ/WRITE FILES
+
+void writeMatrixToFile(vector<vector<string>> mat, string fileName, string sep){
+    ofstream file(fileName);
+    int k;
+    for (const auto& row : mat){
+        k=0;
+        for (const auto& elem : row) {
+            if (k<(mat[0].size()-1)){
+                file << elem << sep;
+            }else{
+                file << elem;
+            }
+            k++;
+        }
+        file << endl;
+    }
+    file.close();
+}
+
+vector<vector<double>> readMatrixFromFile(string fileName) {
+    vector<vector<double>> mat;
+    ifstream inputFile(fileName);
+
+    if (!inputFile.is_open()) {
+        cout << "The file " << fileName << " was not found or could not be opened. Aborting program." << endl;
+        exit(1);
+    }
+
+    int nRows, nCols;
+    vector<int> rowLengths;
+    string line;
+
+    while (getline(inputFile, line)) {
+        int count = 0;
+        for (char c : line) {
+            if (c == ' ') {
+                count++;
+            }
+        }
+        rowLengths.push_back(count + 1);
+    }
+
+    nRows = rowLengths.size();
+    nCols = rowLengths[0];
+
+     for (int i = 1; i < nRows; i++) {
+        if (rowLengths[i] != nCols) {
+            cout << "The matrix in file " << fileName << " is not rectangular. Aborting program." << endl;
+            exit(1);
+        }
+    }
+    inputFile.close();
+
+    mat.resize(nRows, vector<double>(nCols));
+    string val;
+
+    ifstream inputFile2(fileName);
+    for (int i = 0; i < nRows; i++) {
+        for (int j = 0; j < nCols; j++) {
+            inputFile2 >> val;
+            mat[i][j] = stod(val);
+        }
+    }
+
+    inputFile2.close();
+
+    return(mat);
+}
+
+//OUTPUT AND PARAMETER CHECK
+
+vector<vector<string>> resultsMatrix(){
+
+    //INITIALIZATION
+    //determine number of rows and columns
+    int nRows,nCols,mRw;
+    nCols = settings.evaluatedQueue.size() + 2;
+    mRw=0;
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        if (::data.capacity[settings.evaluatedQueue[i]]>mRw){
+            mRw = ::data.capacity[settings.evaluatedQueue[i]];
+        }
+    }
+    mRw++; nRows = (mRw+1)*4+7;
+
+    //BUILD MATRIX
+    vector<vector<string>> mat(nRows,vector<string>(nCols));
+    //key measures
+    mat[0][0] = "Type";
+    for (int i=0; i<6; i++){
+        mat[i+1][0] = "KeyMeasures";
+    }
+    mat[0][1] = "MeasureType";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[0][i+2] = "Queue" + to_string(settings.evaluatedQueue[i]);
+    }
+    mat[1][1] = "ShortageProbability(preferred)";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[1][i+2] = to_string(results.shortageProbabilityPref[settings.evaluatedQueue[i]]);
+    }
+    mat[2][1] = "ShortageProbability(all)";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[2][i+2] = to_string(results.shortageProbability[settings.evaluatedQueue[i]]);
+    }
+    mat[3][1] = "AvailProbability(preferred)";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[3][i+2] = to_string(results.availProbabilityPref[settings.evaluatedQueue[i]]);
+    }
+    mat[4][1] = "AvailProbability(all)";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[4][i+2] = to_string(results.availProbability[settings.evaluatedQueue[i]]);
+    }
+    mat[5][1] = "ExpectedOccupancy";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[5][i+2] = to_string(results.expectedOccupancy[settings.evaluatedQueue[i]]);
+    }
+    mat[6][1] = "ExpectedFractionOccupied";
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[6][i+2] = to_string(results.expOccFraction[settings.evaluatedQueue[i]]);
+    }
+    //density distribution (preferred)
+    mat[7][0] = "Type";
+    for (int i=0; i<mRw; i++){
+        mat[i+8][0] = "DenDist(preferred)";
+    }
+    mat[7][1] = "OccupiedBeds";
+    for (int i=0; i<mRw; i++){
+        mat[i+8][1] = to_string(i);
+        for (int j=0; j<settings.evaluatedQueue.size(); j++){
+            if (i<results.queueDenDistPref[settings.evaluatedQueue[j]].size()){
+                mat[i+8][j+2] = to_string(results.queueDenDistPref[settings.evaluatedQueue[j]][i]);
+            }
+        }
+    }
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[7][i+2] = "Queue" + to_string(settings.evaluatedQueue[i]);
+    }
+
+    //density distribution (all)
+    mat[7+mRw+1][0] = "Type";
+    for (int i=0; i<mRw; i++){
+        mat[i+7+(mRw+1)+1][0] = "DenDist(all)";
+    }
+    mat[7+mRw+1][1] = "Beds";
+    for (int i=0; i<mRw; i++){
+        mat[i+7+(mRw+1)+1][1] = to_string(i);
+        for (int j=0; j<settings.evaluatedQueue.size(); j++){
+            if (i<results.queueDenDist[settings.evaluatedQueue[j]].size()){
+                mat[i+7+(mRw+1)+1][j+2] = to_string(results.queueDenDist[settings.evaluatedQueue[j]][i]);
+            }
+        }
+    }
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[7+mRw+1][i+2] = "Queue" + to_string(settings.evaluatedQueue[i]);
+    }
+
+    //frequency distribution (preferred)
+    mat[7+(mRw+1)*2][0] = "Type";
+    for (int i=0; i<mRw; i++){
+        mat[i+7+(mRw+1)*2+1][0] = "FreqDist(preferred)";
+    }
+    mat[7+(mRw+1)*2][1] = "Beds";
+    for (int i=0; i<mRw; i++){
+        mat[i+7+(mRw+1)*2+1][1] = to_string(i);
+        for (int j=0; j<settings.evaluatedQueue.size(); j++){
+            if (i<results.queueFreqDistPref[settings.evaluatedQueue[j]].size()){
+                mat[i+7+(mRw+1)*2+1][j+2] = to_string(results.queueFreqDistPref[settings.evaluatedQueue[j]][i]);
+            }
+        }
+    }
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[7+(mRw+1)*2][i+2] = "Queue" + to_string(settings.evaluatedQueue[i]);
+    }
+
+    //frequency distribution (all)
+    mat[7+(mRw+1)*3][0] = "Type";
+    for (int i=0; i<mRw; i++){
+        mat[i+7+(mRw+1)*3+1][0] = "FreqDist(all)";
+    }
+    mat[7+(mRw+1)*3][1] = "Beds";
+    for (int i=0; i<mRw; i++){
+        mat[i+7+(mRw+1)*3+1][1] = to_string(i);
+        for (int j=0; j<settings.evaluatedQueue.size(); j++){
+            if (i<results.queueFreqDist[settings.evaluatedQueue[j]].size()){
+                mat[i+7+(mRw+1)*3+1][j+2] = to_string(results.queueFreqDist[settings.evaluatedQueue[j]][i]);
+            }
+        }
+    }
+    for (int i=0; i<settings.evaluatedQueue.size(); i++){
+        mat[7+(mRw+1)*3][i+2] = "Queue" + to_string(settings.evaluatedQueue[i]);
+    }
+
+    return(mat);
+}
+
+
+void printResults(){
+    if (results.evaluated){
+        vector<vector<string>> mat = resultsMatrix();
+        int offs;
+
+        //key measures
+        cout << endl << mat[0][1] << "                        ";
+        for (int i=0; i<settings.evaluatedQueue.size(); i++){
+            cout << "Queue" << settings.evaluatedQueue[i] << "      ";
+        }
+        cout << endl;
+        for (int i=0; i<(35+13*settings.evaluatedQueue.size()); i++){
+            cout << "-";
+        }
+        cout << endl;
+        for (int i=0; i<6; i++){
+            cout << mat[i+1][1];
+            offs = mat[1][1].length() - mat[i+1][1].length();
+            for (int l=0; l<(5+offs); l++){
+                cout << " ";
+            }
+            for (int j=0; j<settings.evaluatedQueue.size(); j++){
+                cout << mat[i+1][j+2] << "    ";
+            }
+            cout << endl;
+        }
+    }
+}
+
+void saveResults(string fileName, string sep){
+    if (results.evaluated){
+        writeMatrixToFile(resultsMatrix(),fileName,sep);
+    }    
+}
+
+
 void printHelp(){
     cout << "Usage: relsys.exe [options]" << endl <<
     endl << "A demo is loaded if no options are provided." << endl << endl;
@@ -164,6 +398,8 @@ void printHelp(){
     cout << "-rel <filename>   A space-separated matrix. Each element denotes the probability that customer type i will try to use queue j when the preferred queue is in shortage." << endl;
     cout << "-prq <filename>   A space-separated vector containing the indices of the queues that are preferred by each customer type." << endl;
     cout << "-evq <filename>   A space-separated vector containing the indices of the queues that are evaluated by the program." << endl;
+    cout << "-o <filename>  Write all results (incl. key measures and distributions) to a semicolon-separated file." << endl;
+    cout << "-hk    Hide key measures from the terminal." << endl << endl;
     
     cout << "-m <value>   Select the model type (simulation (default), approximation, auto)." << endl;
     cout << "-sd <value>    Set a seed for the model." << endl;
@@ -172,9 +408,9 @@ void printHelp(){
     cout << "-bin <value>    Set the burn-in time for the simulation." << endl;
     cout << "-stime <value>    Set the simulation time for the simulation." << endl;
     cout << "-msam <value>    Set the minimum number of open/shortage samples for the approximation." << endl;
-    cout << "-eq    Equalize the service-rates." << endl;
+    cout << "-equal    Equalize the service-rates." << endl;
     cout << "-ops <value>    The number of open states for the approximation." << endl;
-    cout << "-bla <value>    The number of shortage/blocked states for the approximation." << endl;
+    cout << "-bls <value>    The number of shortage/blocked states for the approximation." << endl;
 }
 
 void checkParameters(){
@@ -266,58 +502,6 @@ void checkParameters(){
     }        
 
 }
-
-//READ/WRITE FILES
-vector<vector<double>> readMatrixFromFile(string fileName) {
-    vector<vector<double>> mat;
-    ifstream inputFile(fileName);
-
-    if (!inputFile.is_open()) {
-        cout << "The file " << fileName << " was not found or could not be opened. Aborting program." << endl;
-        exit(1);
-    }
-
-    int nRows, nCols;
-    vector<int> rowLengths;
-    string line;
-
-    while (getline(inputFile, line)) {
-        int count = 0;
-        for (char c : line) {
-            if (c == ' ') {
-                count++;
-            }
-        }
-        rowLengths.push_back(count + 1);
-    }
-
-    nRows = rowLengths.size();
-    nCols = rowLengths[0];
-
-     for (int i = 1; i < nRows; i++) {
-        if (rowLengths[i] != nCols) {
-            cout << "The matrix in file " << fileName << " is not rectangular. Aborting program." << endl;
-            exit(1);
-        }
-    }
-    inputFile.close();
-
-    mat.resize(nRows, vector<double>(nCols));
-    string val;
-
-    ifstream inputFile2(fileName);
-    for (int i = 0; i < nRows; i++) {
-        for (int j = 0; j < nCols; j++) {
-            inputFile2 >> val;
-            mat[i][j] = stod(val);
-        }
-    }
-
-    inputFile2.close();
-
-    return(mat);
-}
-
 
 
 // READ ARGUMENTS
@@ -529,10 +713,24 @@ void argVerbose(int &argc, char** argv){
 }
 
 void argEqualize(int &argc, char** argv){
-    bool act = argActivate("-eq",argc,argv);
+    bool act = argActivate("-equal",argc,argv);
     if (act){
         equalizeService(true);
     }
+}
+
+void argPrintResults(int &argc, char** argv){
+    bool act = argActivate("-hk",argc,argv);
+    if (!act){
+        printResults();
+    }
+}
+
+void argOutputToFile(int &argc, char** argv){
+    string str = argString("-o",argc,argv);
+    if (str.compare("NA")!=0){
+        saveResults(str,";");
+    } 
 }
 
 void readArguments(int &argc, char** argv){
@@ -686,11 +884,12 @@ int main(int argc, char** argv) {
         runCalculations();
 
         //--------------------------
-        // DISPLAY OR SAVE RESULTS
+        // PRINT AND SAVE RESULTS
         //--------------------------
-    
-        //CODE HERE
-    
+
+        argPrintResults(argc,argv);    
+        argOutputToFile(argc,argv);
+
     }
 
     return 0;
