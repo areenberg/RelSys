@@ -49,7 +49,7 @@ Below are guides on how to use both interfaces of RelSys, which is available as 
 
 ## Python (Linux)
 
-We have created a Python module for Linux with `pybind11`. Head to the directory `Python/Linux/`, or run `wget https://github.com/areenberg/RelSys/blob/development/Python/Linux/relsys.cpython-310-x86_64-linux-gnu.so` to download the SO-file for the module.
+We have created a Python module for Linux with `pybind11`. Run `git clone https://github.com/areenberg/RelSys.git` and head to the directory `Python/Linux/` to get the SO-file for the module.
 
 Start by importing the module,
 
@@ -178,7 +178,7 @@ for queueIdx in range(4):
 
 ## Command-line Interface (Windows/Linux)
 
-We have created a Command-Line Interface (CLI) for Windows and Linux, which is similar to the Python module in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration. Windows users can head to the directory `Command-line Interface/Windows/`, or use `wget https://github.com/areenberg/RelSys/blob/master/Command-line%20Interface/Windows/relsys.exe` to download the EXE-file for the CLI. Similarly, Linux users can head to `Command-line Interface/Linux/` or use `wget https://github.com/areenberg/RelSys/blob/master/Command-line%20Interface/Linux/relsys.exe`.  
+We have created a Command-Line Interface (CLI) for Windows and Linux, which is similar to the Python module in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration. Run `git clone https://github.com/areenberg/RelSys.git`. Windows users can head to the directory `Command-line Interface/Windows/` to get the EXE-file for the CLI. Similarly, Linux users can head to `Command-line Interface/Linux/`.
 
 The syntax for the CLI is `relsys [options]`. Use the `-help` flag to view all available options.
 
@@ -222,13 +222,13 @@ Evaluate the model using simulation, and save the result in a semicolon-separate
 relsys -m simulation -arr arrivalRates.txt -ser serviceTimes.txt -cap capacity.txt -rel relocProbs.txt -prq preferred.txt -o results.csv
 ```
 
-### Windows Defender blocking the EXE-file
+### Windows Defender blocking the EXE-files
 
-If you are a Windows user, you may encounter an issue where the Microsoft Defender SmartScreen blocks the EXE-file when you attempt to run the application. In this case, you will need to turn off SmartScreen to run the application. Alternatively, you can compile the EXE-file by downloading the source code from the `RelSys/` directory, removing the `PythonWrapper.cpp` file, and running the command `g++ -O3 -std=c++11 *.cpp -o relsys.exe`. This will enable you to run the application without any issues caused by SmartScreen.  
+If you are a Windows user, you may encounter an issue where the Microsoft Defender SmartScreen blocks the EXE-file when you attempt to run the application. In this case, you will need to turn off SmartScreen to run the application. Alternatively, you can compile the EXE-file yourself by downloading the source code (`git clone https://github.com/areenberg/RelSys.git`), removing the `PythonWrapper.cpp` file, and running the command `g++ -O3 -std=c++11 *.cpp -o relsys.exe`. This will enable you to run the application without any issues caused by SmartScreen.  
 
 ## C++
 
-The following guide will show you how to use the C++ source code for evaluating a model. The directory `RelSys/` contains the complete source code for RelSys. Start by heading there. Create a `main.cpp` file.
+The following guide will show you how to use the C++ source code for evaluating a model. Run `git clone https://github.com/areenberg/RelSys.git`. The directory `RelSys/` contains the complete source code for RelSys. Start by heading here. Create a `main.cpp` file.
 
 Write the following into the `main.cpp` file,
 
