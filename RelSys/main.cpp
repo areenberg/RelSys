@@ -21,6 +21,14 @@ using namespace std;
 
 //input data structure (including example values)
 struct Data {
+    vector<double> arrivalRates;
+    vector<double> serviceTimes;
+    vector<int> capacity;
+    vector<vector<double>> relocationProbabilities;
+    vector<int> preferredQueue;
+} data;
+
+struct DemoData {
     vector<double> arrivalRates = {0.8,2.5,0.6,2.8};
     vector<double> serviceTimes {10,5,10,8};
     vector<int> capacity = {15,20,10,30};
@@ -29,7 +37,7 @@ struct Data {
                                                       {0.0,0.5,0.0,0.5},
                                                       {0.2,0.3,0.5,0.0}};
     vector<int> preferredQueue = {0,1,2,3};
-} data;
+} demoData;
 
 //model settings structure
 struct Settings {
@@ -65,6 +73,14 @@ struct Results {
 
 
 //ACTION METHODS
+
+void loadDemo(){
+    ::data.arrivalRates = demoData.arrivalRates;
+    ::data.serviceTimes = demoData.serviceTimes;
+    ::data.capacity = demoData.capacity;
+    ::data.relocationProbabilities = demoData.relocationProbabilities;
+    ::data.preferredQueue = demoData.preferredQueue;
+}
 
 void setVerbose(bool set){
     settings.verbose=set;
@@ -389,9 +405,10 @@ void saveResults(string fileName, string sep){
 
 
 void printHelp(){
-    cout << "Usage: relsys.exe [options]" << endl <<
-    endl << "A demo is loaded if no options are provided." << endl << endl;
-    cout << "Options include:" << endl << "-v   Activate verbose." << endl;
+    cout << "Usage: relsys.exe [options]" << endl << endl;
+
+    cout << "Options include:" << endl;
+    cout << "-v   Activate verbose." << endl;
     cout << "-arr <filename>   A space-separated vector containing the arrival rates of each customer type." << endl;
     cout << "-ser <filename>   A space-separated vector containing the service times of each customer type." << endl;
     cout << "-cap <filename>   A space-separated vector containing the capacities of each queue." << endl;
@@ -400,6 +417,7 @@ void printHelp(){
     cout << "-evq <filename>   A space-separated vector containing the indices of the queues that are evaluated by the program." << endl;
     cout << "-o <filename>  Write all results (incl. key measures and distributions) to a semicolon-separated file." << endl;
     cout << "-hk    Hide key measures from the terminal." << endl << endl;
+    cout << "-demo    Load demo parameters." << endl << endl;
     
     cout << "-m <value>   Select the model type (simulation (default), approximation, auto)." << endl;
     cout << "-sd <value>    Set a seed for the model." << endl;
@@ -415,6 +433,30 @@ void printHelp(){
 
 void checkParameters(){
     //checks if parameters are feasible
+    if (::data.arrivalRates.size()==0){
+        cout << "The arrival rates were not loaded. Aborting program." << endl;
+        exit(1);
+    }
+
+    if (::data.serviceTimes.size()==0){
+        cout << "The service times were not loaded. Aborting program." << endl;
+        exit(1);
+    }
+
+    if (::data.capacity.size()==0){
+        cout << "The capacities were not loaded. Aborting program." << endl;
+        exit(1);
+    }
+
+    if (::data.preferredQueue.size()==0){
+        cout << "The preferred queues were not loaded. Aborting program." << endl;
+        exit(1);
+    }
+
+    if (::data.relocationProbabilities.size()==0){
+        cout << "The relocation probabilities were not loaded. Aborting program." << endl;
+        exit(1);
+    }
 
     if (::data.arrivalRates.size() != ::data.serviceTimes.size()){
         cout << "The number of arrival rates must equal the number of service times. Aborting program." << endl;
@@ -712,6 +754,13 @@ void argVerbose(int &argc, char** argv){
     }
 }
 
+void argDemo(int &argc, char** argv){
+    bool act = argActivate("-demo",argc,argv);
+    if (act){
+        loadDemo();
+    }
+}
+
 void argEqualize(int &argc, char** argv){
     bool act = argActivate("-equal",argc,argv);
     if (act){
@@ -734,8 +783,10 @@ void argOutputToFile(int &argc, char** argv){
 }
 
 void readArguments(int &argc, char** argv){
+    argDemo(argc,argv);
     argArrivalRates(argc,argv);
     argServiceTimes(argc,argv);
+    argCapacity(argc,argv);
     argRelocProbs(argc,argv);
     argPreferred(argc,argv);
     argEvalQueues(argc,argv);

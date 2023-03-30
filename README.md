@@ -1,6 +1,6 @@
 # RelSys (**Rel**ocation **Sys**tem)
 RelSys is a tool for evaluating a system of queues where arriving customers can be relocated to an alternative queue if none of the servers in the preferred queue are idle.
-The source code is written in C++, but we have developed a module for the users preferring Python (Linux).
+We have developed two interfaces for RelSys: A Python module (Linux) and a command-line interface (Windows/Linux).  
 
 # Table of contents
 
@@ -9,6 +9,7 @@ The source code is written in C++, but we have developed a module for the users 
    * Output types
 2. How to use
    * Python (Linux)
+   * Command-line interface (Windows/Linux)
    * C++
 3. How to cite
 4. Licence
@@ -21,10 +22,10 @@ Consider a number of parallel queues where the capacity of the queue equals the 
 
 ## Input parameters
 
-RelSys has five types of input parameters for the model:
+RelSys uses five types of input parameters:
 
-* An arrival rate vector. Each element corresponds to a customer type.
-* A service time vector. Each element corresponds to a customer type.
+* An arrival rate vector, where each element corresponds to a customer type.
+* A service time vector, where each element corresponds to a customer type.
 * A relocation probability matrix. Rows correspond to customer types and columns to queues.  
 * A capacity vector. Each element corresponds to a queue.
 * A preferrence vector. Each element indicates the preferred queue of each customer type.
@@ -38,15 +39,17 @@ RelSys has six output types:
 * Shortage probabilities.
 * Availability probabilities.
 * Expected occupancy.
-* Expected fraction of capacity occupied.
+* Expected fraction of occupied capacity.
+
+All outputs, except for the *expected occupancy* and *expected fraction of occupied capacity*, can be evaluated from two customer perspectives: The perspective of the customers preferring the queues, and the perspective of all customers arriving to the queues.    
 
 # How to use
 
-RelSys is available for Python users on Linux, and for C++ users on all operating systems. 
+Below are guides on how to use both interfaces of RelSys, which is available as a Python module for Linux and a command-line interface for Windows and Linux.
 
 ## Python (Linux)
 
-We have created a RelSys module for Python with `pybind11`. Head to the directory `Python/Linux/`, or run `wget https://github.com/areenberg/RelSys/blob/development/Python/Linux/relsys.cpython-310-x86_64-linux-gnu.so` to download the SO-file for the module.
+We have created a Python module for Linux with `pybind11`. Head to the directory `Python/Linux/`, or run `wget https://github.com/areenberg/RelSys/blob/development/Python/Linux/relsys.cpython-310-x86_64-linux-gnu.so` to download the SO-file for the module.
 
 Start by importing the module,
 
@@ -175,11 +178,57 @@ for queueIdx in range(4):
 
 ## Command-line Interface (Windows/Linux)
 
-Coming soon.
+We have created a Command-Line Interface (CLI) for Windows and Linux, which is similar to the Python module in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration. Windows users can head to the directory `Command-line Interface/Windows/`, or use `wget https://github.com/areenberg/RelSys/blob/master/Command-line%20Interface/Windows/relsys.exe` to download the EXE-file for the CLI. Similarly, Linux users can head to `Command-line Interface/Linux/` or use `wget https://github.com/areenberg/RelSys/blob/master/Command-line%20Interface/Linux/relsys.exe`.  
+
+The syntax for the CLI is `relsys [options]`. Use the `-help` flag to view all available options.
+
+```
+relsys -help
+```
+
+Create a space-separated file for each of the input parameter types. For instance,
+
+*arrivalRates.txt*
+```
+0.8 2.5 0.6 2.8
+```
+
+*serviceTimes.txt*
+```
+10 5 10 8
+```
+
+*capacity.txt*
+```
+15 20 10 30
+```
+
+*relocProbs.txt*
+```
+0.0 0.4 0.1 0.5
+0.3 0.0 0.5 0.0
+0.0 0.5 0.0 0.5
+0.2 0.3 0.5 0.0
+```
+
+*preferred.txt*
+```
+0 1 2 3
+```
+
+Evaluate the model using simulation, and save the result in a semicolon-separated file named `results.csv`.
+
+```
+relsys -m simulation -arr arrivalRates.txt -ser serviceTimes.txt -cap capacity.txt -rel relocProbs.txt -prq preferred.txt -o results.csv
+```
+
+### Windows Defender blocking the EXE-file
+
+If you are a Windows user, you may encounter an issue where the Microsoft Defender SmartScreen blocks the EXE-file when you attempt to run the application. In this case, you will need to turn off SmartScreen to run the application. Alternatively, you can compile the EXE-file by downloading the source code from the `RelSys/` directory, removing the `PythonWrapper.cpp` file, and running the command `g++ -O3 *.cpp -o relsys.exe`. This will enable you to run the application without any issues caused by SmartScreen.  
 
 ## C++
 
-The approach in C++ is very similar to that of Python. The directory `RelSys/` contains the complete source code for RelSys. Start by heading there. Create a `main.cpp` file.
+The following guide will show you how to use the C++ source code for evaluating a model. The directory `RelSys/` contains the complete source code for RelSys. Start by heading there. Create a `main.cpp` file.
 
 Write the following into the `main.cpp` file,
 
