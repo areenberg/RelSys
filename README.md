@@ -224,7 +224,7 @@ relsys -m simulation -arr arrivalRates.txt -ser serviceTimes.txt -cap capacity.t
 
 ### Windows Defender blocking the EXE-file
 
-If you are a Windows user, you may encounter an issue where the Microsoft Defender SmartScreen blocks the EXE-file when you attempt to run the application. In this case, you will need to turn off SmartScreen to run the application. Alternatively, you can compile the EXE-file by downloading the source code from the `RelSys/` directory, removing the `PythonWrapper.cpp` file, and running the command `g++ -O3 *.cpp -o relsys.exe`. This will enable you to run the application without any issues caused by SmartScreen.  
+If you are a Windows user, you may encounter an issue where the Microsoft Defender SmartScreen blocks the EXE-file when you attempt to run the application. In this case, you will need to turn off SmartScreen to run the application. Alternatively, you can compile the EXE-file by downloading the source code from the `RelSys/` directory, removing the `PythonWrapper.cpp` file, and running the command `g++ -O3 -std=c++11 *.cpp -o relsys.exe`. This will enable you to run the application without any issues caused by SmartScreen.  
 
 ## C++
 
@@ -304,7 +304,7 @@ The following returns the resulting occupancy distributions and shortage probabi
     }
 ```
 
-The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the file `PythonWrapper.cpp`, and run `g++ -O3 *.cpp -o eval` in your terminal. Run the program with `./eval`. 
+The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the file `PythonWrapper.cpp`, and run `g++ -O3 -std=c++11 *.cpp -o relsys.exe` in your terminal. Run the program with `./relsys.exe`. 
 
 ### The complete example
 
