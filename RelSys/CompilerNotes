@@ -1,2 +1,5 @@
-#Compile Python Wrapper on Linux (Ubuntu) using pybind11
+#Compile Python Wrapper on Linux (Ubuntu) using pybind11 (remember to first run: pip install pybind11)
 g++ -O3 -Wall -shared -std=c++11 -fPIC `python3 -m pybind11 --includes` *.cpp -o relsys`python3-config --extension-suffix`
+
+#Compile CLI on Linux (Ubuntu) (remember to first remove the file PythonWrapper.cpp)
+g++ -O3 -Wall *.cpp -o relsys
