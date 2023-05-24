@@ -404,8 +404,9 @@ Leeters, Christoph, and Anders Reenberg Andersen. 2023. "Queueing systems with r
 # Capsule on Code Ocean
 
 We have published a capsule for the Linux CLI on Code Ocean. The URL and DOI for the capsule follows below:
-URL: https://codeocean.com/capsule/7104737/tree
-DOI: https://doi.org/10.24433/CO.2728562.v1
+
+* URL: https://codeocean.com/capsule/7104737/tree
+* DOI: https://doi.org/10.24433/CO.2728562.v1
 
 # How to cite
 
