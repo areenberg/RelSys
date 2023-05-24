@@ -401,6 +401,9 @@ Andersen, Anders Reenberg, Bo Friis Nielsen, and Andreas Lindhardt Plesner. 2023
 
 Leeters, Christoph, and Anders Reenberg Andersen. 2023. "Queueing systems with relocation of customers." ORbit: medlemsblad for Dansk Selskab for Operationsanalyse.
 
+# Capsule on Code Ocean
+
+<script src="https://codeocean.com/widget.js?slug=7104737" async></script>
 
 # How to cite
 
