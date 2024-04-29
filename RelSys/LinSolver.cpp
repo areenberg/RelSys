@@ -28,7 +28,7 @@
 #include <vector>
 //#include <cstdlib>
 #include <cmath>
-#include <unistd.h>
+//#include <unistd.h>
 #include <ios>
 #include <iostream>
 #include <fstream>
@@ -247,107 +247,6 @@ void LinSolver::embeddedChain(vector<vector<double>> &values){
     }
     
 }
-
-//void LinSolver::monteCarlo(HeuristicQueue &q, 
-//        double burnIn, int collectSamples){
-//    //the marginal distribution is found using a simulation of the process
-//    
-//    double mn,sml,smlArr;
-//    int toState,sm,K;
-//    vector<int> s;
-//    
-//    int samples=0;
-//    double clock=0.0;
-//    int currentState=0;
-//    q.initializeState();
-//    s.resize(q.state.size(),0);
-//    int csize = q.state.size()-q.Nh; 
-//    q.margDist.resize(q.margDist.size(),0);
-//    
-//    cout << "Sampling process..." << endl;
-//    StatusBar sbar(collectSamples,30);
-//    while (samples<collectSamples){
-//        //derive jump rates from the current state
-//        
-//        q.allOutgoing();
-//        
-//        //sample the next state
-//        mn=numeric_limits<double>::max();
-//        toState=-1;
-//        for (int j=0; j<q.toIdxSize; j++){
-//            if (q.jumpToRate[j]>0.0){
-//                sml=randomExponential(q.jumpToRate[j]);
-//                if (sml<mn){
-//                    mn=sml;
-//                    toState=q.jumpToIdx[j];
-//                }
-//            }
-//        }
-//        K=0;
-//        for (int i=0; i<csize; i++){
-//            K+=q.state[i];
-//        }
-//        if (K==q.cap){
-//            smlArr=randomExponential(q.arrivalRate);
-//        }
-//        
-//        //move to the next state
-//        for (int i=0; i<q.state.size(); i++){
-//            s[i]=q.state[i];
-//        }
-//        if (toState>currentState){
-//            for (int i=0; i<(toState-currentState); i++){
-//                q.nextCurrentState();
-//            }
-//        }else if (toState<currentState){
-//            //fast version
-////            for (int i=0; i<(currentState-toState); i++){
-////                q.previousCurrentState();
-////            }
-//            
-//            //version that works (but slow)
-//            q.initializeState();
-//            if (toState>0){
-//                for (int i=0; i<toState; i++){
-//                    q.nextCurrentState();
-//                }
-//            }    
-//        }
-//        currentState=toState;
-//        
-//        clock+=mn; //advance the clock
-//        
-//        //track occupancy
-//        if (clock>burnIn){
-//            sm=0;
-//            for (int i=0; i<csize; i++){
-//                sm += (q.state[i]-s[i]);
-//            }
-//            if (sm==1 || (K==q.cap && smlArr<mn)){
-//                samples++;
-//                q.margDist[K]++;
-//            }
-//        }
-//        
-//        if (samples%1000==0){  
-//            sbar.updateBar(samples);
-//        }    
-//        
-//    }
-//    sbar.endBar();
-//    cout << "done." << endl;
-//    
-//    //calculate relative frequencies
-//    sm=0;
-//    for (int i=0; i<q.margDist.size(); i++){
-//        sm+=q.margDist[i];
-//    }
-//    for (int i=0; i<q.margDist.size(); i++){
-//        q.margDist[i]/=(double)sm;
-//    }
-//    
-//    
-//}
 
 double LinSolver::memUsage(){
     //memory usage in kilobytes at runtime for Linux operating systems

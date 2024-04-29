@@ -1,0 +1,1 @@
+from relsys.model import model

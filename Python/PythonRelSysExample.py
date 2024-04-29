@@ -29,10 +29,10 @@ preferredQueue = [0,1,2,3]
 #----------------------------------
 
 #import the parameters
-relsys.input(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
+mdl = relsys.model(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
 
 #run the model
-relsys.run()
+mdl.run()
 
 #----------------------------------
 #   GET THE RESULTS
@@ -40,8 +40,8 @@ relsys.run()
 
 #check the resulting occupancy distribution of each queue 
 for queueIdx in range(4):
-    print(relsys.getDensity(queueIdx))
+    print("Queue",queueIdx,"=",mdl.getDensity(queueIdx))
 
 #check the resulting shortage probabilities of each queue 
 for queueIdx in range(4):
-    print(relsys.getShortageProb(queueIdx))
+    print("Queue",queueIdx,"=",mdl.getShortageProb(queueIdx))

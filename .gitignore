@@ -4,5 +4,7 @@
 /RelSys/dist/
 /RelSys/build/
 /RelSys/.vscode/
+__pycache__/
 .vscode/
 *.bat
+*.txt
