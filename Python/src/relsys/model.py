@@ -15,10 +15,10 @@ class model:
     def run(self):
         self.mdl.run()
         
-    def getDensity(self,queueIdx,type="preferred"):
+    def getDensity(self,queueIdx=0,type="preferred"):
         return self.mdl.getDensity(queueIdx,type=type)
         
-    def getShortageProb(self,queueIdx):
+    def getShortageProb(self,queueIdx=0):
         return self.mdl.getShortageProb(queueIdx)
     
     def setType(self,mdltype):
@@ -57,16 +57,16 @@ class model:
     def setHyperPhases(self,openStates,blockedStates):
         self.mdl.setHyperPhases(openStates,blockedStates)
         
-    def getFreq(self,queueIndex,type="preferred"):
+    def getFreq(self,queueIndex=0,type="preferred"):
         return self.mdl.getFreq(queueIndex,type=type)
         
-    def getAvailProb(self,queueIndex,type="preferred"):
+    def getAvailProb(self,queueIndex=0,type="preferred"):
         return self.mdl.getAvailProb(queueIndex,type=type)
     
-    def getExpOccupany(self,queueIndex):
+    def getExpOccupany(self,queueIndex=0):
         return self.mdl.getExpOccupany(queueIndex)
         
-    def getExpOccFraction(self,queueIndex):
+    def getExpOccFraction(self,queueIndex=0):
         return self.mdl.getExpOccFraction(queueIndex)
         
     def getArrivalRates(self):

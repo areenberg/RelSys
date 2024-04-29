@@ -1,6 +1,6 @@
 # RelSys (**Rel**ocation **Sys**tem)
 RelSys is a tool for evaluating a system of queues where arriving customers can be relocated to an alternative queue if none of the servers in the preferred queue are idle.
-We have developed two interfaces for RelSys: A Python module (Linux) and a command-line interface (Windows/Linux).  
+We have developed two interfaces for RelSys: A Python module and a command-line interface.  
 
 # Table of contents
 
@@ -8,8 +8,8 @@ We have developed two interfaces for RelSys: A Python module (Linux) and a comma
    * Input parameters
    * Output types
 2. How to use
-   * Python (Linux)
-   * Command-line interface (Windows/Linux)
+   * Python
+   * Command-line interface
    * C++
 3. How to cite
 4. Licence
@@ -45,11 +45,19 @@ All outputs, except for the *expected occupancy* and *expected fraction of occup
 
 # How to use
 
-Below are guides on how to use both interfaces of RelSys, which is available as a Python module for Linux and a command-line interface for Windows and Linux.
+Below are guides on how to use both interfaces of RelSys, which is available as a Python module and a command-line interface.
 
-## Python (Linux)
+## Python (Windows/Linux)
 
-We have created a Python module for Linux with `pybind11`. Run `git clone https://github.com/areenberg/RelSys.git` and head to the directory `Python/Linux/` to get the SO-file for the module.
+**Installation:**
+
+Download and install `relsys` directly from PyPI.
+
+```
+pip install relsys
+```
+
+**Usage:**
 
 Start by importing the module,
 
@@ -74,26 +82,26 @@ relocationProbabilities = [[0.0,0.4,0.1,0.5],
 preferredQueue = [0,1,2,3]
 ```
 
-The input parameters are imported using the `input` function,
+Create the model object and import the parameters,
 
 ```python
-relsys.input(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
+mdl = relsys.model(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
 ```
 
 The model can now be evaluated with `run`,
 
 ```python
-relsys.run()
+mdl.run()
 ```
 
 Return the resulting occupancy distributions with `getDensity` and shortage probabilities with `getShortageProb`,
 
 ```python
 for queueIdx in range(4):
-    print(relsys.getDensity(queueIdx))
+    print(mdl.getDensity(queueIdx))
 
 for queueIdx in range(4):
-    print(relsys.getShortageProb(queueIdx))
+    print(mdl.getShortageProb(queueIdx))
 ```
 
 ### The complete example
@@ -121,25 +129,22 @@ relocationProbabilities = [[0.0,0.4,0.1,0.5],
 #queue indices preferred by each customer type
 preferredQueue = [0,1,2,3]
 
-#import the parameters
-relsys.input(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
+#create the model object and import the parameters
+mdl = relsys.model(arrivalRates,serviceTimes,capacity,relocationProbabilities,preferredQueue)
 
 #run the model
-relsys.run()
+mdl.run()
 
 #check the resulting occupancy distribution of each queue 
 for queueIdx in range(4):
-    print(relsys.getDensity(queueIdx))
+    print(mdl.getDensity(queueIdx))
 
 #check the resulting shortage probabilities of each queue 
 for queueIdx in range(4):
-    print(relsys.getShortageProb(queueIdx))
+    print(mdl.getShortageProb(queueIdx))
 ```
 
 ## List of functions
-
-### Import data
-* `input(list arr, list ser, list cap, list relProb, list prefQ)`. Import the input data to the model.
 
 ### Model settings
 
@@ -176,7 +181,7 @@ for queueIdx in range(4):
 * `getReloc()`. Return the imported relocation probabilities.
 * `getPreferredQueue()`. Return the imported preferred queues.
 
-## Command-line Interface (Windows/Linux)
+## Command-line Interface
 
 We have created a Command-Line Interface (CLI) for Windows and Linux, which is similar to the Python module in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration. Run `git clone https://github.com/areenberg/RelSys.git`. Windows users can head to the directory `Command-line Interface/Windows/` to get the EXE-file for the CLI. Similarly, Linux users can head to `Command-line Interface/Linux/`.
 
@@ -392,7 +397,6 @@ Model(vector<double> arrRates, //vector of arrival rates
 * `setSimTolerance(double at)`. Set the tolerance for the automatic termination of the simulation.
 * `setAccuracySampleType(string stype)`. Set the accuracy evaluation type for the automatic termination of the simulation (preferred , all).
 
-
 # Applications of RelSys
 
 ## Articles
@@ -414,7 +418,7 @@ We have published a capsule for the Linux CLI on Code Ocean. The URL and DOI for
 
 # License
 
-Copyright 2023 Anders Reenberg Andersen.
+Copyright 2024 Anders Reenberg Andersen.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
