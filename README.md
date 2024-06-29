@@ -198,7 +198,7 @@ for queueIdx in range(4):
 
 ## Command-line Interface
 
-We have created a Command-Line Interface (CLI), which is similar to the Python package in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration.
+We have created a Command-Line Interface (CLI), which is similar to the Python package in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results.
 
 **Linux installation:**
 
@@ -281,15 +281,9 @@ Evaluate the model using simulation, and save the result in a semicolon-separate
 relsys -m simulation -arr arrivalRates.txt -ser serviceTimes.txt -cap capacity.txt -rel relocProbs.txt -prq preferred.txt -o results.csv
 ```
 
-### Windows Defender blocking the EXE-files
-
-If you are a Windows user, you may encounter an issue where the Microsoft Defender SmartScreen blocks the EXE-file when you attempt to run the application. In this case, you will need to turn off SmartScreen to run the application. Alternatively, you can compile the EXE-file yourself by downloading the source code (`git clone https://github.com/areenberg/RelSys.git`), removing the `PythonWrapper.cpp` file, and running the command `g++ -O3 -std=c++11 *.cpp -o relsys.exe`. This will enable you to run the application without any issues caused by SmartScreen.  
-
 ## C++
 
-The following guide will show you how to use the C++ source code for evaluating a model. Run `git clone https://github.com/areenberg/RelSys.git`. The directory `RelSys/` contains the complete source code for RelSys. Start by heading here. Create a `main.cpp` file.
-
-Write the following into the `main.cpp` file,
+The following guide will show you how to use the C++ source code for evaluating a model. Run `git clone https://github.com/areenberg/RelSys.git`. The directory `RelSys/` contains the complete source code for RelSys. Start by heading here. Replace the content of the current *main*-file with:
 
 ```c++
 #include "Model.h"
@@ -363,7 +357,7 @@ The following returns the resulting occupancy distributions and shortage probabi
     }
 ```
 
-The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the file `PythonWrapper.cpp`, and run `g++ -O3 -std=c++11 *.cpp -o relsys.exe` in your terminal. Run the program with `./relsys.exe`. 
+The model is finally evaluated by compiling the C++ program. If you have cloned the repository to your computer, remove the files `PythonWrapper.cpp` and `ModuleInterface.cpp`, and run `g++ -O3 -std=c++11 *.cpp -o relsys.exe` in your terminal. Run your program with `./relsys.exe`. 
 
 ### The complete example
 
