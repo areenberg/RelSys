@@ -524,7 +524,7 @@ void checkParameters(){
         for (int j=0; j<::data.relocationProbabilities[i].size(); j++){
             sm+=::data.relocationProbabilities[i][j];
         }
-        if (sm>1.0){
+        if (sm>(1.0+1e-6)){
             string out = "The sum of the relocation probabilities in row "+to_string(i)+" is equal to "+to_string(sm)+". The sum must be equal to or smaller than 1.0. Aborting program.";
             cout << out << endl;
             exit(1);

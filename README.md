@@ -45,7 +45,7 @@ All outputs, except for the *expected occupancy* and *expected fraction of occup
 
 # How to use
 
-Below are guides on how to use both interfaces of RelSys, which is available as a Python module and a command-line interface.
+Below are guides on how to install and use the Python package and command-line interface.
 
 ## Python
 
@@ -72,7 +72,7 @@ After installing Visual Studio (incl. MSVC C++ compiler and libraries), install 
 pip install mdpsolver
 ```
 
-**How to use:**
+**How to use the Python package:**
 
 Start by importing the module,
 
@@ -198,7 +198,46 @@ for queueIdx in range(4):
 
 ## Command-line Interface
 
-We have created a Command-Line Interface (CLI) for Windows and Linux, which is similar to the Python module in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration. Run `git clone https://github.com/areenberg/RelSys.git`. Windows users can head to the directory `Command-line Interface/Windows/` to get the EXE-file for the CLI. Similarly, Linux users can head to `Command-line Interface/Linux/`.
+We have created a Command-Line Interface (CLI), which is similar to the Python package in terms of features, inputs, and outputs. The CLI utilizes files to import the input parameters and export the results, ensuring a seamless integration.
+
+**Linux installation:**
+
+Clone the repository:
+
+```
+git clone https://github.com/areenberg/RelSys.git
+```
+
+Navigate to the `RelSys` subfolder in the cloned repository and compile the EXE-file (`relsys.exe`) for the CLI: 
+
+```
+g++ -O3 -std=c++11 $(ls *.cpp | grep -v 'PythonWrapper.cpp\|ModuleInterface.cpp') -o relsys.exe
+``` 
+
+Make sure the CLI works: `./relsys.exe -demo`.
+
+**Windows installation:**
+
+Make sure that *g++* is installed and added to your *Path* variable:
+1. To get *g++*: (1) Install [MinGW](https://sourceforge.net/projects/mingw/). (2) Start MinGW and install all basic support libraries for C++.
+2. Add *C:\MinGW\bin* to the Windows *Path* variable.
+3. Make sure *g++* works: `g++ --version`.
+
+Now clone the repository:
+
+```
+git clone https://github.com/areenberg/RelSys.git
+```
+
+Navigate to the `RelSys` subfolder in the cloned repository, open *Windows PowerShell*, and compile the EXE-file (`relsys.exe`) for the CLI: 
+
+```
+g++ -O3 -std=c++11 -o relsys.exe Combinatorial.cpp LinSolver.cpp QueuePerformance.cpp Customer.cpp CustomerData.cpp main.cpp RelocEvaluation.cpp Model.cpp RelocSimulation.cpp EntireSystem.cpp Experiments.cpp PhaseFitter.cpp StatusBar.cpp HeuristicQueue.cpp SystemParameters.cpp HyperQueue.cpp QueueData.cpp
+```
+
+Make sure the CLI works: `./relsys.exe -demo`.
+
+**How to use the CLI:**
 
 The syntax for the CLI is `relsys [options]`. Use the `-help` flag to view all available options.
 
