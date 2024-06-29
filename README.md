@@ -47,9 +47,9 @@ All outputs, except for the *expected occupancy* and *expected fraction of occup
 
 Below are guides on how to use both interfaces of RelSys, which is available as a Python module and a command-line interface.
 
-## Python (Windows/Linux)
+## Python
 
-**Installation:**
+**Linux installation:**
 
 Download and install `relsys` directly from PyPI.
 
@@ -57,7 +57,22 @@ Download and install `relsys` directly from PyPI.
 pip install relsys
 ```
 
-**Usage:**
+`relsys` works *out of the box* on Linux.
+
+
+**Windows installation:**
+
+Requires [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) (17.9) with MSVC C++ compiler and libraries installed (see below).
+
+<img src="https://github.com/areenberg/RelSys/blob/master/images/visualstudioinstaller.png" alt="Logo" width="300">
+
+After installing Visual Studio (incl. MSVC C++ compiler and libraries), install directly from PyPI with:
+
+```
+pip install mdpsolver
+```
+
+**How to use:**
 
 Start by importing the module,
 
