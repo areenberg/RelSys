@@ -12,7 +12,6 @@ We have developed two interfaces for RelSys: A Python module and a command-line 
    * Command-line interface
    * C++
 3. How to cite
-4. Licence
 
 # Description of RelSys
 
