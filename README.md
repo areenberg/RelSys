@@ -466,6 +466,6 @@ Please cite our paper:
 
 Andersen, Anders Reenberg, Bo Friis Nielsen, and Andreas Lindhardt Plesner. 2023. "An Approximation of the Inpatient Distribution in Hospitals with Patient Relocation Using Markov Chains." Healthcare Analytics 3: 100145. https://doi.org/10.1016/j.health.2023.100145.
 
-or cite the software itself using the DOI below:
+or the software itself using the DOI below:
 
 [![DOI](https://zenodo.org/badge/293829002.svg)](https://zenodo.org/badge/latestdoi/293829002)
