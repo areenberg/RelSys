@@ -47,7 +47,7 @@ All outputs, except for the *expected occupancy* and *expected fraction of occup
 
 Below are guides on how to install and use the Python package and command-line interface.
 
-## Python
+## Python (3.10)
 
 **Linux installation:**
 
@@ -69,7 +69,7 @@ Requires [Visual Studio 2022](https://visualstudio.microsoft.com/downloads/) (17
 After installing Visual Studio (incl. MSVC C++ compiler and libraries), install directly from PyPI with:
 
 ```
-pip install mdpsolver
+pip install relsys
 ```
 
 **How to use the Python package:**
