@@ -453,13 +453,6 @@ Andersen, Anders Reenberg, Bo Friis Nielsen, and Andreas Lindhardt Plesner. 2023
 
 Leeters, Christoph, and Anders Reenberg Andersen. 2023. "Queueing systems with relocation of customers." ORbit: medlemsblad for Dansk Selskab for Operationsanalyse.
 
-# Capsule on Code Ocean
-
-We have published a capsule for the Linux CLI on Code Ocean. The URL and DOI for the capsule follows below:
-
-* URL: https://codeocean.com/capsule/7104737/tree
-* DOI: https://doi.org/10.24433/CO.2728562.v1
-
 # How to cite
 
 Please cite our paper:
@@ -469,3 +462,12 @@ Andersen, Anders Reenberg, Bo Friis Nielsen, and Andreas Lindhardt Plesner. 2023
 or the software itself using the DOI below:
 
 [![DOI](https://zenodo.org/badge/293829002.svg)](https://zenodo.org/badge/latestdoi/293829002)
+
+
+# Capsule on Code Ocean
+
+We have published a capsule for the Linux CLI on Code Ocean. The URL and DOI for the capsule follows below:
+
+* URL: https://codeocean.com/capsule/7104737/tree
+* DOI: https://doi.org/10.24433/CO.2728562.v1
+
